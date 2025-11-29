@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # --- Include directories ---
 include_directories(
+        Step0
         Step1_Sharding
         Step2_MCMC
         Step3_Consensus
@@ -19,6 +20,7 @@ include_directories(
 set(SOURCES
         main.cpp
         SpatialCMC/SpatialCMC.cpp
+        Step0/CSVLoader.cpp
         Step1_Sharding/Sharding.cpp
         Step2_MCMC/MCMC.cpp
         Step3_Consensus/Consensus.cpp

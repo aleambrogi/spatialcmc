@@ -68,49 +68,153 @@ include CMakeFiles/spatialcmc.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/spatialcmc.dir/flags.make
 
-CMakeFiles/spatialcmc.dir/src/main.cpp.obj: CMakeFiles/spatialcmc.dir/flags.make
-CMakeFiles/spatialcmc.dir/src/main.cpp.obj: C:/Users/samsung/Desktop/spatialcmc/src/main.cpp
-CMakeFiles/spatialcmc.dir/src/main.cpp.obj: CMakeFiles/spatialcmc.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/spatialcmc.dir/src/main.cpp.obj"
-	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/spatialcmc.dir/src/main.cpp.obj -MF CMakeFiles\spatialcmc.dir\src\main.cpp.obj.d -o CMakeFiles\spatialcmc.dir\src\main.cpp.obj -c C:\Users\samsung\Desktop\spatialcmc\src\main.cpp
+CMakeFiles/spatialcmc.dir/main.cpp.obj: CMakeFiles/spatialcmc.dir/flags.make
+CMakeFiles/spatialcmc.dir/main.cpp.obj: CMakeFiles/spatialcmc.dir/includes_CXX.rsp
+CMakeFiles/spatialcmc.dir/main.cpp.obj: C:/Users/samsung/Desktop/spatialcmc/main.cpp
+CMakeFiles/spatialcmc.dir/main.cpp.obj: CMakeFiles/spatialcmc.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/spatialcmc.dir/main.cpp.obj"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/spatialcmc.dir/main.cpp.obj -MF CMakeFiles\spatialcmc.dir\main.cpp.obj.d -o CMakeFiles\spatialcmc.dir\main.cpp.obj -c C:\Users\samsung\Desktop\spatialcmc\main.cpp
 
-CMakeFiles/spatialcmc.dir/src/main.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/spatialcmc.dir/src/main.cpp.i"
-	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\samsung\Desktop\spatialcmc\src\main.cpp > CMakeFiles\spatialcmc.dir\src\main.cpp.i
+CMakeFiles/spatialcmc.dir/main.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/spatialcmc.dir/main.cpp.i"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\samsung\Desktop\spatialcmc\main.cpp > CMakeFiles\spatialcmc.dir\main.cpp.i
 
-CMakeFiles/spatialcmc.dir/src/main.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/spatialcmc.dir/src/main.cpp.s"
-	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\samsung\Desktop\spatialcmc\src\main.cpp -o CMakeFiles\spatialcmc.dir\src\main.cpp.s
+CMakeFiles/spatialcmc.dir/main.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/spatialcmc.dir/main.cpp.s"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\samsung\Desktop\spatialcmc\main.cpp -o CMakeFiles\spatialcmc.dir\main.cpp.s
 
-CMakeFiles/spatialcmc.dir/src/spatialCMC.cpp.obj: CMakeFiles/spatialcmc.dir/flags.make
-CMakeFiles/spatialcmc.dir/src/spatialCMC.cpp.obj: C:/Users/samsung/Desktop/spatialcmc/src/spatialCMC.cpp
-CMakeFiles/spatialcmc.dir/src/spatialCMC.cpp.obj: CMakeFiles/spatialcmc.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/spatialcmc.dir/src/spatialCMC.cpp.obj"
-	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/spatialcmc.dir/src/spatialCMC.cpp.obj -MF CMakeFiles\spatialcmc.dir\src\spatialCMC.cpp.obj.d -o CMakeFiles\spatialcmc.dir\src\spatialCMC.cpp.obj -c C:\Users\samsung\Desktop\spatialcmc\src\spatialCMC.cpp
+CMakeFiles/spatialcmc.dir/SpatialCMC/SpatialCMC.cpp.obj: CMakeFiles/spatialcmc.dir/flags.make
+CMakeFiles/spatialcmc.dir/SpatialCMC/SpatialCMC.cpp.obj: CMakeFiles/spatialcmc.dir/includes_CXX.rsp
+CMakeFiles/spatialcmc.dir/SpatialCMC/SpatialCMC.cpp.obj: C:/Users/samsung/Desktop/spatialcmc/SpatialCMC/SpatialCMC.cpp
+CMakeFiles/spatialcmc.dir/SpatialCMC/SpatialCMC.cpp.obj: CMakeFiles/spatialcmc.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/spatialcmc.dir/SpatialCMC/SpatialCMC.cpp.obj"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/spatialcmc.dir/SpatialCMC/SpatialCMC.cpp.obj -MF CMakeFiles\spatialcmc.dir\SpatialCMC\SpatialCMC.cpp.obj.d -o CMakeFiles\spatialcmc.dir\SpatialCMC\SpatialCMC.cpp.obj -c C:\Users\samsung\Desktop\spatialcmc\SpatialCMC\SpatialCMC.cpp
 
-CMakeFiles/spatialcmc.dir/src/spatialCMC.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/spatialcmc.dir/src/spatialCMC.cpp.i"
-	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\samsung\Desktop\spatialcmc\src\spatialCMC.cpp > CMakeFiles\spatialcmc.dir\src\spatialCMC.cpp.i
+CMakeFiles/spatialcmc.dir/SpatialCMC/SpatialCMC.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/spatialcmc.dir/SpatialCMC/SpatialCMC.cpp.i"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\samsung\Desktop\spatialcmc\SpatialCMC\SpatialCMC.cpp > CMakeFiles\spatialcmc.dir\SpatialCMC\SpatialCMC.cpp.i
 
-CMakeFiles/spatialcmc.dir/src/spatialCMC.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/spatialcmc.dir/src/spatialCMC.cpp.s"
-	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\samsung\Desktop\spatialcmc\src\spatialCMC.cpp -o CMakeFiles\spatialcmc.dir\src\spatialCMC.cpp.s
+CMakeFiles/spatialcmc.dir/SpatialCMC/SpatialCMC.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/spatialcmc.dir/SpatialCMC/SpatialCMC.cpp.s"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\samsung\Desktop\spatialcmc\SpatialCMC\SpatialCMC.cpp -o CMakeFiles\spatialcmc.dir\SpatialCMC\SpatialCMC.cpp.s
+
+CMakeFiles/spatialcmc.dir/Step0/CSVLoader.cpp.obj: CMakeFiles/spatialcmc.dir/flags.make
+CMakeFiles/spatialcmc.dir/Step0/CSVLoader.cpp.obj: CMakeFiles/spatialcmc.dir/includes_CXX.rsp
+CMakeFiles/spatialcmc.dir/Step0/CSVLoader.cpp.obj: C:/Users/samsung/Desktop/spatialcmc/Step0/CSVLoader.cpp
+CMakeFiles/spatialcmc.dir/Step0/CSVLoader.cpp.obj: CMakeFiles/spatialcmc.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/spatialcmc.dir/Step0/CSVLoader.cpp.obj"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/spatialcmc.dir/Step0/CSVLoader.cpp.obj -MF CMakeFiles\spatialcmc.dir\Step0\CSVLoader.cpp.obj.d -o CMakeFiles\spatialcmc.dir\Step0\CSVLoader.cpp.obj -c C:\Users\samsung\Desktop\spatialcmc\Step0\CSVLoader.cpp
+
+CMakeFiles/spatialcmc.dir/Step0/CSVLoader.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/spatialcmc.dir/Step0/CSVLoader.cpp.i"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\samsung\Desktop\spatialcmc\Step0\CSVLoader.cpp > CMakeFiles\spatialcmc.dir\Step0\CSVLoader.cpp.i
+
+CMakeFiles/spatialcmc.dir/Step0/CSVLoader.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/spatialcmc.dir/Step0/CSVLoader.cpp.s"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\samsung\Desktop\spatialcmc\Step0\CSVLoader.cpp -o CMakeFiles\spatialcmc.dir\Step0\CSVLoader.cpp.s
+
+CMakeFiles/spatialcmc.dir/Step1_Sharding/Sharding.cpp.obj: CMakeFiles/spatialcmc.dir/flags.make
+CMakeFiles/spatialcmc.dir/Step1_Sharding/Sharding.cpp.obj: CMakeFiles/spatialcmc.dir/includes_CXX.rsp
+CMakeFiles/spatialcmc.dir/Step1_Sharding/Sharding.cpp.obj: C:/Users/samsung/Desktop/spatialcmc/Step1_Sharding/Sharding.cpp
+CMakeFiles/spatialcmc.dir/Step1_Sharding/Sharding.cpp.obj: CMakeFiles/spatialcmc.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/spatialcmc.dir/Step1_Sharding/Sharding.cpp.obj"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/spatialcmc.dir/Step1_Sharding/Sharding.cpp.obj -MF CMakeFiles\spatialcmc.dir\Step1_Sharding\Sharding.cpp.obj.d -o CMakeFiles\spatialcmc.dir\Step1_Sharding\Sharding.cpp.obj -c C:\Users\samsung\Desktop\spatialcmc\Step1_Sharding\Sharding.cpp
+
+CMakeFiles/spatialcmc.dir/Step1_Sharding/Sharding.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/spatialcmc.dir/Step1_Sharding/Sharding.cpp.i"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\samsung\Desktop\spatialcmc\Step1_Sharding\Sharding.cpp > CMakeFiles\spatialcmc.dir\Step1_Sharding\Sharding.cpp.i
+
+CMakeFiles/spatialcmc.dir/Step1_Sharding/Sharding.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/spatialcmc.dir/Step1_Sharding/Sharding.cpp.s"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\samsung\Desktop\spatialcmc\Step1_Sharding\Sharding.cpp -o CMakeFiles\spatialcmc.dir\Step1_Sharding\Sharding.cpp.s
+
+CMakeFiles/spatialcmc.dir/Step2_MCMC/MCMC.cpp.obj: CMakeFiles/spatialcmc.dir/flags.make
+CMakeFiles/spatialcmc.dir/Step2_MCMC/MCMC.cpp.obj: CMakeFiles/spatialcmc.dir/includes_CXX.rsp
+CMakeFiles/spatialcmc.dir/Step2_MCMC/MCMC.cpp.obj: C:/Users/samsung/Desktop/spatialcmc/Step2_MCMC/MCMC.cpp
+CMakeFiles/spatialcmc.dir/Step2_MCMC/MCMC.cpp.obj: CMakeFiles/spatialcmc.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/spatialcmc.dir/Step2_MCMC/MCMC.cpp.obj"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/spatialcmc.dir/Step2_MCMC/MCMC.cpp.obj -MF CMakeFiles\spatialcmc.dir\Step2_MCMC\MCMC.cpp.obj.d -o CMakeFiles\spatialcmc.dir\Step2_MCMC\MCMC.cpp.obj -c C:\Users\samsung\Desktop\spatialcmc\Step2_MCMC\MCMC.cpp
+
+CMakeFiles/spatialcmc.dir/Step2_MCMC/MCMC.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/spatialcmc.dir/Step2_MCMC/MCMC.cpp.i"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\samsung\Desktop\spatialcmc\Step2_MCMC\MCMC.cpp > CMakeFiles\spatialcmc.dir\Step2_MCMC\MCMC.cpp.i
+
+CMakeFiles/spatialcmc.dir/Step2_MCMC/MCMC.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/spatialcmc.dir/Step2_MCMC/MCMC.cpp.s"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\samsung\Desktop\spatialcmc\Step2_MCMC\MCMC.cpp -o CMakeFiles\spatialcmc.dir\Step2_MCMC\MCMC.cpp.s
+
+CMakeFiles/spatialcmc.dir/Step3_Consensus/Consensus.cpp.obj: CMakeFiles/spatialcmc.dir/flags.make
+CMakeFiles/spatialcmc.dir/Step3_Consensus/Consensus.cpp.obj: CMakeFiles/spatialcmc.dir/includes_CXX.rsp
+CMakeFiles/spatialcmc.dir/Step3_Consensus/Consensus.cpp.obj: C:/Users/samsung/Desktop/spatialcmc/Step3_Consensus/Consensus.cpp
+CMakeFiles/spatialcmc.dir/Step3_Consensus/Consensus.cpp.obj: CMakeFiles/spatialcmc.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/spatialcmc.dir/Step3_Consensus/Consensus.cpp.obj"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/spatialcmc.dir/Step3_Consensus/Consensus.cpp.obj -MF CMakeFiles\spatialcmc.dir\Step3_Consensus\Consensus.cpp.obj.d -o CMakeFiles\spatialcmc.dir\Step3_Consensus\Consensus.cpp.obj -c C:\Users\samsung\Desktop\spatialcmc\Step3_Consensus\Consensus.cpp
+
+CMakeFiles/spatialcmc.dir/Step3_Consensus/Consensus.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/spatialcmc.dir/Step3_Consensus/Consensus.cpp.i"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\samsung\Desktop\spatialcmc\Step3_Consensus\Consensus.cpp > CMakeFiles\spatialcmc.dir\Step3_Consensus\Consensus.cpp.i
+
+CMakeFiles/spatialcmc.dir/Step3_Consensus/Consensus.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/spatialcmc.dir/Step3_Consensus/Consensus.cpp.s"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\samsung\Desktop\spatialcmc\Step3_Consensus\Consensus.cpp -o CMakeFiles\spatialcmc.dir\Step3_Consensus\Consensus.cpp.s
+
+CMakeFiles/spatialcmc.dir/Distance/Distance.cpp.obj: CMakeFiles/spatialcmc.dir/flags.make
+CMakeFiles/spatialcmc.dir/Distance/Distance.cpp.obj: CMakeFiles/spatialcmc.dir/includes_CXX.rsp
+CMakeFiles/spatialcmc.dir/Distance/Distance.cpp.obj: C:/Users/samsung/Desktop/spatialcmc/Distance/Distance.cpp
+CMakeFiles/spatialcmc.dir/Distance/Distance.cpp.obj: CMakeFiles/spatialcmc.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/spatialcmc.dir/Distance/Distance.cpp.obj"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/spatialcmc.dir/Distance/Distance.cpp.obj -MF CMakeFiles\spatialcmc.dir\Distance\Distance.cpp.obj.d -o CMakeFiles\spatialcmc.dir\Distance\Distance.cpp.obj -c C:\Users\samsung\Desktop\spatialcmc\Distance\Distance.cpp
+
+CMakeFiles/spatialcmc.dir/Distance/Distance.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/spatialcmc.dir/Distance/Distance.cpp.i"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\samsung\Desktop\spatialcmc\Distance\Distance.cpp > CMakeFiles\spatialcmc.dir\Distance\Distance.cpp.i
+
+CMakeFiles/spatialcmc.dir/Distance/Distance.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/spatialcmc.dir/Distance/Distance.cpp.s"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\samsung\Desktop\spatialcmc\Distance\Distance.cpp -o CMakeFiles\spatialcmc.dir\Distance\Distance.cpp.s
+
+CMakeFiles/spatialcmc.dir/Utils/Utils.cpp.obj: CMakeFiles/spatialcmc.dir/flags.make
+CMakeFiles/spatialcmc.dir/Utils/Utils.cpp.obj: CMakeFiles/spatialcmc.dir/includes_CXX.rsp
+CMakeFiles/spatialcmc.dir/Utils/Utils.cpp.obj: C:/Users/samsung/Desktop/spatialcmc/Utils/Utils.cpp
+CMakeFiles/spatialcmc.dir/Utils/Utils.cpp.obj: CMakeFiles/spatialcmc.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/spatialcmc.dir/Utils/Utils.cpp.obj"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/spatialcmc.dir/Utils/Utils.cpp.obj -MF CMakeFiles\spatialcmc.dir\Utils\Utils.cpp.obj.d -o CMakeFiles\spatialcmc.dir\Utils\Utils.cpp.obj -c C:\Users\samsung\Desktop\spatialcmc\Utils\Utils.cpp
+
+CMakeFiles/spatialcmc.dir/Utils/Utils.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/spatialcmc.dir/Utils/Utils.cpp.i"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\samsung\Desktop\spatialcmc\Utils\Utils.cpp > CMakeFiles\spatialcmc.dir\Utils\Utils.cpp.i
+
+CMakeFiles/spatialcmc.dir/Utils/Utils.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/spatialcmc.dir/Utils/Utils.cpp.s"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\samsung\Desktop\spatialcmc\Utils\Utils.cpp -o CMakeFiles\spatialcmc.dir\Utils\Utils.cpp.s
 
 # Object files for target spatialcmc
 spatialcmc_OBJECTS = \
-"CMakeFiles/spatialcmc.dir/src/main.cpp.obj" \
-"CMakeFiles/spatialcmc.dir/src/spatialCMC.cpp.obj"
+"CMakeFiles/spatialcmc.dir/main.cpp.obj" \
+"CMakeFiles/spatialcmc.dir/SpatialCMC/SpatialCMC.cpp.obj" \
+"CMakeFiles/spatialcmc.dir/Step0/CSVLoader.cpp.obj" \
+"CMakeFiles/spatialcmc.dir/Step1_Sharding/Sharding.cpp.obj" \
+"CMakeFiles/spatialcmc.dir/Step2_MCMC/MCMC.cpp.obj" \
+"CMakeFiles/spatialcmc.dir/Step3_Consensus/Consensus.cpp.obj" \
+"CMakeFiles/spatialcmc.dir/Distance/Distance.cpp.obj" \
+"CMakeFiles/spatialcmc.dir/Utils/Utils.cpp.obj"
 
 # External object files for target spatialcmc
 spatialcmc_EXTERNAL_OBJECTS =
 
-spatialcmc.exe: CMakeFiles/spatialcmc.dir/src/main.cpp.obj
-spatialcmc.exe: CMakeFiles/spatialcmc.dir/src/spatialCMC.cpp.obj
+spatialcmc.exe: CMakeFiles/spatialcmc.dir/main.cpp.obj
+spatialcmc.exe: CMakeFiles/spatialcmc.dir/SpatialCMC/SpatialCMC.cpp.obj
+spatialcmc.exe: CMakeFiles/spatialcmc.dir/Step0/CSVLoader.cpp.obj
+spatialcmc.exe: CMakeFiles/spatialcmc.dir/Step1_Sharding/Sharding.cpp.obj
+spatialcmc.exe: CMakeFiles/spatialcmc.dir/Step2_MCMC/MCMC.cpp.obj
+spatialcmc.exe: CMakeFiles/spatialcmc.dir/Step3_Consensus/Consensus.cpp.obj
+spatialcmc.exe: CMakeFiles/spatialcmc.dir/Distance/Distance.cpp.obj
+spatialcmc.exe: CMakeFiles/spatialcmc.dir/Utils/Utils.cpp.obj
 spatialcmc.exe: CMakeFiles/spatialcmc.dir/build.make
 spatialcmc.exe: CMakeFiles/spatialcmc.dir/linkLibs.rsp
 spatialcmc.exe: CMakeFiles/spatialcmc.dir/objects1.rsp
 spatialcmc.exe: CMakeFiles/spatialcmc.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable spatialcmc.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Linking CXX executable spatialcmc.exe"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\spatialcmc.dir\link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

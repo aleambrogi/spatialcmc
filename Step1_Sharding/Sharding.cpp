@@ -1,42 +1,35 @@
 #include "Sharding.h"
-#include <fstream>
-#include <sstream>
-#include <iostream>
 
-bool Sharding::loadData(const std::string& filename) {
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        std::cerr << "Errore apertura file: " << filename << std::endl;
-        return false;
-    }
+namespace Step1_Sharding {
 
-    dataset.clear();
-    std::string line;
-    while (std::getline(file, line)) {
-        std::stringstream ss(line);
-        std::vector<double> row;
-        std::string value;
-        while (std::getline(ss, value, ',')) {
-            row.push_back(std::stod(value));
+    Sharding::Sharding(const std::vector<Row>& data) : dataset(data) {}
+
+    std::vector<Sharding::Shard> Sharding::generateShards(const std::string& column) {
+        if (dataset.empty()) {
+            std::cerr << "Dataset vuoto.\n";
+            return {};
         }
-        dataset.push_back(row);
+
+        // Trova valori unici della colonna
+        std::set<std::string> uniqueValues;
+        for (const auto& row : dataset) {
+            uniqueValues.insert(row.fields.at(column));
+        }
+
+        // Mappa valore -> indice shard
+        std::unordered_map<std::string, size_t> indexMap;
+        size_t idx = 0;
+        for (const auto& val : uniqueValues)
+            indexMap[val] = idx++;
+
+        // Crea shard
+        std::vector<Shard> shards(uniqueValues.size());
+        for (const auto& row : dataset) {
+            shards[indexMap[row.fields.at(column)]].push_back(row);
+        }
+
+        std::cout << "Numero di shard generati: " << shards.size() << std::endl;
+        return shards;
     }
 
-    file.close();
-    return true;
-}
-
-void Sharding::splitShards(int numShards) {
-    shards.clear();
-    shards.resize(numShards);
-
-    for (size_t i = 0; i < dataset.size(); ++i) {
-        shards[i % numShards].push_back(dataset[i]);
-    }
-
-    std::cout << "Dataset diviso in " << numShards << " shard." << std::endl;
-}
-
-std::vector<std::vector<std::vector<double>>> Sharding::getShards() const {
-    return shards;
 }

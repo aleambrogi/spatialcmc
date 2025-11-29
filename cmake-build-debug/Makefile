@@ -128,53 +128,197 @@ spatialcmc/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/build
 .PHONY : spatialcmc/fast
 
-src/main.obj: src/main.cpp.obj
-.PHONY : src/main.obj
+Distance/Distance.obj: Distance/Distance.cpp.obj
+.PHONY : Distance/Distance.obj
 
 # target to build an object file
-src/main.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/src/main.cpp.obj
-.PHONY : src/main.cpp.obj
+Distance/Distance.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/Distance/Distance.cpp.obj
+.PHONY : Distance/Distance.cpp.obj
 
-src/main.i: src/main.cpp.i
-.PHONY : src/main.i
+Distance/Distance.i: Distance/Distance.cpp.i
+.PHONY : Distance/Distance.i
 
 # target to preprocess a source file
-src/main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/src/main.cpp.i
-.PHONY : src/main.cpp.i
+Distance/Distance.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/Distance/Distance.cpp.i
+.PHONY : Distance/Distance.cpp.i
 
-src/main.s: src/main.cpp.s
-.PHONY : src/main.s
+Distance/Distance.s: Distance/Distance.cpp.s
+.PHONY : Distance/Distance.s
 
 # target to generate assembly for a file
-src/main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/src/main.cpp.s
-.PHONY : src/main.cpp.s
+Distance/Distance.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/Distance/Distance.cpp.s
+.PHONY : Distance/Distance.cpp.s
 
-src/spatialCMC.obj: src/spatialCMC.cpp.obj
-.PHONY : src/spatialCMC.obj
+SpatialCMC/SpatialCMC.obj: SpatialCMC/SpatialCMC.cpp.obj
+.PHONY : SpatialCMC/SpatialCMC.obj
 
 # target to build an object file
-src/spatialCMC.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/src/spatialCMC.cpp.obj
-.PHONY : src/spatialCMC.cpp.obj
+SpatialCMC/SpatialCMC.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/SpatialCMC/SpatialCMC.cpp.obj
+.PHONY : SpatialCMC/SpatialCMC.cpp.obj
 
-src/spatialCMC.i: src/spatialCMC.cpp.i
-.PHONY : src/spatialCMC.i
+SpatialCMC/SpatialCMC.i: SpatialCMC/SpatialCMC.cpp.i
+.PHONY : SpatialCMC/SpatialCMC.i
 
 # target to preprocess a source file
-src/spatialCMC.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/src/spatialCMC.cpp.i
-.PHONY : src/spatialCMC.cpp.i
+SpatialCMC/SpatialCMC.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/SpatialCMC/SpatialCMC.cpp.i
+.PHONY : SpatialCMC/SpatialCMC.cpp.i
 
-src/spatialCMC.s: src/spatialCMC.cpp.s
-.PHONY : src/spatialCMC.s
+SpatialCMC/SpatialCMC.s: SpatialCMC/SpatialCMC.cpp.s
+.PHONY : SpatialCMC/SpatialCMC.s
 
 # target to generate assembly for a file
-src/spatialCMC.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/src/spatialCMC.cpp.s
-.PHONY : src/spatialCMC.cpp.s
+SpatialCMC/SpatialCMC.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/SpatialCMC/SpatialCMC.cpp.s
+.PHONY : SpatialCMC/SpatialCMC.cpp.s
+
+Step0/CSVLoader.obj: Step0/CSVLoader.cpp.obj
+.PHONY : Step0/CSVLoader.obj
+
+# target to build an object file
+Step0/CSVLoader.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/Step0/CSVLoader.cpp.obj
+.PHONY : Step0/CSVLoader.cpp.obj
+
+Step0/CSVLoader.i: Step0/CSVLoader.cpp.i
+.PHONY : Step0/CSVLoader.i
+
+# target to preprocess a source file
+Step0/CSVLoader.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/Step0/CSVLoader.cpp.i
+.PHONY : Step0/CSVLoader.cpp.i
+
+Step0/CSVLoader.s: Step0/CSVLoader.cpp.s
+.PHONY : Step0/CSVLoader.s
+
+# target to generate assembly for a file
+Step0/CSVLoader.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/Step0/CSVLoader.cpp.s
+.PHONY : Step0/CSVLoader.cpp.s
+
+Step1_Sharding/Sharding.obj: Step1_Sharding/Sharding.cpp.obj
+.PHONY : Step1_Sharding/Sharding.obj
+
+# target to build an object file
+Step1_Sharding/Sharding.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/Step1_Sharding/Sharding.cpp.obj
+.PHONY : Step1_Sharding/Sharding.cpp.obj
+
+Step1_Sharding/Sharding.i: Step1_Sharding/Sharding.cpp.i
+.PHONY : Step1_Sharding/Sharding.i
+
+# target to preprocess a source file
+Step1_Sharding/Sharding.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/Step1_Sharding/Sharding.cpp.i
+.PHONY : Step1_Sharding/Sharding.cpp.i
+
+Step1_Sharding/Sharding.s: Step1_Sharding/Sharding.cpp.s
+.PHONY : Step1_Sharding/Sharding.s
+
+# target to generate assembly for a file
+Step1_Sharding/Sharding.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/Step1_Sharding/Sharding.cpp.s
+.PHONY : Step1_Sharding/Sharding.cpp.s
+
+Step2_MCMC/MCMC.obj: Step2_MCMC/MCMC.cpp.obj
+.PHONY : Step2_MCMC/MCMC.obj
+
+# target to build an object file
+Step2_MCMC/MCMC.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/Step2_MCMC/MCMC.cpp.obj
+.PHONY : Step2_MCMC/MCMC.cpp.obj
+
+Step2_MCMC/MCMC.i: Step2_MCMC/MCMC.cpp.i
+.PHONY : Step2_MCMC/MCMC.i
+
+# target to preprocess a source file
+Step2_MCMC/MCMC.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/Step2_MCMC/MCMC.cpp.i
+.PHONY : Step2_MCMC/MCMC.cpp.i
+
+Step2_MCMC/MCMC.s: Step2_MCMC/MCMC.cpp.s
+.PHONY : Step2_MCMC/MCMC.s
+
+# target to generate assembly for a file
+Step2_MCMC/MCMC.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/Step2_MCMC/MCMC.cpp.s
+.PHONY : Step2_MCMC/MCMC.cpp.s
+
+Step3_Consensus/Consensus.obj: Step3_Consensus/Consensus.cpp.obj
+.PHONY : Step3_Consensus/Consensus.obj
+
+# target to build an object file
+Step3_Consensus/Consensus.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/Step3_Consensus/Consensus.cpp.obj
+.PHONY : Step3_Consensus/Consensus.cpp.obj
+
+Step3_Consensus/Consensus.i: Step3_Consensus/Consensus.cpp.i
+.PHONY : Step3_Consensus/Consensus.i
+
+# target to preprocess a source file
+Step3_Consensus/Consensus.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/Step3_Consensus/Consensus.cpp.i
+.PHONY : Step3_Consensus/Consensus.cpp.i
+
+Step3_Consensus/Consensus.s: Step3_Consensus/Consensus.cpp.s
+.PHONY : Step3_Consensus/Consensus.s
+
+# target to generate assembly for a file
+Step3_Consensus/Consensus.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/Step3_Consensus/Consensus.cpp.s
+.PHONY : Step3_Consensus/Consensus.cpp.s
+
+Utils/Utils.obj: Utils/Utils.cpp.obj
+.PHONY : Utils/Utils.obj
+
+# target to build an object file
+Utils/Utils.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/Utils/Utils.cpp.obj
+.PHONY : Utils/Utils.cpp.obj
+
+Utils/Utils.i: Utils/Utils.cpp.i
+.PHONY : Utils/Utils.i
+
+# target to preprocess a source file
+Utils/Utils.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/Utils/Utils.cpp.i
+.PHONY : Utils/Utils.cpp.i
+
+Utils/Utils.s: Utils/Utils.cpp.s
+.PHONY : Utils/Utils.s
+
+# target to generate assembly for a file
+Utils/Utils.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/Utils/Utils.cpp.s
+.PHONY : Utils/Utils.cpp.s
+
+main.obj: main.cpp.obj
+.PHONY : main.obj
+
+# target to build an object file
+main.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/main.cpp.obj
+.PHONY : main.cpp.obj
+
+main.i: main.cpp.i
+.PHONY : main.i
+
+# target to preprocess a source file
+main.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/main.cpp.i
+.PHONY : main.cpp.i
+
+main.s: main.cpp.s
+.PHONY : main.s
+
+# target to generate assembly for a file
+main.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\spatialcmc.dir\build.make CMakeFiles/spatialcmc.dir/main.cpp.s
+.PHONY : main.cpp.s
 
 # Help Target
 help:
@@ -185,12 +329,30 @@ help:
 	@echo ... edit_cache
 	@echo ... rebuild_cache
 	@echo ... spatialcmc
-	@echo ... src/main.obj
-	@echo ... src/main.i
-	@echo ... src/main.s
-	@echo ... src/spatialCMC.obj
-	@echo ... src/spatialCMC.i
-	@echo ... src/spatialCMC.s
+	@echo ... Distance/Distance.obj
+	@echo ... Distance/Distance.i
+	@echo ... Distance/Distance.s
+	@echo ... SpatialCMC/SpatialCMC.obj
+	@echo ... SpatialCMC/SpatialCMC.i
+	@echo ... SpatialCMC/SpatialCMC.s
+	@echo ... Step0/CSVLoader.obj
+	@echo ... Step0/CSVLoader.i
+	@echo ... Step0/CSVLoader.s
+	@echo ... Step1_Sharding/Sharding.obj
+	@echo ... Step1_Sharding/Sharding.i
+	@echo ... Step1_Sharding/Sharding.s
+	@echo ... Step2_MCMC/MCMC.obj
+	@echo ... Step2_MCMC/MCMC.i
+	@echo ... Step2_MCMC/MCMC.s
+	@echo ... Step3_Consensus/Consensus.obj
+	@echo ... Step3_Consensus/Consensus.i
+	@echo ... Step3_Consensus/Consensus.s
+	@echo ... Utils/Utils.obj
+	@echo ... Utils/Utils.i
+	@echo ... Utils/Utils.s
+	@echo ... main.obj
+	@echo ... main.i
+	@echo ... main.s
 .PHONY : help
 
 

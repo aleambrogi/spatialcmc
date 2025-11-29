@@ -1,21 +1,25 @@
 #pragma once
-#include <vector>
+#include <DataRow.h>
 #include <string>
+#include <vector>
+#include <unordered_map>
+#include <set>
+#include <iostream>
 
-class Sharding {
-public:
-    Sharding() = default;
+namespace Step1_Sharding {
 
-    // Carica i dati da file CSV o altro formato
-    bool loadData(const std::string& filename);
+    class Sharding {
+    public:
+        using Row = DataRow;
+        using Shard = std::vector<Row>;
 
-    // Divide il dataset in "numShards" shard
-    void splitShards(int numShards);
+        Sharding(const std::vector<Row>& data);
 
-    // Getter dei dati di ogni shard (opzionale)
-    std::vector<std::vector<std::vector<double>>> getShards() const;
+        // Divide il dataset in shard basati su una colonna chiave
+        std::vector<Shard> generateShards(const std::string& column);
 
-private:
-    std::vector<std::vector<double>> dataset;  // dati originali
-    std::vector<std::vector<std::vector<double>>> shards; // dati divisi in shard
-};
+    private:
+        std::vector<Row> dataset;
+    };
+
+}
