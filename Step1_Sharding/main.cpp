@@ -1,7 +1,7 @@
 #include "Step0/CSVLoader.h"
 #include "Step1_Sharding/Sharding.h"
 #include <iostream>
-
+/*
 int main() {
     CSVReader reader("dataset.csv");
     auto data = reader.read();  // restituisce std::vector<DataRow>
@@ -16,3 +16,4 @@ int main() {
     return 0;
 }
 
+*/
