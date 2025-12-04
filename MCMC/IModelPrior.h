@@ -27,6 +27,10 @@ struct ComponentParameter {
 // Interface for distribution-specific operations (e.g., Normal-Normal Conjugate)
 class IModelPrior {
 public:
+
+    std::mt19937 generator;
+
+    void set_seed(unsigned int s) { generator.seed(s); }
     // Computes the likelihood F(y_i, phi_c)
     virtual double likelihood(double y_i, const ComponentParameter& phi) = 0;
 
@@ -43,6 +47,9 @@ public:
     // Computes the prior predictive (integral term: ∫ F(y_i, phi) dG_0(phi))
     virtual double calculate_prior_predictive(double y_i) = 0;
 
+    // allow to clone the prior for parallel implementation
+    virtual IModelPrior* clone() const = 0;
+
     virtual ~IModelPrior() = default;
 };
 
@@ -57,10 +64,8 @@ private:
     const double alpha_0;
     const double beta_0;
 
-    std::mt19937 generator;
-
     // Helper functions (implementation not shown, but necessary)
-    double normal_pdf(double x,  const ComponentParameter& phi) const;
+    [[nodiscard]] double normal_pdf(double x,  const ComponentParameter& phi) const;
     double normal_rng(const ComponentParameter& phi);
     double inv_gamma_rng(double alpha, double beta);
     double student_t_pdf(double x, double mu, double df, double sigma_sq); // Student's t-PDF
@@ -82,6 +87,8 @@ public:
     // Samples a new phi from the posterior given all data points associated with cluster c
     // (Algorithm 2, last step)
     ComponentParameter sample_from_posterior(const std::vector<double>& cluster_data) override;
+
+    [[nodiscard]] IModelPrior* clone() const override;
 
     // Computes the prior predictive (integral term: ∫ F(y_i, phi) dG_0(phi))
     double calculate_prior_predictive(double y_i) override;

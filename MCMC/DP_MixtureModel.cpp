@@ -29,21 +29,21 @@ void DPMixtureModel::run_mcmc(int burn_in, int sampling)
     // --------------------------
     // BURN-IN PHASE
     // --------------------------
-    std::cout << "Burn-in (" << burn_in << " iterations)...\n";
+    //std::cout << "Burn-in (" << burn_in << " iterations)...\n";
 
     for (int it = 0; it < burn_in; ++it) {
         gibbs_scan();
 
-        std::cout << "\rBurn-in iteration " << (it + 1)
-                  << " / " << burn_in << std::flush;
+        //std::cout << "\rBurn-in iteration " << (it + 1)
+               //   << " / " << burn_in << std::flush;
     }
 
-    if (burn_in > 0) std::cout << "\nBurn-in completed.\n";
+    //if (burn_in > 0) std::cout << "\nBurn-in completed.\n";
 
     // --------------------------
     // SAMPLING PHASE
     // --------------------------
-    std::cout << "Sampling (" << sampling << " iterations)...\n";
+    //std::cout << "Sampling (" << sampling << " iterations)...\n";
 
     for (int it = 0; it < sampling; ++it) {
         gibbs_scan();
@@ -52,17 +52,17 @@ void DPMixtureModel::run_mcmc(int burn_in, int sampling)
         samples_c.push_back(c);
         samples_phi_c.push_back(phi_c);
 
-        std::cout << "\rSample iteration " << (it + 1)
-                  << " / " << sampling << std::flush;
+        //std::cout << "\rSample iteration " << (it + 1)
+                 // << " / " << sampling << std::flush;
     }
 
     auto end_time = clock::now();
     std::chrono::duration<double> elapsed = end_time - start_time;
 
-    std::cout << "\nMCMC completed in "
-              << elapsed.count() << " seconds.\n";
-    std::cout << "Total saved samples: "
-              << samples_c.size() << "\n";
+    //std::cout << "\nMCMC completed in "
+           //   << elapsed.count() << " seconds.\n";
+    //std::cout << "Total saved samples: "
+        //      << samples_c.size() << "\n";
 }
 
 void DPMixtureModel::gibbs_scan() {

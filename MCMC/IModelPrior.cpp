@@ -10,8 +10,9 @@
  */
 
 NormalConjugateModel::NormalConjugateModel(double mu0, double kappa0, double alpha0, double beta0)
-    : mu_0(mu0), kappa_0(kappa0), alpha_0(alpha0), beta_0(beta0) {
-    generator.seed(std::time(nullptr));
+: mu_0(mu0), kappa_0(kappa0), alpha_0(alpha0), beta_0(beta0) {
+    std::random_device rd;
+    generator.seed(rd());
 }
 
 ComponentParameter NormalConjugateModel::sample_nig_posterior(const std::vector<double>& data, double mu0, double kappa0, double alpha0, double beta0) {
@@ -188,3 +189,6 @@ double NormalConjugateModel::inv_gamma_rng(double alpha, double beta) {
     return 1.0 / x;
 }
 
+IModelPrior* NormalConjugateModel::clone() const {
+    return new NormalConjugateModel(*this);
+}

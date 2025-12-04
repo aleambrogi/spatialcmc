@@ -335,12 +335,12 @@ void CohesionRepulsionDP::run_mcmc(int burn_in, int n_samples)
 
     for (int it = 0; it < burn_in; ++it) {
         gibbs_scan();
-        std::cout << "Burn-in, iteration: " << it << "\n";
+        //std::cout << "Burn-in, iteration: " << it << "\n";
     }
 
     for (int it = 0; it < n_samples; ++it) {
         gibbs_scan();
-        std::cout << "Sampling , iteration: " << it << "\n";
+        //std::cout << "Sampling , iteration: " << it << "\n";
         samples_c.push_back(c);
     }
 }
