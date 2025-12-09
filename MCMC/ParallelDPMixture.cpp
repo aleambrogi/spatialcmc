@@ -11,55 +11,47 @@ ParallelDPMixture::ParallelDPMixture(
         IModelPrior* prior_,
         const std::vector<std::vector<int>>& full_adjacency,
         double lambda_appm_)
-        : alpha(alpha_),
-          lambda_appm(lambda_appm_),
-          prior(prior_)
+    : alpha(alpha_),
+      lambda_appm(lambda_appm_),
+      prior(prior_)
 {
     num_partitions = shards.size();
     partitions_data.resize(num_partitions);
     partitions_adj.resize(num_partitions);
 
-    // Concatenazione globale per calcolare gli indici
-    std::vector<double> all_data;
-    std::vector<int> shard_start(num_partitions, 0);
-    for (size_t k = 0; k < shards.size(); ++k) {
-        shard_start[k] = all_data.size();
-        for (const auto& row : shards[k])
-            all_data.push_back(std::stod(row.fields.at("X")));
-    }
+    int global_idx = 0;
 
-    // Per ogni shard
     for (size_t k = 0; k < shards.size(); ++k) {
         size_t shard_size = shards[k].size();
         partitions_data[k].resize(shard_size);
         partitions_adj[k].resize(shard_size);
 
-        int idx = shard_start[k];
+        // Copia dati median_value
+        for (size_t i = 0; i < shard_size; ++i) {
+            partitions_data[k][i] = shards[k][i].median_value;
+        }
 
-        // Copia dati
-        for (size_t i = 0; i < shard_size; ++i)
-            partitions_data[k][i] = all_data[idx + i];
-
-        // Map global -> local
+        // Costruzione grafo locale filtrando solo vicini presenti nello shard
         std::unordered_map<int,int> global2local;
-        for (int g = idx; g < idx + (int)shard_size; ++g)
-            global2local[g] = g - idx;
+        for (size_t i = 0; i < shard_size; ++i)
+            global2local[global_idx + i] = i;
 
-        // Costruzione grafo locale filtrando i vicini
-        for (int g = idx; g < idx + (int)shard_size; ++g) {
-            int local = g - idx;
-            for (int nb : full_adjacency[g]) {
-                if (global2local.count(nb))
-                    partitions_adj[k][local].push_back(global2local[nb]);
+        for (size_t i = 0; i < shard_size; ++i) {
+            int local = i;
+            for (int nb : full_adjacency[global_idx + i]) {
+                auto it = global2local.find(nb);
+                if (it != global2local.end())
+                    partitions_adj[k][local].push_back(it->second);
             }
-            // Self-loop se vuoto
             if (partitions_adj[k][local].empty())
                 partitions_adj[k][local].push_back(local);
         }
+
+        global_idx += shard_size;
     }
 
     std::cout << "Created ParallelDPMixture with "
-              << num_partitions << " shards and local adjacency\n";
+              << num_partitions << " shards\n";
 }
 
 // ---------------------------------------------------------

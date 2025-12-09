@@ -363,7 +363,12 @@ void test_Parallel_Mixture_with_MetaClustering()
     // 0. LOAD CSV
     // =====================================================================
     std::cout << "Loading CSV...\n";
-    CSVReader reader("data.csv", ',');
+    std::ifstream file("dataset_median.csv");
+    std::string header;
+    std::getline(file, header);
+    std::cout << "Header CSV: " << header << std::endl;
+
+    CSVReader reader("dataset_median.csv", ',');
     std::vector<DataRow> rows = reader.read();
 
     if (rows.empty()) {
@@ -378,7 +383,7 @@ void test_Parallel_Mixture_with_MetaClustering()
     std::cout << "Running sharding...\n";
     Step1_Sharding::Sharding sharder(rows);
 
-    std::string shard_column = "group"; // <-- change if needed
+    std::string shard_column = "PROVINCIA"; // <-- change if needed
     auto shards = sharder.generateShards(shard_column);
     int num_partitions = shards.size();
     std::cout << "Generated " << num_partitions << " shards.\n";
@@ -394,13 +399,13 @@ void test_Parallel_Mixture_with_MetaClustering()
     // =====================================================================
     double alpha_dp    = 1.0;
     double lambda_appm = 0.2;
-    int burn_in        = 500;
-    int sampling       = 1000;
+    int burn_in        = 200;
+    int sampling       = 100;
 
     // concateno tutti i dati per fare la kNN globale
     std::vector<double> all_data;
     for (const auto& row : rows)
-        all_data.push_back(std::stod(row.fields.at("value")));
+        all_data.push_back(row.median_value);
 
     auto full_adjacency = make_knn_graph(all_data, 5);
 
