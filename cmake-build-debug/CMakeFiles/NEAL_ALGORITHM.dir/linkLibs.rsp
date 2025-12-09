@@ -1,0 +1,1 @@
+  -LC:/boost_1_89_0/stage/lib  "C:/boost_1_89_0/stage/lib/libboost_math_c99-mgw15-mt-s-x64-1_89.a" -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32 

@@ -10,6 +10,8 @@
 #include "aPPM_MixtureModel.h"
 #include "CohesionRepulsionDP.h"
 #include "ParallelDPMixture.h"
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
 
 // ------------------------------------------------------------
 // Generate synthetic Gaussian cluster parameters (mu, sigma^2)
@@ -280,51 +282,54 @@ void test_DP_MixtureModel_with_APPM()
     std::cout << "===== END TEST =====\n";
 }
 
-// -------------------------------------------------------------------------
-// Helper: generate synthetic spatial adjacency for a 1D line graph
-// -------------------------------------------------------------------------
-std::vector<std::vector<int>> make_knn_graph(
-        const std::vector<double>& data,
-        int k)
+std::vector<std::vector<int>> load_adjacency_json(const std::string& filename)
 {
-    int N = data.size();
-    std::vector<std::vector<int>> adj(N);
+    std::ifstream f(filename);
+    if (!f.is_open())
+        throw std::runtime_error("Cannot open adjacency JSON file.");
 
-    // Index array for sorting
-    std::vector<int> idx(N);
-    std::iota(idx.begin(), idx.end(), 0);
+    json j;
+    f >> j;
 
-    // Sort indices by data value
-    std::sort(idx.begin(), idx.end(),
-              [&](int a, int b){ return data[a] < data[b]; });
-
-    // Each point connects to k neighbors on each side after sorting by value
-    for (int r = 0; r < N; ++r)
-    {
-        int i = idx[r];
-
-        // connect to k neighbors before
-        for (int d = 1; d <= k; ++d)
-        {
-            if (r - d >= 0) {
-                int j = idx[r - d];
-                adj[i].push_back(j);
-            }
-        }
-
-        // connect to k neighbors after
-        for (int d = 1; d <= k; ++d)
-        {
-            if (r + d < N) {
-                int j = idx[r + d];
-                adj[i].push_back(j);
-            }
-        }
-    }
+    std::vector<std::vector<int>> adj(j.size());
+    for (int i = 0; i < j.size(); i++)
+        for (auto v : j[i])
+            adj[i].push_back(v);
 
     return adj;
 }
 
+
+std::vector<std::vector<int>> extract_local_adjacency(
+        const std::vector<DataRow>& shard,
+        const std::vector<std::vector<int>>& global_adj)
+{
+    int n = shard.size();
+
+    // mappa: global_index → local_index
+    std::unordered_map<int,int> map_global_to_local;
+    for (int i = 0; i < n; i++)
+        map_global_to_local[ shard[i].global_index ] = i;
+
+    // adjacency locale
+    std::vector<std::vector<int>> local_adj(n);
+
+    for (int i = 0; i < n; i++)
+    {
+        int gi = shard[i].global_index;
+
+        for (int g_nei : global_adj[gi])
+        {
+            if (map_global_to_local.count(g_nei))
+            {
+                int local_j = map_global_to_local[g_nei];
+                local_adj[i].push_back(local_j);
+            }
+        }
+    }
+
+    return local_adj;
+}
 
 
 void test_Parallel_Mixture_with_MetaClustering()
@@ -349,59 +354,86 @@ void test_Parallel_Mixture_with_MetaClustering()
     }
     std::cout << "Loaded " << rows.size() << " rows.\n";
 
+    for (size_t i = 0; i < std::min<size_t>(20, rows.size()); ++i) {
+        std::cout << "row[" << i << "] PROVINCIA=\"" << rows[i].PROVINCIA
+                  << "\" COMUNE=\"" << rows[i].COMUNE
+                  << "\" median=" << rows[i].median_value << "\n";
+    }
+
     // =====================================================================
     // 1. SHARDING
     // =====================================================================
     std::cout << "Running sharding...\n";
+
+    // assegna GLOBAL INDEX ai dati
+    for (size_t i = 0; i < rows.size(); i++)
+        rows[i].global_index = i;
+
     Step1_Sharding::Sharding sharder(rows);
 
-    std::string shard_column = "PROVINCIA"; // <-- change if needed
+    std::string shard_column = "PROVINCIA";
     auto shards = sharder.generateShards(shard_column);
+
     int num_partitions = shards.size();
     std::cout << "Generated " << num_partitions << " shards.\n";
 
     // =====================================================================
-    // 2. CREATE PRIOR
+    // 2. PRIOR
     // =====================================================================
     double mu0 = 0.0, kappa0 = 1.0, alpha0 = 2.0, beta0 = 2.0;
     IModelPrior* prior = new NormalConjugateModel(mu0, kappa0, alpha0, beta0);
 
     // =====================================================================
-    // 3. RUN PARALLEL DP MIXTURE ON SHARDS
+    // 3. LOAD GLOBAL ADJACENCY (JSON)
+    // =====================================================================
+    auto global_adjacency = load_adjacency_json("adjacency_list.json");
+    std::cout << "Loaded adjacency list with " << global_adjacency.size() << " nodes.\n";
+
+    // =====================================================================
+    // 3a. COSTRUZIONE ADIACENZA PER SHARD
+    // =====================================================================
+    std::vector<std::vector<std::vector<int>>> adjacency_per_shard;
+
+    for (const auto& shard : shards)
+    {
+        adjacency_per_shard.push_back(
+                extract_local_adjacency(shard, global_adjacency)
+        );
+    }
+
+    std::cout << "Built local adjacency matrices for "
+              << adjacency_per_shard.size() << " shards.\n";
+
+    // =====================================================================
+    // 4. PARALLEL DP ON SHARDS
     // =====================================================================
     double alpha_dp    = 1.0;
     double lambda_appm = 0.2;
     int burn_in        = 200;
     int sampling       = 100;
 
-    // concateno tutti i dati per fare la kNN globale
-    std::vector<double> all_data;
-    for (const auto& row : rows)
-        all_data.push_back(row.median_value);
-
-    auto full_adjacency = make_knn_graph(all_data, 5);
-
-    // Parallel DP mixture
     ParallelDPMixture pdp(alpha_dp,
-                          shards,          // vector of Shard
+                          shards,               // ora vettore di vettori DataRow
                           prior,
-                          full_adjacency,  // global adjacency
+                          adjacency_per_shard,  // adjacency locale corretta
                           lambda_appm);
 
     pdp.run_parallel_mcmc(burn_in, sampling);
 
     // =====================================================================
-    // 4. EXTRACT RESULTS
+    // 5. RISULTATI: BEST CLUSTER PER SHARD
     // =====================================================================
     const auto& all_samples_c   = pdp.get_best_clustering_per_chain();
     const auto& all_samples_phi = pdp.get_best_parameters_per_chain();
     int M = all_samples_c.size();
+
     std::cout << "\nCollected best output from " << M << " chains.\n";
 
     // =====================================================================
-    // 6. META-CLUSTERING ON PARAMETERS
+    // 6. META-CLUSTERING SU PHI
     // =====================================================================
     std::vector<ComponentParameter> phi_data;
+
     for (int ch = 0; ch < M; ++ch)
         for (const auto& kv : all_samples_phi[ch])
             phi_data.push_back(kv.second);
@@ -410,9 +442,11 @@ void test_Parallel_Mixture_with_MetaClustering()
     std::cout << "Collected " << Q << " parameter vectors.\n";
 
     std::vector<std::vector<double>> D_phi(Q, std::vector<double>(Q, 0.0));
+
     for (int i = 0; i < Q; ++i)
         for (int j = i + 1; j < Q; ++j)
-            D_phi[i][j] = D_phi[j][i] = wasserstein_1d(phi_data[i], phi_data[j]);
+            D_phi[i][j] = D_phi[j][i] =
+                    wasserstein_1d(phi_data[i], phi_data[j]);
 
     CohesionRepulsionDP phiDP(1.0, D_phi, 0.5, 1.0, 3.0, 1.0, 999);
     phiDP.initialize_random(6);
@@ -420,6 +454,7 @@ void test_Parallel_Mixture_with_MetaClustering()
 
     int best_phi_idx = phiDP.best_sample_binder();
     const auto& final_phi_labels = phiDP.get_samples_labels()[best_phi_idx];
+
     int Kphi = *std::max_element(final_phi_labels.begin(), final_phi_labels.end()) + 1;
     std::cout << "Detected " << Kphi << " parameter clusters.\n";
 
@@ -432,6 +467,7 @@ void test_Parallel_Mixture_with_MetaClustering()
 
     delete prior;
 }
+
 
 int main()
 {

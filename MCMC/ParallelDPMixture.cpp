@@ -9,50 +9,33 @@ ParallelDPMixture::ParallelDPMixture(
         double alpha_,
         const std::vector<Step1_Sharding::Sharding::Shard>& shards,
         IModelPrior* prior_,
-        const std::vector<std::vector<int>>& full_adjacency,
-        double lambda_appm_)
-    : alpha(alpha_),
-      lambda_appm(lambda_appm_),
-      prior(prior_)
+        const std::vector<std::vector<std::vector<int>>>& adjacency_per_shard,
+        double lambda_appm_
+)
+        : alpha(alpha_),
+          lambda_appm(lambda_appm_),
+          prior(prior_)
 {
     num_partitions = shards.size();
+
     partitions_data.resize(num_partitions);
-    partitions_adj.resize(num_partitions);
+    partitions_adj  = adjacency_per_shard;   // <-- copia diretta, zero trasformazioni
 
-    int global_idx = 0;
-
-    for (size_t k = 0; k < shards.size(); ++k) {
+    for (size_t k = 0; k < shards.size(); ++k)
+    {
         size_t shard_size = shards[k].size();
         partitions_data[k].resize(shard_size);
-        partitions_adj[k].resize(shard_size);
 
-        // Copia dati median_value
-        for (size_t i = 0; i < shard_size; ++i) {
+        for (size_t i = 0; i < shard_size; ++i)
+        {
             partitions_data[k][i] = shards[k][i].median_value;
         }
-
-        // Costruzione grafo locale filtrando solo vicini presenti nello shard
-        std::unordered_map<int,int> global2local;
-        for (size_t i = 0; i < shard_size; ++i)
-            global2local[global_idx + i] = i;
-
-        for (size_t i = 0; i < shard_size; ++i) {
-            int local = i;
-            for (int nb : full_adjacency[global_idx + i]) {
-                auto it = global2local.find(nb);
-                if (it != global2local.end())
-                    partitions_adj[k][local].push_back(it->second);
-            }
-            if (partitions_adj[k][local].empty())
-                partitions_adj[k][local].push_back(local);
-        }
-
-        global_idx += shard_size;
     }
 
     std::cout << "Created ParallelDPMixture with "
               << num_partitions << " shards\n";
 }
+
 
 // ---------------------------------------------------------
 // Clone prior (thread-safe)

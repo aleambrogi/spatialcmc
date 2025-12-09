@@ -6,5 +6,7 @@ struct DataRow {
     std::string PROVINCIA;
     double median_value;
 
-    DataRow() : median_value(0.0) {}
+    int global_index;
+
+    DataRow() : median_value(0.0), global_index(-1) {}
 };

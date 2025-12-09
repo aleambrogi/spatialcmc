@@ -11,11 +11,11 @@
 
 class ParallelDPMixture {
 public:
-    ParallelDPMixture(double alpha,
-                  const std::vector<Step1_Sharding::Sharding::Shard>& shards,
-                  IModelPrior* prior,
-                  const std::vector<std::vector<int>>& full_adjacency,
-                  double lambda_appm);
+    ParallelDPMixture(double alpha_,
+                      const std::vector<Step1_Sharding::Sharding::Shard>& shards,
+                      IModelPrior* prior_,
+                      const std::vector<std::vector<std::vector<int>>>& adjacency_per_shard,
+                      double lambda_appm_);
 
     void run_parallel_mcmc(int burn_in, int sampling);
 

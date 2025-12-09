@@ -14,6 +14,12 @@ set(BOOST_LIBS
 )
 
 # ----------------------------------------------------------------------
+# JSON
+# ----------------------------------------------------------------------
+include_directories(${PROJECT_SOURCE_DIR}/external)
+include_directories(${PROJECT_SOURCE_DIR}/external/nlohmann)
+
+# ----------------------------------------------------------------------
 # SOURCES
 # ----------------------------------------------------------------------
 set(SOURCES
@@ -42,11 +48,12 @@ add_executable(NEAL_ALGORITHM ${SOURCES})
 # INCLUDE DIRECTORIES
 # ----------------------------------------------------------------------
 target_include_directories(NEAL_ALGORITHM PRIVATE
-        "${PROJECT_SOURCE_DIR}"              # <--- IMPORTANT (root include)
+        "${PROJECT_SOURCE_DIR}"
         "${PROJECT_SOURCE_DIR}/MCMC"
         "${PROJECT_SOURCE_DIR}/Consensus"
         "${PROJECT_SOURCE_DIR}/Step0"
         "${PROJECT_SOURCE_DIR}/Step1_Sharding"
+        "${PROJECT_SOURCE_DIR}/external/nlohmann"
         "C:/boost_1_89_0"
 )
 
