@@ -154,8 +154,8 @@ void test_DP_MixtureModel() {
     std::normal_distribution<double> dist1(-5.0, 1.0);
     std::normal_distribution<double> dist2(5.0, 1.0);
 
-    for (int i = 0; i < 50; ++i) data.push_back(dist1(gen));
-    for (int i = 0; i < 50; ++i) data.push_back(dist2(gen));
+    for (int i = 0; i < 500; ++i) data.push_back(dist1(gen));
+    for (int i = 0; i < 500; ++i) data.push_back(dist2(gen));
 
     NormalConjugateModel prior(0.0, 1.0, 2.0, 2.0);
 
@@ -163,7 +163,7 @@ void test_DP_MixtureModel() {
     model.run_mcmc(1000, 1000);
 
     // Print last iteration cluster assignments
-    const auto& index_star = model.opt_param_index();
+    const auto& index_star = model.opt_param_index_fast();
     const auto& best_c = model.samples_c[index_star];
     const auto& best_phi = model.samples_phi_c[index_star];
 
@@ -263,7 +263,7 @@ void test_DP_MixtureModel_with_APPM()
     // -----------------------------------------------------
     // 6. Recover optimal clustering
     // -----------------------------------------------------
-    int idx = model.opt_param_index();
+    int idx = model.opt_param_index_fast();
     const auto& best_clust = model.samples_c[idx];
 
     std::cout << "\nBest partition index = " << idx << "\n";
@@ -326,34 +326,6 @@ std::vector<std::vector<int>> make_knn_graph(
 }
 
 
-
-// -------------------------------------------------------------------------
-// TEST FUNCTION (call this from main)
-// -------------------------------------------------------------------------
-
-long binder_loss(const std::vector<int>& z1,
-                 const std::vector<int>& z2)
-{
-    const int n = z1.size();
-    if (z2.size() != n) {
-        throw std::runtime_error("binder_loss: size mismatch between partitions.");
-    }
-
-    long loss = 0;
-
-    for (int i = 0; i < n; ++i) {
-        for (int j = i + 1; j < n; ++j) {
-
-            bool same1 = (z1[i] == z1[j]);
-            bool same2 = (z2[i] == z2[j]);
-
-            if (same1 != same2)
-                loss++;
-        }
-    }
-
-    return loss;
-}
 
 void test_Parallel_Mixture_with_MetaClustering()
 {
@@ -425,28 +397,6 @@ void test_Parallel_Mixture_with_MetaClustering()
     const auto& all_samples_phi = pdp.get_best_parameters_per_chain();
     int M = all_samples_c.size();
     std::cout << "\nCollected best output from " << M << " chains.\n";
-
-    // =====================================================================
-    // 5. META-CLUSTERING ON CLUSTERINGS
-    // =====================================================================
-    std::vector<std::vector<int>> clusterings = all_samples_c;
-    int P = clusterings.size();
-    std::cout << "Meta-clustering on " << P << " partitions...\n";
-
-    std::vector<std::vector<double>> D_clusters(P, std::vector<double>(P, 0.0));
-    for (int i = 0; i < P; ++i)
-        for (int j = i + 1; j < P; ++j)
-            D_clusters[i][j] = D_clusters[j][i] =
-                static_cast<double>(binder_loss(clusterings[i], clusterings[j]));
-
-    CohesionRepulsionDP metaDP(1.0, D_clusters, 0.5, 1.0, 3.0, 1.0, 444);
-    metaDP.initialize_random(6);
-    metaDP.run_mcmc(300, 400);
-
-    int best_meta_idx = metaDP.best_sample_binder();
-    const auto& meta_labels = metaDP.get_samples_labels()[best_meta_idx];
-    int Kmeta = *std::max_element(meta_labels.begin(), meta_labels.end()) + 1;
-    std::cout << "Detected " << Kmeta << " meta-clusters.\n";
 
     // =====================================================================
     // 6. META-CLUSTERING ON PARAMETERS

@@ -101,7 +101,7 @@ void ParallelDPMixture::run_parallel_mcmc(int burn_in, int sampling)
             all_samples_c[k]   = model.samples_c;
             all_samples_phi[k] = model.samples_phi_c;
 
-            int best_idx = model.opt_param_index();
+            int best_idx = model.opt_param_index_fast();
 
             best_k_per_chain[k]          = best_idx;
             best_clustering_per_chain[k] = model.samples_c[best_idx];
