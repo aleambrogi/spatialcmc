@@ -17,6 +17,10 @@
 #include <unordered_set>
 #include "IModelPrior.h"
 
+
+int binder_loss(const std::vector<int>& a,
+                const std::vector<int>& b);
+
 class DPMixtureModel {
 protected:
     // Core Model Parameters (from DP(G0, alpha))
@@ -48,12 +52,24 @@ protected:
 public:
     std::vector<std::vector<int>> samples_c;
     std::vector<std::map<int, ComponentParameter>> samples_phi_c;
-    [[nodiscard]] int opt_param_index() const;
+    //[[nodiscard]] int opt_param_index() const;
     DPMixtureModel(double alpha, const std::vector<double>& data, IModelPrior* prior);
     void run_mcmc(int burn_in, int sampling);
     void gibbs_scan(); // Executes one full scan (step 1 and 2 of Algorithm 2)
     virtual ~DPMixtureModel() = default;
+    [[nodiscard]] int opt_param_index_fast() const;
+
+
 private:
+
+    std::vector<std::vector<double>> compute_co_clustering() const;
+
+    double binder_expected_loss(
+            const std::vector<int>& est,
+            const std::vector<std::vector<double>>& P,
+            double a = 1.0,
+            double b = 1.0) const;
+
 
     // Counter for component labels (to ensure new components get unique IDs)
     int next_component_id;

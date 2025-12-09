@@ -1,92 +1,73 @@
 #include "ParallelDPMixture.h"
+#include "Sharding.h"
 
 // ---------------------------------------------------------
 // Constructor
 // ---------------------------------------------------------
-ParallelDPMixture::ParallelDPMixture(double alpha_,
-                                     const std::vector<double>& full_data,
-                                     IModelPrior* prior_,
-                                     const std::vector<std::vector<int>>& full_adjacency,
-                                     int num_partitions_,
-                                     double lambda_appm_)
+
+ParallelDPMixture::ParallelDPMixture(
+        double alpha_,
+        const std::vector<Step1_Sharding::Sharding::Shard>& shards,
+        IModelPrior* prior_,
+        const std::vector<std::vector<int>>& full_adjacency,
+        double lambda_appm_)
     : alpha(alpha_),
-      num_partitions(num_partitions_),
       lambda_appm(lambda_appm_),
       prior(prior_)
 {
-    split_data_and_graph(full_data, full_adjacency);
-}
-
-
-// ---------------------------------------------------------
-// Split data and adjacency into K subproblems
-// ---------------------------------------------------------
-void ParallelDPMixture::split_data_and_graph(
-        const std::vector<double>& data,
-        const std::vector<std::vector<int>>& full_adj)
-{
-    int N = data.size();
-    int block = N / num_partitions;
-    int remainder = N % num_partitions;
-
+    num_partitions = shards.size();
     partitions_data.resize(num_partitions);
     partitions_adj.resize(num_partitions);
 
-    int idx = 0;
+    int global_idx = 0;
 
-    for (int k = 0; k < num_partitions; ++k)
-    {
-        int size = block + (k < remainder ? 1 : 0);
+    for (size_t k = 0; k < shards.size(); ++k) {
+        size_t shard_size = shards[k].size();
+        partitions_data[k].resize(shard_size);
+        partitions_adj[k].resize(shard_size);
 
-        partitions_data[k].assign(data.begin() + idx,
-                                  data.begin() + idx + size);
+        // Copia dati median_value
+        for (size_t i = 0; i < shard_size; ++i) {
+            partitions_data[k][i] = shards[k][i].median_value;
+        }
 
-        partitions_adj[k].clear();
-        partitions_adj[k].resize(size);
-
-        // map global indices → local (for this shard)
+        // Costruzione grafo locale filtrando solo vicini presenti nello shard
         std::unordered_map<int,int> global2local;
-        for (int g = idx; g < idx + size; ++g)
-            global2local[g] = g - idx;
+        for (size_t i = 0; i < shard_size; ++i)
+            global2local[global_idx + i] = i;
 
-        for (int g = idx; g < idx + size; ++g)
-        {
-            int local = g - idx;
-
-            for (int nb : full_adj[g])
-            {
-                if (global2local.count(nb))
-                    partitions_adj[k][local].push_back(global2local[nb]);
+        for (size_t i = 0; i < shard_size; ++i) {
+            int local = i;
+            for (int nb : full_adjacency[global_idx + i]) {
+                auto it = global2local.find(nb);
+                if (it != global2local.end())
+                    partitions_adj[k][local].push_back(it->second);
             }
-
-            // Safety: ensure at least self-loop to avoid empty clusters collapsing
             if (partitions_adj[k][local].empty())
                 partitions_adj[k][local].push_back(local);
         }
 
-        idx += size;
+        global_idx += shard_size;
     }
+
+    std::cout << "Created ParallelDPMixture with "
+              << num_partitions << " shards\n";
 }
 
-
-
 // ---------------------------------------------------------
-// Clone prior for thread safety
+// Clone prior (thread-safe)
 // ---------------------------------------------------------
 IModelPrior* ParallelDPMixture::clone_prior() const
 {
-    auto* p = prior->clone();  // deep clone of the prior
+    auto* p = prior->clone();
 
-    // Give each clone a unique seed
     static std::atomic<int> counter{1};
-    unsigned int seed = std::random_device{}() ^ (counter++ * 2654435761u);
+    unsigned int seed =
+        std::random_device{}() ^ (counter++ * 2654435761u);
 
     p->set_seed(seed);
-
     return p;
 }
-
-
 
 // ---------------------------------------------------------
 // Run parallel MCMC
@@ -104,7 +85,8 @@ void ParallelDPMixture::run_parallel_mcmc(int burn_in, int sampling)
 
     for (int k = 0; k < num_partitions; ++k)
     {
-        jobs.push_back(std::async(std::launch::async, [&, k]() {
+        jobs.push_back(std::async(std::launch::async,
+                                  [this, k, burn_in, sampling]() {
 
             IModelPrior* prior_copy = clone_prior();
 
@@ -114,30 +96,18 @@ void ParallelDPMixture::run_parallel_mcmc(int burn_in, int sampling)
                                     partitions_adj[k],
                                     lambda_appm);
 
-            // Run MCMC -----------------------------------
-
             model.run_mcmc(burn_in, sampling);
 
-            std::cout << "Chain " << k << " finished MCMC \n";
-
-            // Store all raw samples
             all_samples_c[k]   = model.samples_c;
             all_samples_phi[k] = model.samples_phi_c;
 
-            // Compute optimal sample index
-            int best_idx = model.opt_param_index();
+            int best_idx = model.opt_param_index_fast();
 
-            std::cout << "Chain " << k << " finished binder loss optimization \n";
-
-            // Store per-chain results
-            best_k_per_chain[k]            = best_idx;
-            best_clustering_per_chain[k]   = model.samples_c[best_idx];
-            best_parameters_per_chain[k]   = model.samples_phi_c[best_idx];
+            best_k_per_chain[k]          = best_idx;
+            best_clustering_per_chain[k] = model.samples_c[best_idx];
+            best_parameters_per_chain[k] = model.samples_phi_c[best_idx];
 
             delete prior_copy;
-
-            std::cout << "Chain " << k << " finished. Best index = "
-                      << best_idx << "\n";
         }));
     }
 
@@ -145,6 +115,10 @@ void ParallelDPMixture::run_parallel_mcmc(int burn_in, int sampling)
         f.get();
 }
 
+
+// ---------------------------------------------------------
+// Accessors
+// ---------------------------------------------------------
 
 const std::vector<int>&
 ParallelDPMixture::get_best_k_per_chain() const {
@@ -161,11 +135,6 @@ ParallelDPMixture::get_best_parameters_per_chain() const {
     return best_parameters_per_chain;
 }
 
-
-
-// ---------------------------------------------------------
-// Result accessors
-// ---------------------------------------------------------
 const std::vector<std::vector<std::vector<int>>>&
 ParallelDPMixture::get_all_samples_c() const {
     return all_samples_c;

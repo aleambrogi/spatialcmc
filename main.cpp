@@ -4,6 +4,7 @@
 #include <fstream>
 #include <cmath>
 #include <algorithm>
+#include <CSVLoader.h>
 #include <map>
 #include "DP_MixtureModel.h"
 #include "aPPM_MixtureModel.h"
@@ -153,8 +154,8 @@ void test_DP_MixtureModel() {
     std::normal_distribution<double> dist1(-5.0, 1.0);
     std::normal_distribution<double> dist2(5.0, 1.0);
 
-    for (int i = 0; i < 50; ++i) data.push_back(dist1(gen));
-    for (int i = 0; i < 50; ++i) data.push_back(dist2(gen));
+    for (int i = 0; i < 500; ++i) data.push_back(dist1(gen));
+    for (int i = 0; i < 500; ++i) data.push_back(dist2(gen));
 
     NormalConjugateModel prior(0.0, 1.0, 2.0, 2.0);
 
@@ -162,7 +163,7 @@ void test_DP_MixtureModel() {
     model.run_mcmc(1000, 1000);
 
     // Print last iteration cluster assignments
-    const auto& index_star = model.opt_param_index();
+    const auto& index_star = model.opt_param_index_fast();
     const auto& best_c = model.samples_c[index_star];
     const auto& best_phi = model.samples_phi_c[index_star];
 
@@ -262,7 +263,7 @@ void test_DP_MixtureModel_with_APPM()
     // -----------------------------------------------------
     // 6. Recover optimal clustering
     // -----------------------------------------------------
-    int idx = model.opt_param_index();
+    int idx = model.opt_param_index_fast();
     const auto& best_clust = model.samples_c[idx];
 
     std::cout << "\nBest partition index = " << idx << "\n";
@@ -326,363 +327,111 @@ std::vector<std::vector<int>> make_knn_graph(
 
 
 
-// -------------------------------------------------------------------------
-// TEST FUNCTION (call this from main)
-// -------------------------------------------------------------------------
-    void test_Parallel_DP_MixtureModel_with_APPM()
-{
-    std::cout << "===== Parallel APPM Mixture Integration Test =====\n";
-
-    // -------------------------------------------------------------
-    // 1. Generate synthetic Gaussian mixture (ordered)
-    // -------------------------------------------------------------
-    std::cout << "Generating synthetic spatial test data...\n";
-
-    std::mt19937 rng(12345);
-    std::normal_distribution<double> dist1(-5.0, 1);
-    std::normal_distribution<double> dist2( 5.0, 1);
-
-    const int N = 4000;
-    std::vector<double> data(N);
-    std::vector<int> true_label(N);
-
-    for (int i = 0; i < N; ++i) {
-        if (i < N/2) {
-            data[i] = dist1(rng);
-            true_label[i] = 0;
-        } else {
-            data[i] = dist2(rng);
-            true_label[i] = 1;
-        }
-    }
-
-    std::cout << "Generated " << N << " observations.\n";
-
-    // -------------------------------------------------------------
-    // 2. Permute data
-    // -------------------------------------------------------------
-    std::vector<int> perm(N);
-    std::iota(perm.begin(), perm.end(), 0);
-    std::shuffle(perm.begin(), perm.end(), rng);
-
-    std::vector<double> data_perm(N);
-    std::vector<int> true_label_perm(N);
-
-    for (int i = 0; i < N; ++i) {
-        data_perm[i] = data[perm[i]];
-        true_label_perm[i] = true_label[perm[i]];
-    }
-
-    std::cout << "Data randomly permuted.\n";
-
-    // -------------------------------------------------------------
-    // 3. Build adjacency using kNN on permuted data
-    // -------------------------------------------------------------
-    std::cout << "Building kNN adjacency...\n";
-    auto adjacency = make_knn_graph(data_perm, /*k=*/5);
-
-    // -------------------------------------------------------------
-    // 4. Prior
-    // -------------------------------------------------------------
-    double mu0 = 0.0;
-    double kappa0 = 1.0;
-    double alpha0 = 2.0;
-    double beta0  = 2.0;
-
-    IModelPrior* prior = new NormalConjugateModel(mu0, kappa0, alpha0, beta0);
-
-    // -------------------------------------------------------------
-    // 5. Parallel APPM DP mixture
-    // -------------------------------------------------------------
-    int num_partitions = 20;
-    double alpha_dp    = 1.0;
-    double lambda_appm = 0.2;
-    int burn_in        = 500;
-    int sampling       = 1000;
-
-    ParallelDPMixture pdp(alpha_dp,
-                          data_perm,
-                          prior,
-                          adjacency,
-                          num_partitions,
-                          lambda_appm);
-
-    pdp.run_parallel_mcmc(burn_in, sampling);
-
-    // -------------------------------------------------------------
-    // 6. Extract per-chain results
-    // -------------------------------------------------------------
-    const auto& best_k     = pdp.get_best_k_per_chain();
-    const auto& best_clust = pdp.get_best_clustering_per_chain();
-    const auto& best_phi   = pdp.get_best_parameters_per_chain();
-    const auto& all_shards = pdp.get_partitioned_data();
-
-    std::cout << "\n===== PER-CHAIN RESULTS =====\n";
-
-    for (int chain = 0; chain < num_partitions; ++chain)
-    {
-        const auto& cvec      = best_clust[chain];
-        const auto& phi_map   = best_phi[chain];
-        const auto& shard     = all_shards[chain];
-
-        std::unordered_set<int> unique_clusters(cvec.begin(), cvec.end());
-
-        std::cout << "\n==================== Chain " << chain << " ====================\n";
-        std::cout << "Best iteration index = " << best_k[chain] << "\n";
-        std::cout << "Clusters discovered  = " << unique_clusters.size() << "\n\n";
-
-        std::cout << "--- Cluster Parameters ---\n";
-        for (const auto& kv : phi_map)
-        {
-            int cl = kv.first;
-            const auto& cp = kv.second;
-
-            std::cout << "Cluster " << cl << " : ";
-            if (cp.parameters.size() >= 2)
-                std::cout << "mu=" << cp.parameters[0]
-                          << ", sigma2=" << cp.parameters[1];
-            else
-                std::cout << "[Invalid parameters]";
-            std::cout << "\n";
-        }
-
-        std::cout << "=====================================================\n\n";
-    }
-
-    std::cout << "\n===== Parallel APPM Mixture Test PASSED =====\n";
-
-    delete prior;
-}
-
-long binder_loss(const std::vector<int>& z1,
-                 const std::vector<int>& z2)
-{
-    const int n = z1.size();
-    if (z2.size() != n) {
-        throw std::runtime_error("binder_loss: size mismatch between partitions.");
-    }
-
-    long loss = 0;
-
-    for (int i = 0; i < n; ++i) {
-        for (int j = i + 1; j < n; ++j) {
-
-            bool same1 = (z1[i] == z1[j]);
-            bool same2 = (z2[i] == z2[j]);
-
-            if (same1 != same2)
-                loss++;
-        }
-    }
-
-    return loss;
-}
-
 void test_Parallel_Mixture_with_MetaClustering()
 {
     std::cout << "\n==================== FULL PIPELINE TEST ====================\n";
 
     // =====================================================================
-    // 0. Generate synthetic data + setup ParallelDPMixture (same as before)
+    // 0. LOAD CSV
     // =====================================================================
-    std::cout << "Generating synthetic Gaussian mixture test data...\n";
+    std::cout << "Loading CSV...\n";
+    std::ifstream file("dataset_median.csv");
+    std::string header;
+    std::getline(file, header);
+    std::cout << "Header CSV: " << header << std::endl;
 
-    std::mt19937 rng(12345);
-    std::normal_distribution<double> dist1(-5.0, 1.0);
-    std::normal_distribution<double> dist2( 5.0, 1.0);
+    CSVReader reader("dataset_median.csv", ',');
+    std::vector<DataRow> rows = reader.read();
 
-    const int N = 1000;
-    std::vector<double> data(N);
-    std::vector<int> true_label(N);
-
-    for (int i = 0; i < N; ++i) {
-        if (i < N/2) {
-            data[i] = dist1(rng);
-            true_label[i] = 0;
-        } else {
-            data[i] = dist2(rng);
-            true_label[i] = 1;
-        }
+    if (rows.empty()) {
+        std::cerr << "CSV is empty. Abort.\n";
+        return;
     }
+    std::cout << "Loaded " << rows.size() << " rows.\n";
 
-    std::cout << "Generated " << N << " observations.\n";
+    // =====================================================================
+    // 1. SHARDING
+    // =====================================================================
+    std::cout << "Running sharding...\n";
+    Step1_Sharding::Sharding sharder(rows);
 
-    // -------------------------------------------------------------
-    // Permute the data
-    // -------------------------------------------------------------
-    std::vector<int> perm(N);
-    std::iota(perm.begin(), perm.end(), 0);
-    std::shuffle(perm.begin(), perm.end(), rng);
+    std::string shard_column = "PROVINCIA"; // <-- change if needed
+    auto shards = sharder.generateShards(shard_column);
+    int num_partitions = shards.size();
+    std::cout << "Generated " << num_partitions << " shards.\n";
 
-    std::vector<double> data_perm(N);
-    std::vector<int> true_label_perm(N);
-
-    for (int i = 0; i < N; ++i) {
-        data_perm[i] = data[perm[i]];
-        true_label_perm[i] = true_label[perm[i]];
-    }
-
-    // -------------------------------------------------------------
-    // Build adjacency (kNN)
-    // -------------------------------------------------------------
-    auto adjacency = make_knn_graph(data_perm, /*k=*/5);
-
-    // -------------------------------------------------------------
-    // Prior
-    // -------------------------------------------------------------
+    // =====================================================================
+    // 2. CREATE PRIOR
+    // =====================================================================
     double mu0 = 0.0, kappa0 = 1.0, alpha0 = 2.0, beta0 = 2.0;
     IModelPrior* prior = new NormalConjugateModel(mu0, kappa0, alpha0, beta0);
 
-    // -------------------------------------------------------------
-    // Parallel APPM DP mixture
-    // -------------------------------------------------------------
-    int num_partitions = 10;
+    // =====================================================================
+    // 3. RUN PARALLEL DP MIXTURE ON SHARDS
+    // =====================================================================
     double alpha_dp    = 1.0;
     double lambda_appm = 0.2;
-    int burn_in        = 500;
-    int sampling       = 1000;
+    int burn_in        = 200;
+    int sampling       = 100;
 
+    // concateno tutti i dati per fare la kNN globale
+    std::vector<double> all_data;
+    for (const auto& row : rows)
+        all_data.push_back(row.median_value);
+
+    auto full_adjacency = make_knn_graph(all_data, 5);
+
+    // Parallel DP mixture
     ParallelDPMixture pdp(alpha_dp,
-                          data_perm,
+                          shards,          // vector of Shard
                           prior,
-                          adjacency,
-                          num_partitions,
+                          full_adjacency,  // global adjacency
                           lambda_appm);
 
     pdp.run_parallel_mcmc(burn_in, sampling);
 
     // =====================================================================
-    // 1. Extract ALL best clustering + ALL φ parameters from all chains
+    // 4. EXTRACT RESULTS
     // =====================================================================
-    const auto& all_samples_c   = pdp.get_best_clustering_per_chain();   // M × n
-    const auto& all_samples_phi = pdp.get_best_parameters_per_chain();   // M × map
-
+    const auto& all_samples_c   = pdp.get_best_clustering_per_chain();
+    const auto& all_samples_phi = pdp.get_best_parameters_per_chain();
     int M = all_samples_c.size();
-    int T = 1;                           // only ONE best sample per chain
-    int n = all_samples_c[0].size();
-
-    std::cout << "\nCollected best MCMC output: "
-              << M << " chains × 1 sample each.\n";
-
+    std::cout << "\nCollected best output from " << M << " chains.\n";
 
     // =====================================================================
-    // 2. Flatten clusterings into list of P partitions
-    // =====================================================================
-    std::vector<std::vector<int>> clusterings;
-    clusterings.reserve(M);
-
-    for (int ch = 0; ch < M; ++ch)
-        clusterings.push_back(all_samples_c[ch]);
-
-    int P = clusterings.size();
-    std::cout << "Total clusterings gathered for meta-clustering = " << P << "\n";
-
-
-    // =====================================================================
-    // 3. Compute Binder distance matrix
-    // =====================================================================
-    std::vector<std::vector<double>> D_clusters(P, std::vector<double>(P, 0.0));
-
-    for (int i = 0; i < P; ++i)
-        for (int j = i + 1; j < P; ++j)
-            D_clusters[i][j] = D_clusters[j][i] =
-                static_cast<double>(binder_loss(clusterings[i], clusterings[j]));
-
-
-    // =====================================================================
-    // 4. Meta-cluster the clusterings
-    // =====================================================================
-    CohesionRepulsionDP metaDP(
-        1.0, D_clusters,
-        0.5, 1.0,
-        3.0, 1.0,
-        444
-    );
-
-    metaDP.initialize_random(6);
-    metaDP.run_mcmc(300, 400);
-
-    int best_meta_idx = metaDP.best_sample_binder();
-    const auto& meta_labels = metaDP.get_samples_labels()[best_meta_idx];
-
-    int Kmeta = *std::max_element(meta_labels.begin(), meta_labels.end()) + 1;
-
-    std::cout << "\nDetected " << Kmeta << " meta-clusters of clusterings.\n";
-
-
-    // =====================================================================
-    // 5. Find representative clustering
-    // =====================================================================
-    std::vector<std::vector<int>> meta_groups(Kmeta);
-    for (int p = 0; p < P; ++p)
-        meta_groups[meta_labels[p]].push_back(p);
-
-    auto representative_partition = [&](const std::vector<int>& idxs) {
-        long best = LONG_MAX;
-        int rep = -1;
-        for (int p : idxs) {
-            long tot = 0;
-            for (int q : idxs)
-                tot += binder_loss(clusterings[p], clusterings[q]);
-            if (tot < best) { best = tot; rep = p; }
-        }
-        return rep;
-    };
-
-
-    // =====================================================================
-    // 6. Gather φ parameters (cluster IDs are only LOCAL → treat each separately)
+    // 6. META-CLUSTERING ON PARAMETERS
     // =====================================================================
     std::vector<ComponentParameter> phi_data;
-    phi_data.reserve(M * 5);  // typical DP, rough guess
-
     for (int ch = 0; ch < M; ++ch)
         for (const auto& kv : all_samples_phi[ch])
             phi_data.push_back(kv.second);
 
     int Q = phi_data.size();
-    std::cout << "\nCollected " << Q << " component parameters.\n";
+    std::cout << "Collected " << Q << " parameter vectors.\n";
 
     std::vector<std::vector<double>> D_phi(Q, std::vector<double>(Q, 0.0));
-
     for (int i = 0; i < Q; ++i)
         for (int j = i + 1; j < Q; ++j)
             D_phi[i][j] = D_phi[j][i] = wasserstein_1d(phi_data[i], phi_data[j]);
 
-
-    CohesionRepulsionDP phiDP(
-        1.0, D_phi,
-        0.5, 1.0,
-        3.0, 1.0,
-        999
-    );
-
+    CohesionRepulsionDP phiDP(1.0, D_phi, 0.5, 1.0, 3.0, 1.0, 999);
     phiDP.initialize_random(6);
     phiDP.run_mcmc(200, 400);
 
     int best_phi_idx = phiDP.best_sample_binder();
     const auto& final_phi_labels = phiDP.get_samples_labels()[best_phi_idx];
-
     int Kphi = *std::max_element(final_phi_labels.begin(), final_phi_labels.end()) + 1;
-
     std::cout << "Detected " << Kphi << " parameter clusters.\n";
 
-
-    // =====================================================================
-    // 7. PRINT RESULTS
-    // =====================================================================
-    std::cout << "\n--- FINAL PARAMETER CLUSTERS (Binder-minimizing) ---\n";
-
     for (int i = 0; i < Q; ++i)
-        std::cout << "cluster[" << i << "]  mu=" << phi_data[i].parameters[0]
-                  << "  sigma2=" << phi_data[i].parameters[1]
-                  << "  -> cluster " << final_phi_labels[i] << "\n";
+        std::cout << "cluster[" << i << "]: mu=" << phi_data[i].parameters[0]
+                  << " sigma2=" << phi_data[i].parameters[1]
+                  << " --> meta cluster " << final_phi_labels[i] << "\n";
 
     std::cout << "\n==================== END FULL PIPELINE TEST ====================\n";
 
     delete prior;
 }
-
 
 int main()
 {

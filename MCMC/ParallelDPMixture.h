@@ -4,6 +4,7 @@
 #include <vector>
 #include <future>
 #include <iostream>
+#include <Sharding.h>
 #include <unordered_map>
 #include "aPPM_MixtureModel.h"
 #include "IModelPrior.h"
@@ -11,11 +12,10 @@
 class ParallelDPMixture {
 public:
     ParallelDPMixture(double alpha,
-                      const std::vector<double>& full_data,
-                      IModelPrior* prior,
-                      const std::vector<std::vector<int>>& full_adjacency,
-                      int num_partitions,
-                      double lambda_appm);
+                  const std::vector<Step1_Sharding::Sharding::Shard>& shards,
+                  IModelPrior* prior,
+                  const std::vector<std::vector<int>>& full_adjacency,
+                  double lambda_appm);
 
     void run_parallel_mcmc(int burn_in, int sampling);
 
@@ -47,10 +47,8 @@ private:
     std::vector<std::vector<std::vector<int>>> all_samples_c;
     std::vector<std::vector<std::map<int, ComponentParameter>>> all_samples_phi;
 
-    void split_data_and_graph(const std::vector<double>& full_data,
-                              const std::vector<std::vector<int>>& full_adj);
-
     IModelPrior* clone_prior() const;
+
 };
 
 #endif
