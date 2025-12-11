@@ -380,7 +380,7 @@ void test_Parallel_Mixture_with_MetaClustering()
     // =====================================================================
     // 2. PRIOR
     // =====================================================================
-    double mu0 = 0.0, kappa0 = 1.0, alpha0 = 2.0, beta0 = 2.0;
+    double mu0 = 0.0, kappa0 = 0.1, alpha0 = 10.0, beta0 = 0.001;
     IModelPrior* prior = new NormalConjugateModel(mu0, kappa0, alpha0, beta0);
 
     // =====================================================================
@@ -407,8 +407,8 @@ void test_Parallel_Mixture_with_MetaClustering()
     // =====================================================================
     // 4. PARALLEL DP ON SHARDS
     // =====================================================================
-    double alpha_dp    = 1.0;
-    double lambda_appm = 0.2;
+    double alpha_dp    = 10.0;
+    double lambda_appm = 0.01;
     int burn_in        = 200;
     int sampling       = 100;
 
@@ -448,7 +448,7 @@ void test_Parallel_Mixture_with_MetaClustering()
             D_phi[i][j] = D_phi[j][i] =
                     wasserstein_1d(phi_data[i], phi_data[j]);
 
-    CohesionRepulsionDP phiDP(1.0, D_phi, 0.5, 1.0, 3.0, 1.0, 999);
+    CohesionRepulsionDP phiDP(10.0, D_phi, 0.5, 400.0, 3.0, 50.0, 999);
     phiDP.initialize_random(6);
     phiDP.run_mcmc(200, 400);
 

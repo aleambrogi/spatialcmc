@@ -6,12 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 # ----------------------------------------------------------------------
 # BOOST
 # ----------------------------------------------------------------------
-include_directories("C:/boost_1_89_0")
-link_directories("C:/boost_1_89_0/stage/lib")
-
-set(BOOST_LIBS
-        "C:/boost_1_89_0/stage/lib/libboost_math_c99-mgw15-mt-s-x64-1_89.a"
-)
+set(BOOST_ROOT "C:/boost_1_89_0")
 
 # ----------------------------------------------------------------------
 # JSON
@@ -40,6 +35,9 @@ set(SOURCES
         # ---- Step1 ----
         Step1_Sharding/Sharding.cpp
         Step1_Sharding/test_sharding.cpp
+
+        dataset_median.csv
+        adjacency_list.json
 )
 
 add_executable(NEAL_ALGORITHM ${SOURCES})
