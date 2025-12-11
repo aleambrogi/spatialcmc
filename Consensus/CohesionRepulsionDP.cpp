@@ -344,3 +344,85 @@ void CohesionRepulsionDP::run_mcmc(int burn_in, int n_samples)
         samples_c.push_back(c);
     }
 }
+
+#include <fstream>
+#include <stdexcept>
+
+void CohesionRepulsionDP::run_mcmc_to_csv(int burn_in, int n_samples, const std::string& filename)
+{
+    if (burn_in < 0 || n_samples <= 0) {
+        throw std::runtime_error("Invalid burn_in or n_samples in run_mcmc_to_csv.");
+    }
+
+    samples_c.clear();
+    samples_c.reserve(n_samples);
+
+    std::ofstream outfile(filename);
+    if (!outfile.is_open()) {
+        throw std::runtime_error("Cannot open file: " + filename);
+    }
+
+    // Opzionale: intestazione con nomi degli elementi
+    for (int i = 0; i < n; ++i) {
+        outfile << "elem" << i;
+        if (i != n-1) outfile << ",";
+    }
+    outfile << "\n";
+
+    // Burn-in
+    for (int it = 0; it < burn_in; ++it) {
+        gibbs_scan();
+        // Non si scrive nulla per il burn-in
+    }
+
+    // Sampling
+    for (int it = 0; it < n_samples; ++it) {
+        gibbs_scan();
+        samples_c.push_back(c);
+
+        // Salva lo stato corrente dei cluster nel CSV
+        for (int i = 0; i < n; ++i) {
+            outfile << c[i];
+            if (i != n-1) outfile << ",";
+        }
+        outfile << "\n";
+    }
+
+    outfile.close();
+    std::cout << "Saved " << n_samples << " MCMC samples to " << filename << "\n";
+}
+
+void CohesionRepulsionDP::save_meta_cluster_assignments_csv(
+    const std::vector<ComponentParameter>& phi_data,
+    const std::string& filename) const
+{
+    std::ofstream out(filename);
+    if (!out.is_open()) {
+        throw std::runtime_error("Cannot open file for writing: " + filename);
+    }
+
+    int Q = phi_data.size(); // numero di cluster dalla prima MCMC
+    auto samples_labels = get_samples_labels(); // ✅ usa il getter
+    int n_iter = samples_labels.size();
+
+
+    // Header: prima colonna "iteration", poi (mu,sigma2) per ogni cluster
+    out << "iteration";
+    for (int i = 0; i < Q; ++i) {
+        out << ",(" << phi_data[i].parameters[0] << "," << phi_data[i].parameters[1] << ")";
+    }
+    out << "\n";
+
+    // Iterazioni
+    for (int it = 0; it < n_iter; ++it) {
+        out << (it + 1); // numero iterazione a partire da 1
+        const auto& labels = samples_labels[it];
+        for (int i = 0; i < Q; ++i) {
+            out << "," << labels[i];
+        }
+        out << "\n";
+    }
+
+    out.close();
+    std::cout << "Saved meta-cluster assignments CSV to: " << filename << "\n";
+}

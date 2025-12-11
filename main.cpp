@@ -380,7 +380,7 @@ void test_Parallel_Mixture_with_MetaClustering()
     // =====================================================================
     // 2. PRIOR
     // =====================================================================
-    double mu0 = 0.0, kappa0 = 0.1, alpha0 = 10.0, beta0 = 0.001;
+    double mu0 = 0.0, kappa0 = 0.1, alpha0 = 2.0, beta0 = 0.01;
     IModelPrior* prior = new NormalConjugateModel(mu0, kappa0, alpha0, beta0);
 
     // =====================================================================
@@ -407,9 +407,9 @@ void test_Parallel_Mixture_with_MetaClustering()
     // =====================================================================
     // 4. PARALLEL DP ON SHARDS
     // =====================================================================
-    double alpha_dp    = 10.0;
+    double alpha_dp    = 5.0;
     double lambda_appm = 0.01;
-    int burn_in        = 200;
+    int burn_in        = 1;
     int sampling       = 100;
 
     ParallelDPMixture pdp(alpha_dp,
@@ -448,9 +448,12 @@ void test_Parallel_Mixture_with_MetaClustering()
             D_phi[i][j] = D_phi[j][i] =
                     wasserstein_1d(phi_data[i], phi_data[j]);
 
-    CohesionRepulsionDP phiDP(10.0, D_phi, 0.5, 400.0, 3.0, 50.0, 999);
+    CohesionRepulsionDP phiDP(5.0, D_phi, 0.5, 10.0, 2.0, 10.0, 999);
     phiDP.initialize_random(6);
-    phiDP.run_mcmc(200, 400);
+    phiDP.run_mcmc(1, 100);
+
+    //phiDP.run_mcmc_to_csv(1, 100, "output_clusters.csv");
+    phiDP.save_meta_cluster_assignments_csv(phi_data, "meta_cluster_assignments.csv");
 
     int best_phi_idx = phiDP.best_sample_binder();
     const auto& final_phi_labels = phiDP.get_samples_labels()[best_phi_idx];
