@@ -49,6 +49,12 @@ protected:
     // Helper: Calculates n_{-i, c} (count of observations in cluster c excluding observation i)
     int get_cluster_count_minus_i(int i, int c_label);
 
+    int next_component_id;
+
+    // Step 1 and Step 2 must be overridable for Neal-8 / non-conjugate
+    virtual void update_component_indicator(int i);
+    virtual void update_component_parameters();
+
 public:
     std::vector<std::vector<int>> samples_c;
     std::vector<std::map<int, ComponentParameter>> samples_phi_c;
@@ -69,16 +75,6 @@ private:
             const std::vector<std::vector<double>>& P,
             double a = 1.0,
             double b = 1.0) const;
-
-
-    // Counter for component labels (to ensure new components get unique IDs)
-    int next_component_id;
-
-    // Step 1: Update component indicator c_i
-    void update_component_indicator(int i);
-
-    // Step 2: Update component parameters phi_c
-    void update_component_parameters();
 
     //compute the binder_loss btw two vectors a and b
     static int binder_loss(const std::vector<int>& a,

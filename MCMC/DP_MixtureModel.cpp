@@ -210,7 +210,10 @@ void DPMixtureModel::update_component_indicator(int i) {
     for (auto& p : probs) p /= sum;
 
     // Draw a cluster
-    double u = ((double) rand() / RAND_MAX);
+    std::uniform_real_distribution<double> U(0.0, 1.0);
+    double u =  U(model_prior->generator);
+
+
     double cum = 0.0;
     int selected = cluster_labels.back();  // default: new cluster
     for (size_t k = 0; k < probs.size(); ++k) {
@@ -238,6 +241,7 @@ void DPMixtureModel::update_component_parameters() {
             if (c[i] == label)
                 cluster_data.push_back(y[i]);
         }
+        model_prior->set_current_phi(kv.second);
         kv.second = model_prior->sample_from_posterior(cluster_data);
     }
 }

@@ -192,3 +192,5 @@ double NormalConjugateModel::inv_gamma_rng(double alpha, double beta) {
 IModelPrior* NormalConjugateModel::clone() const {
     return new NormalConjugateModel(*this);
 }
+
+

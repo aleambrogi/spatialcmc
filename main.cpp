@@ -9,6 +9,7 @@
 #include "DP_MixtureModel.h"
 #include "aPPM_MixtureModel.h"
 #include "CohesionRepulsionDP.h"
+#include "BetaNonConjugateModel.h"
 #include "ParallelDPMixture.h"
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
@@ -471,6 +472,173 @@ void test_Parallel_Mixture_with_MetaClustering()
     delete prior;
 }
 
+void test_Parallel_Mixture_with_MetaClustering_Neal8_beta()
+{
+    std::cout << "\n==================== FULL PIPELINE TEST (NEAL 8 + BETA) ====================\n";
+
+    // =====================================================================
+    // 0. LOAD CSV
+    // =====================================================================
+    std::cout << "Loading CSV...\n";
+    std::ifstream file("dataset_median.csv");
+    std::string header;
+    std::getline(file, header);
+    std::cout << "Header CSV: " << header << std::endl;
+
+    CSVReader reader("dataset_median.csv", ',');
+    std::vector<DataRow> rows = reader.read();
+
+    if (rows.empty()) {
+        std::cerr << "CSV is empty. Abort.\n";
+        return;
+    }
+    std::cout << "Loaded " << rows.size() << " rows.\n";
+/*
+    // =====================================================================
+    // 0a. RESCALE MEDIANS TO (0,1) FOR BETA MODEL
+    // =====================================================================
+    double min_val = std::numeric_limits<double>::infinity();
+    double max_val = -std::numeric_limits<double>::infinity();
+
+    for (const auto& r : rows) {
+        min_val = std::min(min_val, r.median_value);
+        max_val = std::max(max_val, r.median_value);
+    }
+
+    const double eps = 1e-6;
+    for (auto& r : rows) {
+        double x = (r.median_value - min_val) / (max_val - min_val);
+        r.median_value = std::min(1.0 - eps, std::max(eps, x));
+    }
+
+    std::cout << "Rescaled median_value to (0,1).\n";
+*/
+    // =====================================================================
+    // 1. SHARDING
+    // =====================================================================
+    for (size_t i = 0; i < rows.size(); i++)
+        rows[i].global_index = i;
+
+    Step1_Sharding::Sharding sharder(rows);
+    auto shards = sharder.generateShards("PROVINCIA");
+
+    std::cout << "Generated " << shards.size() << " shards.\n";
+
+    // =====================================================================
+    // 2. NON-CONJUGATE BETA PRIOR
+    // =====================================================================
+    // Independent Gamma priors on alpha and beta
+    double shape_a = 2.0, rate_a = 1.0;
+    double shape_b = 2.0, rate_b = 1.0;
+
+    IModelPrior* prior = new BetaNonConjugateModel(
+        shape_a, rate_a,
+        shape_b, rate_b,
+        0.25,   // proposal sd log(alpha)
+        0.25,   // proposal sd log(beta)
+        2       // MH steps per update
+    );
+
+    // =====================================================================
+    // 3. LOAD GLOBAL ADJACENCY
+    // =====================================================================
+    auto global_adjacency = load_adjacency_json("adjacency_list.json");
+
+    std::vector<std::vector<std::vector<int>>> adjacency_per_shard;
+    for (const auto& shard : shards) {
+        adjacency_per_shard.push_back(
+            extract_local_adjacency(shard, global_adjacency)
+        );
+    }
+
+    // =====================================================================
+    // 4. PARALLEL DP (NEAL 8)
+    // =====================================================================
+    double alpha_dp    = 2;
+    double lambda_appm = 0.5;
+    int burn_in        = 1000;
+    int sampling       = 200;
+    int m_aux          = 5;
+
+    ParallelDPMixture pdp(
+        alpha_dp,
+        shards,
+        prior,
+        adjacency_per_shard,
+        lambda_appm,
+        ParallelDPMixture::SamplerType::Neal8,
+        m_aux
+    );
+
+    pdp.run_parallel_mcmc(burn_in, sampling);
+
+    // =====================================================================
+    // 5. COLLECT BEST CLUSTERS PER SHARD
+    // =====================================================================
+    const auto& best_c   = pdp.get_best_clustering_per_chain();
+    const auto& best_phi = pdp.get_best_parameters_per_chain();
+
+    std::cout << "Collected best output from "
+              << best_phi.size() << " chains.\n";
+
+    // =====================================================================
+    // 6. META-CLUSTERING ON BETA PARAMETERS
+    // =====================================================================
+    std::vector<ComponentParameter> phi_data;
+    for (const auto& chain_phi : best_phi)
+        for (const auto& kv : chain_phi)
+            phi_data.push_back(kv.second);
+
+    int Q = phi_data.size();
+    std::cout << "Collected " << Q << " Beta parameter vectors.\n";
+
+    std::vector<std::vector<double>> D_phi(Q, std::vector<double>(Q, 0.0));
+    for (int i = 0; i < Q; ++i)
+        for (int j = i + 1; j < Q; ++j)
+            D_phi[i][j] = D_phi[j][i] =
+                wasserstein_1d(phi_data[i], phi_data[j]);
+
+    CohesionRepulsionDP phiDP(
+        2.0,   // alpha
+        D_phi,
+        0.5,   // delta_in
+        5.0,  // lambda_in
+        0.5,   // delta_out
+        5.0,  // theta_out
+        999
+    );
+
+    phiDP.initialize_random(6);
+    phiDP.run_mcmc(1000, 200);
+    phiDP.save_meta_cluster_assignments_csv(
+        phi_data, "meta_cluster_assignments_neal8_beta.csv"
+    );
+
+    int best_phi_idx = phiDP.best_sample_binder();
+    const auto& final_phi_labels =
+        phiDP.get_samples_labels()[best_phi_idx];
+
+    int Kphi = *std::max_element(
+        final_phi_labels.begin(),
+        final_phi_labels.end()
+    ) + 1;
+
+    std::cout << "Detected " << Kphi << " Beta meta-clusters.\n";
+
+    for (int i = 0; i < Q; ++i) {
+        std::cout << "component[" << i << "]: "
+                  << "alpha=" << phi_data[i].parameters[0]
+                  << " beta="  << phi_data[i].parameters[1]
+                  << " --> meta cluster "
+                  << final_phi_labels[i] << "\n";
+    }
+
+    std::cout << "\n==================== END FULL PIPELINE TEST (NEAL 8 + BETA) ====================\n";
+
+    delete prior;
+}
+
+
 
 int main()
 {
@@ -478,6 +646,7 @@ int main()
     //test_DP_MixtureModel_with_APPM();
     //test_CohesionRepulsionDP();
     //test_Parallel_DP_MixtureModel_with_APPM();
-    test_Parallel_Mixture_with_MetaClustering();
+    //test_Parallel_Mixture_with_MetaClustering();
+    test_Parallel_Mixture_with_MetaClustering_Neal8_beta();
     return 0;
 }

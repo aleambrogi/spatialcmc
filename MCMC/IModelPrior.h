@@ -26,6 +26,8 @@ struct ComponentParameter {
 
 // Interface for distribution-specific operations (e.g., Normal-Normal Conjugate)
 class IModelPrior {
+protected:
+    ComponentParameter current_phi;
 public:
 
     std::mt19937 generator;
@@ -49,6 +51,8 @@ public:
 
     // allow to clone the prior for parallel implementation
     virtual IModelPrior* clone() const = 0;
+
+    void set_current_phi(const ComponentParameter& phi) { current_phi = phi; }
 
     virtual ~IModelPrior() = default;
 };

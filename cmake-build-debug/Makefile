@@ -47,19 +47,19 @@ cmake_force:
 SHELL = cmd.exe
 
 # The CMake executable.
-CMAKE_COMMAND = "C:\Program Files\JetBrains\CLion 2025.2.1\bin\cmake\win\x64\bin\cmake.exe"
+CMAKE_COMMAND = "C:\Program Files\JetBrains\CLion 2025.2.4\bin\cmake\win\x64\bin\cmake.exe"
 
 # The command to remove a file.
-RM = "C:\Program Files\JetBrains\CLion 2025.2.1\bin\cmake\win\x64\bin\cmake.exe" -E rm -f
+RM = "C:\Program Files\JetBrains\CLion 2025.2.4\bin\cmake\win\x64\bin\cmake.exe" -E rm -f
 
 # Escaping for special characters.
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = "C:\Users\ricca\Desktop\PoliMi\Bayesian\Project\Code GitHub"
+CMAKE_SOURCE_DIR = C:\Users\albor\CLionProjects\spatialcmc
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = "C:\Users\ricca\Desktop\PoliMi\Bayesian\Project\Code GitHub\cmake-build-debug"
+CMAKE_BINARY_DIR = C:\Users\albor\CLionProjects\spatialcmc\cmake-build-debug
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -67,7 +67,7 @@ CMAKE_BINARY_DIR = "C:\Users\ricca\Desktop\PoliMi\Bayesian\Project\Code GitHub\c
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "No interactive CMake dialog available..."
-	"C:\Program Files\JetBrains\CLion 2025.2.1\bin\cmake\win\x64\bin\cmake.exe" -E echo "No interactive CMake dialog available."
+	"C:\Program Files\JetBrains\CLion 2025.2.4\bin\cmake\win\x64\bin\cmake.exe" -E echo "No interactive CMake dialog available."
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -77,7 +77,7 @@ edit_cache/fast: edit_cache
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Running CMake to regenerate build system..."
-	"C:\Program Files\JetBrains\CLion 2025.2.1\bin\cmake\win\x64\bin\cmake.exe" --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	"C:\Program Files\JetBrains\CLion 2025.2.4\bin\cmake\win\x64\bin\cmake.exe" --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : rebuild_cache
 
 # Special rule for the target rebuild_cache
@@ -86,9 +86,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\ricca\Desktop\PoliMi\Bayesian\Project\Code GitHub\cmake-build-debug\CMakeFiles" "C:\Users\ricca\Desktop\PoliMi\Bayesian\Project\Code GitHub\cmake-build-debug\\CMakeFiles\progress.marks"
+	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\albor\CLionProjects\spatialcmc\cmake-build-debug\CMakeFiles C:\Users\albor\CLionProjects\spatialcmc\cmake-build-debug\\CMakeFiles\progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start "C:\Users\ricca\Desktop\PoliMi\Bayesian\Project\Code GitHub\cmake-build-debug\CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\albor\CLionProjects\spatialcmc\cmake-build-debug\CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -151,6 +151,30 @@ Consensus/CohesionRepulsionDP.s: Consensus/CohesionRepulsionDP.cpp.s
 Consensus/CohesionRepulsionDP.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/Consensus/CohesionRepulsionDP.cpp.s
 .PHONY : Consensus/CohesionRepulsionDP.cpp.s
+
+MCMC/BetaNonConjugateModel.obj: MCMC/BetaNonConjugateModel.cpp.obj
+.PHONY : MCMC/BetaNonConjugateModel.obj
+
+# target to build an object file
+MCMC/BetaNonConjugateModel.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/MCMC/BetaNonConjugateModel.cpp.obj
+.PHONY : MCMC/BetaNonConjugateModel.cpp.obj
+
+MCMC/BetaNonConjugateModel.i: MCMC/BetaNonConjugateModel.cpp.i
+.PHONY : MCMC/BetaNonConjugateModel.i
+
+# target to preprocess a source file
+MCMC/BetaNonConjugateModel.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/MCMC/BetaNonConjugateModel.cpp.i
+.PHONY : MCMC/BetaNonConjugateModel.cpp.i
+
+MCMC/BetaNonConjugateModel.s: MCMC/BetaNonConjugateModel.cpp.s
+.PHONY : MCMC/BetaNonConjugateModel.s
+
+# target to generate assembly for a file
+MCMC/BetaNonConjugateModel.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/MCMC/BetaNonConjugateModel.cpp.s
+.PHONY : MCMC/BetaNonConjugateModel.cpp.s
 
 MCMC/DP_MixtureModel.obj: MCMC/DP_MixtureModel.cpp.obj
 .PHONY : MCMC/DP_MixtureModel.obj
@@ -247,6 +271,30 @@ MCMC/aPPM_MixtureModel.s: MCMC/aPPM_MixtureModel.cpp.s
 MCMC/aPPM_MixtureModel.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel.cpp.s
 .PHONY : MCMC/aPPM_MixtureModel.cpp.s
+
+MCMC/aPPM_MixtureModel_Neal8.obj: MCMC/aPPM_MixtureModel_Neal8.cpp.obj
+.PHONY : MCMC/aPPM_MixtureModel_Neal8.obj
+
+# target to build an object file
+MCMC/aPPM_MixtureModel_Neal8.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel_Neal8.cpp.obj
+.PHONY : MCMC/aPPM_MixtureModel_Neal8.cpp.obj
+
+MCMC/aPPM_MixtureModel_Neal8.i: MCMC/aPPM_MixtureModel_Neal8.cpp.i
+.PHONY : MCMC/aPPM_MixtureModel_Neal8.i
+
+# target to preprocess a source file
+MCMC/aPPM_MixtureModel_Neal8.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel_Neal8.cpp.i
+.PHONY : MCMC/aPPM_MixtureModel_Neal8.cpp.i
+
+MCMC/aPPM_MixtureModel_Neal8.s: MCMC/aPPM_MixtureModel_Neal8.cpp.s
+.PHONY : MCMC/aPPM_MixtureModel_Neal8.s
+
+# target to generate assembly for a file
+MCMC/aPPM_MixtureModel_Neal8.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel_Neal8.cpp.s
+.PHONY : MCMC/aPPM_MixtureModel_Neal8.cpp.s
 
 Step0/CSVLoader.obj: Step0/CSVLoader.cpp.obj
 .PHONY : Step0/CSVLoader.obj
@@ -356,6 +404,9 @@ help:
 	@echo ... Consensus/CohesionRepulsionDP.obj
 	@echo ... Consensus/CohesionRepulsionDP.i
 	@echo ... Consensus/CohesionRepulsionDP.s
+	@echo ... MCMC/BetaNonConjugateModel.obj
+	@echo ... MCMC/BetaNonConjugateModel.i
+	@echo ... MCMC/BetaNonConjugateModel.s
 	@echo ... MCMC/DP_MixtureModel.obj
 	@echo ... MCMC/DP_MixtureModel.i
 	@echo ... MCMC/DP_MixtureModel.s
@@ -368,6 +419,9 @@ help:
 	@echo ... MCMC/aPPM_MixtureModel.obj
 	@echo ... MCMC/aPPM_MixtureModel.i
 	@echo ... MCMC/aPPM_MixtureModel.s
+	@echo ... MCMC/aPPM_MixtureModel_Neal8.obj
+	@echo ... MCMC/aPPM_MixtureModel_Neal8.i
+	@echo ... MCMC/aPPM_MixtureModel_Neal8.s
 	@echo ... Step0/CSVLoader.obj
 	@echo ... Step0/CSVLoader.i
 	@echo ... Step0/CSVLoader.s

@@ -7,15 +7,22 @@
 #include <Sharding.h>
 #include <unordered_map>
 #include "aPPM_MixtureModel.h"
+#include "aPPM_MixtureModel_Neal8.h"
 #include "IModelPrior.h"
+
 
 class ParallelDPMixture {
 public:
+    enum class SamplerType { Neal2, Neal8 };
+
     ParallelDPMixture(double alpha_,
-                      const std::vector<Step1_Sharding::Sharding::Shard>& shards,
-                      IModelPrior* prior_,
-                      const std::vector<std::vector<std::vector<int>>>& adjacency_per_shard,
-                      double lambda_appm_);
+                  const std::vector<Step1_Sharding::Sharding::Shard>& shards,
+                  IModelPrior* prior_,
+                  const std::vector<std::vector<std::vector<int>>>& adjacency_per_shard,
+                  double lambda_appm_,
+                  SamplerType sampler_ = SamplerType::Neal2,
+                  int m_aux_ = 5);
+
 
     void run_parallel_mcmc(int burn_in, int sampling);
 
@@ -35,6 +42,8 @@ private:
     int num_partitions;
     double lambda_appm;
     IModelPrior* prior;
+    SamplerType sampler;
+    int m_aux;
 
     // RESULTS PER CHAIN
     std::vector<int> best_k_per_chain;                                         // best index per chain

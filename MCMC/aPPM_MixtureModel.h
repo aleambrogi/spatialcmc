@@ -21,7 +21,7 @@ public:
                       const std::vector<std::vector<int>>& adjacency,
                       double lambda);
 
-private:
+protected:
     // Override cluster weight in DP mixture
     double cluster_weight(int i,
                           int cluster_label,

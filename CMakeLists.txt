@@ -38,6 +38,10 @@ set(SOURCES
 
         dataset_median.csv
         adjacency_list.json
+        MCMC/aPPM_MixtureModel_Neal8.cpp
+        MCMC/aPPM_MixtureModel_Neal8.h
+        MCMC/BetaNonConjugateModel.cpp
+        MCMC/BetaNonConjugateModel.h
 )
 
 add_executable(NEAL_ALGORITHM ${SOURCES})

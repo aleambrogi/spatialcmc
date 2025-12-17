@@ -1,6 +1,8 @@
 file(REMOVE_RECURSE
   "CMakeFiles/NEAL_ALGORITHM.dir/Consensus/CohesionRepulsionDP.cpp.obj"
   "CMakeFiles/NEAL_ALGORITHM.dir/Consensus/CohesionRepulsionDP.cpp.obj.d"
+  "CMakeFiles/NEAL_ALGORITHM.dir/MCMC/BetaNonConjugateModel.cpp.obj"
+  "CMakeFiles/NEAL_ALGORITHM.dir/MCMC/BetaNonConjugateModel.cpp.obj.d"
   "CMakeFiles/NEAL_ALGORITHM.dir/MCMC/DP_MixtureModel.cpp.obj"
   "CMakeFiles/NEAL_ALGORITHM.dir/MCMC/DP_MixtureModel.cpp.obj.d"
   "CMakeFiles/NEAL_ALGORITHM.dir/MCMC/IModelPrior.cpp.obj"
@@ -9,6 +11,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/NEAL_ALGORITHM.dir/MCMC/ParallelDPMixture.cpp.obj.d"
   "CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel.cpp.obj"
   "CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel.cpp.obj.d"
+  "CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel_Neal8.cpp.obj"
+  "CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel_Neal8.cpp.obj.d"
   "CMakeFiles/NEAL_ALGORITHM.dir/Step0/CSVLoader.cpp.obj"
   "CMakeFiles/NEAL_ALGORITHM.dir/Step0/CSVLoader.cpp.obj.d"
   "CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/Sharding.cpp.obj"
