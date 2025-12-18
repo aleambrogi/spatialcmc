@@ -11,6 +11,7 @@
 #include "CohesionRepulsionDP.h"
 #include "BetaNonConjugateModel.h"
 #include "ParallelDPMixture.h"
+#include "BayesianPipelineBaseline.h"
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
@@ -466,6 +467,25 @@ void test_Parallel_Mixture_with_MetaClustering()
         std::cout << "cluster[" << i << "]: mu=" << phi_data[i].parameters[0]
                   << " sigma2=" << phi_data[i].parameters[1]
                   << " --> meta cluster " << final_phi_labels[i] << "\n";
+    // Creazione e stampa della pipeline
+    BayesianPipelineBaseline pipeline;
+    // Meta-clustering
+    double alpha_meta  = 5.0;
+    double delta_in    = 0.5;
+    double lambda_in   = 10.0;
+    double delta_out   = 2.0;
+    double theta_out   = 10.0;
+
+
+    pipeline.populate_from_pipeline(
+        all_samples_c, all_samples_phi, phi_data, final_phi_labels,
+        SamplerType::Neal2,  // indica Neal2
+        alpha_dp, lambda_appm,
+        burn_in, sampling,
+        alpha_meta, delta_in, lambda_in, delta_out, theta_out
+    );
+    pipeline.print_summary();
+
 
     std::cout << "\n==================== END FULL PIPELINE TEST ====================\n";
 
@@ -493,26 +513,26 @@ void test_Parallel_Mixture_with_MetaClustering_Neal8_beta()
         return;
     }
     std::cout << "Loaded " << rows.size() << " rows.\n";
-/*
-    // =====================================================================
-    // 0a. RESCALE MEDIANS TO (0,1) FOR BETA MODEL
-    // =====================================================================
-    double min_val = std::numeric_limits<double>::infinity();
-    double max_val = -std::numeric_limits<double>::infinity();
+    /*
+        // =====================================================================
+        // 0a. RESCALE MEDIANS TO (0,1) FOR BETA MODEL
+        // =====================================================================
+        double min_val = std::numeric_limits<double>::infinity();
+        double max_val = -std::numeric_limits<double>::infinity();
 
-    for (const auto& r : rows) {
-        min_val = std::min(min_val, r.median_value);
-        max_val = std::max(max_val, r.median_value);
-    }
+        for (const auto& r : rows) {
+            min_val = std::min(min_val, r.median_value);
+            max_val = std::max(max_val, r.median_value);
+        }
 
-    const double eps = 1e-6;
-    for (auto& r : rows) {
-        double x = (r.median_value - min_val) / (max_val - min_val);
-        r.median_value = std::min(1.0 - eps, std::max(eps, x));
-    }
+        const double eps = 1e-6;
+        for (auto& r : rows) {
+            double x = (r.median_value - min_val) / (max_val - min_val);
+            r.median_value = std::min(1.0 - eps, std::max(eps, x));
+        }
 
-    std::cout << "Rescaled median_value to (0,1).\n";
-*/
+        std::cout << "Rescaled median_value to (0,1).\n";
+    */
     // =====================================================================
     // 1. SHARDING
     // =====================================================================
@@ -633,12 +653,28 @@ void test_Parallel_Mixture_with_MetaClustering_Neal8_beta()
                   << final_phi_labels[i] << "\n";
     }
 
-    std::cout << "\n==================== END FULL PIPELINE TEST (NEAL 8 + BETA) ====================\n";
+    // Creazione e stampa della pipeline
+    BayesianPipelineBaseline pipeline;
+    // Meta-clustering
+    double alpha_meta  = 5.0;
+    double delta_in    = 0.5;
+    double lambda_in   = 10.0;
+    double delta_out   = 2.0;
+    double theta_out   = 10.0;
+
+
+    pipeline.populate_from_pipeline(
+        best_c, best_phi, phi_data, final_phi_labels,
+        SamplerType::Neal8, // indica Neal8
+        alpha_dp, lambda_appm,
+        burn_in, sampling,
+        alpha_meta, delta_in, lambda_in, delta_out, theta_out
+    );
+    pipeline.print_summary();
+    std::cout << "\n==================== END FULL PIPELINE TEST (NEAL8 + BETA) ====================\n";
 
     delete prior;
 }
-
-
 
 int main()
 {
@@ -646,7 +682,7 @@ int main()
     //test_DP_MixtureModel_with_APPM();
     //test_CohesionRepulsionDP();
     //test_Parallel_DP_MixtureModel_with_APPM();
-    //test_Parallel_Mixture_with_MetaClustering();
-    test_Parallel_Mixture_with_MetaClustering_Neal8_beta();
+    test_Parallel_Mixture_with_MetaClustering();
+    //test_Parallel_Mixture_with_MetaClustering_Neal8_beta();
     return 0;
 }

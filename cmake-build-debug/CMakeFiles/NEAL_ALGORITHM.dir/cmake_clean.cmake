@@ -1,4 +1,6 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/NEAL_ALGORITHM.dir/BayesianPipelineBaseline.cpp.obj"
+  "CMakeFiles/NEAL_ALGORITHM.dir/BayesianPipelineBaseline.cpp.obj.d"
   "CMakeFiles/NEAL_ALGORITHM.dir/Consensus/CohesionRepulsionDP.cpp.obj"
   "CMakeFiles/NEAL_ALGORITHM.dir/Consensus/CohesionRepulsionDP.cpp.obj.d"
   "CMakeFiles/NEAL_ALGORITHM.dir/MCMC/BetaNonConjugateModel.cpp.obj"

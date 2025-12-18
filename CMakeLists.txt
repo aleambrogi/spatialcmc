@@ -6,7 +6,12 @@ set(CMAKE_CXX_STANDARD 20)
 # ----------------------------------------------------------------------
 # BOOST
 # ----------------------------------------------------------------------
-set(BOOST_ROOT "C:/boost_1_89_0")
+set(BOOST_ROOT "C:/Users/plakk/Desktop/boost_1_89_0/boost_1_89_0")
+set(BOOST_INCLUDEDIR "${BOOST_ROOT}")
+set(BOOST_LIBRARYDIR "${BOOST_ROOT}/stage/lib")
+
+find_package(Boost 1.89.0 REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
 
 # ----------------------------------------------------------------------
 # JSON
@@ -42,9 +47,13 @@ set(SOURCES
         MCMC/aPPM_MixtureModel_Neal8.h
         MCMC/BetaNonConjugateModel.cpp
         MCMC/BetaNonConjugateModel.h
+        BayesianPipelineBaseline.cpp
+        BayesianPipelineBaseline.h
 )
 
-add_executable(NEAL_ALGORITHM ${SOURCES})
+add_executable(NEAL_ALGORITHM ${SOURCES}
+        BayesianPipelineBaseline.cpp
+        BayesianPipelineBaseline.h)
 
 # ----------------------------------------------------------------------
 # INCLUDE DIRECTORIES
