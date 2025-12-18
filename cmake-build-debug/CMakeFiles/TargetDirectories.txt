@@ -1,3 +1,0 @@
-C:/Users/albor/CLionProjects/spatialcmc/cmake-build-debug/CMakeFiles/NEAL_ALGORITHM.dir
-C:/Users/albor/CLionProjects/spatialcmc/cmake-build-debug/CMakeFiles/edit_cache.dir
-C:/Users/albor/CLionProjects/spatialcmc/cmake-build-debug/CMakeFiles/rebuild_cache.dir
