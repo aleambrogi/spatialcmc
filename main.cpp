@@ -468,6 +468,7 @@ void test_Parallel_Mixture_with_MetaClustering()
                   << " sigma2=" << phi_data[i].parameters[1]
                   << " --> meta cluster " << final_phi_labels[i] << "\n";
     // Creazione e stampa della pipeline
+
     BayesianPipelineBaseline pipeline;
     // Meta-clustering
     double alpha_meta  = 5.0;
@@ -478,12 +479,16 @@ void test_Parallel_Mixture_with_MetaClustering()
 
 
     pipeline.populate_from_pipeline(
-        all_samples_c, all_samples_phi, phi_data, final_phi_labels,
-        SamplerType::Neal2,  // indica Neal2
-        alpha_dp, lambda_appm,
-        burn_in, sampling,
-        alpha_meta, delta_in, lambda_in, delta_out, theta_out
-    );
+    all_samples_c, all_samples_phi, phi_data, final_phi_labels,
+    SamplerType::Neal2,
+    alpha_dp, lambda_appm,
+    burn_in, sampling,
+    alpha_meta, delta_in, lambda_in, delta_out, theta_out,
+    best_phi_idx,          // <-- BEST ITERATION (Binder)
+    true,                  // <-- ha prior coniugata
+    mu0, kappa0, alpha0, beta0
+);
+
     pipeline.print_summary();
 
 
@@ -654,6 +659,7 @@ void test_Parallel_Mixture_with_MetaClustering_Neal8_beta()
     }
 
     // Creazione e stampa della pipeline
+
     BayesianPipelineBaseline pipeline;
     // Meta-clustering
     double alpha_meta  = 5.0;
@@ -662,13 +668,14 @@ void test_Parallel_Mixture_with_MetaClustering_Neal8_beta()
     double delta_out   = 2.0;
     double theta_out   = 10.0;
 
-
     pipeline.populate_from_pipeline(
-        best_c, best_phi, phi_data, final_phi_labels,
-        SamplerType::Neal8, // indica Neal8
-        alpha_dp, lambda_appm,
-        burn_in, sampling,
-        alpha_meta, delta_in, lambda_in, delta_out, theta_out
+    best_c, best_phi, phi_data, final_phi_labels,
+    SamplerType::Neal8,        // <-- Neal8
+    alpha_dp, lambda_appm,
+    burn_in, sampling,
+    alpha_meta, delta_in, lambda_in, delta_out, theta_out,
+    best_phi_idx,              // <-- BEST ITERATION Binder
+    false                      // <-- NON coniugata
     );
     pipeline.print_summary();
     std::cout << "\n==================== END FULL PIPELINE TEST (NEAL8 + BETA) ====================\n";

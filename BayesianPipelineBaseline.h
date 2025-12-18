@@ -16,7 +16,6 @@ enum class SamplerType {
     Neal8
 };
 
-// Interfaccia generica per visualizzare pipeline già runnata
 class BayesianPipelineBaseline {
 public:
     // OUTPUT dal pipeline
@@ -26,17 +25,22 @@ public:
     std::vector<int> best_meta_labels;
 
     // DP + MCMC + Meta hyperparameters
-    double alpha_dp, lambda_appm;
-    int burn_in, samples;
-    double alpha_meta, delta_in, lambda_in, delta_out, theta_out;
+    double alpha_dp = 0.0, lambda_appm = 0.0;
+    int burn_in = 0, samples = 0;
+    double alpha_meta = 0.0, delta_in = 0.0, lambda_in = 0.0;
+    double delta_out = 0.0, theta_out = 0.0;
 
-    // Optional prior info
-    double mu0=0, kappa0=0, alpha0=0, beta0=0;
+    // Prior (solo Neal2)
+    bool has_conjugate_prior = false;
+    double mu0 = 0.0, kappa0 = 0.0, alpha0 = 0.0, beta0 = 0.0;
 
-    // Sampler usato
+    // Sampler
     SamplerType sampler_type;
 
-    // Global posteriors
+    // Meta info
+    int best_meta_iteration = -1;
+
+    // Global posteriors (lasciati invariati)
     std::map<int, ComponentParameter> global_posteriors;
 
 public:
@@ -51,14 +55,15 @@ public:
         double alpha_dp_, double lambda_appm_,
         int burn_in_, int samples_,
         double alpha_meta_, double delta_in_, double lambda_in_,
-        double delta_out_, double theta_out_
+        double delta_out_, double theta_out_,
+        int best_meta_iteration_,
+        bool has_conjugate_prior_ = false,
+        double mu0_ = 0.0, double kappa0_ = 0.0,
+        double alpha0_ = 0.0, double beta0_ = 0.0
     );
 
     void compute_global_posteriors_from_meta();
-
     void print_summary() const;
 };
 
-
-#endif //BAYESIANPIPELINEBASELINE_H
-
+#endif // BAYESIANPIPELINEBASELINE_H
