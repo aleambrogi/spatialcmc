@@ -13,6 +13,7 @@
 #include "ParallelDPMixture.h"
 #include "BayesianPipelineBaseline.h"
 #include <nlohmann/json.hpp>
+#include "MCMC/PoissonGammaModel.h"
 using json = nlohmann::json;
 
 // ------------------------------------------------------------
@@ -491,6 +492,17 @@ void test_Parallel_Mixture_with_MetaClustering()
 
     pipeline.print_summary();
 
+    // A. Ricostruiamo il vettore ordinato per l'export
+    std::vector<DataRow> sorted_rows_for_export;
+    for(const auto& shard : shards) {
+        for(const auto& row : shard) {
+            sorted_rows_for_export.push_back(row);
+        }
+    }
+
+    // B. Salviamo
+    pipeline.save_global_clustering_csv("FINAL_GLOBAL_CLUSTERING.csv", sorted_rows_for_export);
+    //pipeline.save_global_clustering_csv("FINAL_GLOBAL_CLUSTERING.csv");
 
     std::cout << "\n==================== END FULL PIPELINE TEST ====================\n";
 
@@ -678,8 +690,204 @@ void test_Parallel_Mixture_with_MetaClustering_Neal8_beta()
     false                      // <-- NON coniugata
     );
     pipeline.print_summary();
+
+    // Creiamo un vettore piatto dei dati riordinati come negli shard
+    std::vector<DataRow> sorted_rows_for_export;
+    for(const auto& shard : shards) {
+        for(const auto& row : shard) {
+            sorted_rows_for_export.push_back(row);
+        }
+    }
+
+    // Passiamo questo vettore alla funzione di salvataggio
+    // Nota: devi aggiornare la firma in BayesianPipelineBaseline.h/cpp per accettare questo vettore
+    // (Nel codice Step 2 ho già predisposto l'argomento opzionale const std::vector<DataRow>& original_data = {})
+
+    pipeline.save_global_clustering_csv("FINAL_GLOBAL_CLUSTERING.csv", sorted_rows_for_export);
+    //pipeline.save_global_clustering_csv("FINAL_GLOBAL_CLUSTERING.csv");
     std::cout << "\n==================== END FULL PIPELINE TEST (NEAL8 + BETA) ====================\n";
 
+    delete prior;
+}
+
+void test_PoissonGamma_DP() {
+    std::cout << "\n===== TEST: DP Mixture Model with Poisson-Gamma (Count Data) =====\n";
+
+    // 1. Generazione dati sintetici (Conteggi)
+    std::vector<double> data;
+    std::mt19937 gen(1234);
+
+    // Cluster 1: Lambda = 5 (conteggi bassi)
+    std::poisson_distribution<int> pois1(5);
+    for (int i = 0; i < 100; ++i) data.push_back(static_cast<double>(pois1(gen)));
+
+    // Cluster 2: Lambda = 20 (conteggi alti)
+    std::poisson_distribution<int> pois2(20);
+    for (int i = 0; i < 100; ++i) data.push_back(static_cast<double>(pois2(gen)));
+
+    std::cout << "Generated " << data.size() << " count observations.\n";
+    std::cout << "Cluster 1 True Lambda: 5, Cluster 2 True Lambda: 20.\n";
+
+    // 2. Definizione Prior
+    // Prior Gamma(alpha=2, beta=0.5). Media a priori = alpha/beta = 4. Varianza alta.
+    // beta basso => prior "piatta" (informativa debole)
+    IModelPrior* prior = new PoissonGammaModel(2.0, 0.5);
+
+    // 3. Modello DPMixture (Neal 2)
+    // Nota: Passiamo 'data' che è std::vector<double>, ma contiene interi.
+    double alpha_dp = 1.0;
+    DPMixtureModel model(alpha_dp, data, prior);
+
+    // 4. Esecuzione MCMC
+    std::cout << "Running MCMC (Poisson Likelihood)...\n";
+    model.run_mcmc(500, 1000); // 500 burn-in, 1000 samples
+
+    // 5. Risultati
+    const auto& index_star = model.opt_param_index_fast();
+    const auto& best_phi = model.samples_phi_c[index_star];
+    const auto& best_c = model.samples_c[index_star];
+
+    std::cout << "\nBest iteration index: " << index_star << "\n";
+    std::cout << "Estimated Clusters (Lambda):\n";
+    for (auto& kv : best_phi) {
+        // parameter[0] è il lambda stimato
+        std::cout << "Cluster " << kv.first
+                  << " -> Lambda estimated: " << kv.second.parameters[0]
+                  << " (Size: " << std::count(best_c.begin(), best_c.end(), kv.first) << ")\n";
+    }
+
+    delete prior;
+    std::cout << "===== END TEST =====\n";
+}
+
+void test_Parallel_Poisson_FullPipeline() {
+    std::cout << "\n==================== FULL PIPELINE TEST (POISSON - COUNT DATA) ====================\n";
+
+    // 1. GENERAZIONE DATI SINTETICI (Simuliamo lettura CSV)
+    // Creiamo 200 dati: 100 con lambda=5 (Shard A), 100 con lambda=50 (Shard B)
+    std::vector<DataRow> rows;
+    std::mt19937 gen(999);
+    std::poisson_distribution<int> p1(5);
+    std::poisson_distribution<int> p2(50);
+
+    // Shard A (Lambda 5)
+    for(int i=0; i<100; ++i) {
+        DataRow r;
+        r.global_index = i;
+        r.median_value = (double)p1(gen); // Il conteggio va in median_value
+        r.PROVINCIA = "SHARD_A";          // Fittizio per lo sharding
+        r.COMUNE = "Comune_" + std::to_string(i);
+        rows.push_back(r);
+    }
+    // Shard B (Lambda 50)
+    for(int i=0; i<100; ++i) {
+        DataRow r;
+        r.global_index = 100 + i;
+        r.median_value = (double)p2(gen);
+        r.PROVINCIA = "SHARD_B";
+        r.COMUNE = "Comune_" + std::to_string(100+i);
+        rows.push_back(r);
+    }
+
+    std::cout << "Generated " << rows.size() << " synthetic count data.\n";
+
+    // 2. SHARDING
+    Step1_Sharding::Sharding sharder(rows);
+    auto shards = sharder.generateShards("PROVINCIA");
+    std::cout << "Generated " << shards.size() << " shards based on synthetic PROVINCIA.\n";
+
+    // 3. PRIOR POISSON-GAMMA
+    // Prior poco informativa: Gamma(alpha=1, beta=0.1) -> Media 10, Varianza 100
+    IModelPrior* prior = new PoissonGammaModel(1.0, 0.1);
+
+    // 4. ADIACENZA (Fittizia: identità o vuota, dato che i dati sono sintetici e non spaziali)
+    // Creiamo un'adiacenza vuota per ogni shard (nessun vicino spaziale)
+    std::vector<std::vector<std::vector<int>>> adjacency_per_shard;
+    for(const auto& shard : shards) {
+        std::vector<std::vector<int>> adj(shard.size()); // vettori vuoti
+        adjacency_per_shard.push_back(adj);
+    }
+
+    // 5. PARALLEL MCMC
+    double alpha_dp = 1.0;
+    double lambda_appm = 0.0; // Disattiviamo influenza spaziale (dato che l'adj è vuota)
+    int burn_in = 200;
+    int sampling = 500;
+
+    ParallelDPMixture pdp(alpha_dp, shards, prior, adjacency_per_shard, lambda_appm);
+    pdp.run_parallel_mcmc(burn_in, sampling);
+
+    // 6. RACCOLTA RISULTATI LOCALI
+    const auto& best_c = pdp.get_best_clustering_per_chain();
+    const auto& best_phi = pdp.get_best_parameters_per_chain();
+
+    // 7. META-CLUSTERING (Consensus)
+    // Raccogliamo tutti i parametri Lambda trovati
+    std::vector<ComponentParameter> phi_data;
+    for (const auto& chain_phi : best_phi)
+        for (const auto& kv : chain_phi)
+            phi_data.push_back(kv.second);
+
+    int Q = phi_data.size();
+    std::cout << "Collected " << Q << " local Poisson parameters (Lambdas).\n";
+
+    // Calcolo matrice distanze D_phi
+    // Per Poisson, il parametro è uno scalare (Lambda).
+    // Usiamo semplicemente la differenza assoluta: |lambda1 - lambda2|
+    std::vector<std::vector<double>> D_phi(Q, std::vector<double>(Q, 0.0));
+    for (int i = 0; i < Q; ++i) {
+        for (int j = i + 1; j < Q; ++j) {
+            double lam1 = phi_data[i].parameters[0];
+            double lam2 = phi_data[j].parameters[0];
+            double dist = std::abs(lam1 - lam2); // Distanza semplice 1D
+            D_phi[i][j] = D_phi[j][i] = dist;
+        }
+    }
+
+    // Eseguiamo CohesionRepulsionDP sulla distanza dei Lambda
+    CohesionRepulsionDP phiDP(
+        1.0,   // alpha meta
+        D_phi,
+        0.5, 1.0,  // Cohesion (delta_in, lambda_in)
+        5.0, 1.0,  // Repulsion (delta_out, theta_out) - Parametri forti per separare 5 da 50
+        1234       // seed
+    );
+    phiDP.initialize_random(5);
+    phiDP.run_mcmc(200, 500);
+
+    int best_phi_idx = phiDP.best_sample_binder();
+    const auto& final_phi_labels = phiDP.get_samples_labels()[best_phi_idx];
+
+    // 8. PIPELINE & SALVATAGGIO CSV
+    BayesianPipelineBaseline pipeline;
+
+    pipeline.populate_from_pipeline(
+        best_c, best_phi, phi_data, final_phi_labels,
+        SamplerType::Neal2, // PoissonGamma è coniugato -> Neal2
+        alpha_dp, lambda_appm,
+        burn_in, sampling,
+        1.0, 0.5, 1.0, 5.0, 1.0, // Meta params
+        best_phi_idx,
+        true, // Coniugato = true
+        1.0, 0.1, 0.0, 0.0 // Prior params (alpha0, beta0 negli slot mu0, kappa0)
+    );
+
+    pipeline.print_summary();
+
+    // --- SALVATAGGIO CSV CON DATI ORIGINALI ---
+
+    // A. Ricostruiamo il vettore ordinato per l'export
+    std::vector<DataRow> sorted_rows_for_export;
+    for(const auto& shard : shards) {
+        for(const auto& row : shard) {
+            sorted_rows_for_export.push_back(row);
+        }
+    }
+
+    // B. Salviamo
+    pipeline.save_global_clustering_csv("FINAL_POISSON_CLUSTERING.csv", sorted_rows_for_export);
+
+    std::cout << "\n==================== END POISSON TEST ====================\n";
     delete prior;
 }
 
@@ -691,5 +899,7 @@ int main()
     //test_Parallel_DP_MixtureModel_with_APPM();
     test_Parallel_Mixture_with_MetaClustering();
     //test_Parallel_Mixture_with_MetaClustering_Neal8_beta();
+    //test_PoissonGamma_DP();
+    //test_Parallel_Poisson_FullPipeline();
     return 0;
 }

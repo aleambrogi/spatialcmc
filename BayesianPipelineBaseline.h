@@ -9,6 +9,8 @@
 #include <map>
 #include <iostream>
 #include "MCMC/IModelPrior.h"
+#include <string>
+#include "Step0/DataRow.h"
 
 // Tipo di sampler
 enum class SamplerType {
@@ -23,6 +25,7 @@ public:
     std::vector<std::map<int, ComponentParameter>> all_parameters;
     std::vector<ComponentParameter> phi_data;
     std::vector<int> best_meta_labels;
+    std::vector<std::vector<int>> global_assignments;
 
     // DP + MCMC + Meta hyperparameters
     double alpha_dp = 0.0, lambda_appm = 0.0;
@@ -64,6 +67,9 @@ public:
 
     void compute_global_posteriors_from_meta();
     void print_summary() const;
+    void save_global_clustering_csv(const std::string& filename, const std::vector<DataRow>& original_data );
+private:
+    void map_local_to_global();
 };
 
 #endif // BAYESIANPIPELINEBASELINE_H
