@@ -1,8 +1,3 @@
-//
-// Created by plakk on 18/12/2025.
-//
-
-
 #include "BayesianPipelineBaseline.h"
 #include <algorithm>
 #include <iostream>
@@ -53,6 +48,65 @@ void BayesianPipelineBaseline::populate_from_pipeline(
 
     compute_global_posteriors_from_meta();
     map_local_to_global();
+}
+
+
+std::map<int, int>
+BayesianPipelineBaseline::build_global_index_to_cluster_map(
+    const std::vector<std::vector<DataRow>>& shards) const
+{
+    std::map<int, int> global_map;
+
+    for (size_t s = 0; s < shards.size(); ++s) {
+        for (size_t i = 0; i < shards[s].size(); ++i) {
+
+            int global_idx = shards[s][i].global_index;
+            int global_c   = global_assignments[s][i];
+
+            global_map[global_idx] = global_c;
+        }
+    }
+
+    return global_map;
+}
+
+void BayesianPipelineBaseline::save_dataset_with_global_clusters(
+    const std::string& filename,
+    const std::vector<DataRow>& original_data,
+    const std::vector<std::vector<DataRow>>& shards
+) const
+{
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+        throw std::runtime_error("Cannot open output CSV: " + filename);
+    }
+
+    // Costruiamo la mappa global_index -> cluster
+    auto global_map = build_global_index_to_cluster_map(shards);
+
+    // Header
+    file << "GlobalIndex,PROVINCIA,COMUNE,Value,GlobalClusterID\n";
+
+    for (const auto& row : original_data) {
+
+        int global_idx = row.global_index;
+        int cluster_id = -1;
+
+        if (global_map.count(global_idx)) {
+            cluster_id = global_map.at(global_idx);
+        }
+
+        file << global_idx << ","
+             << "\"" << row.PROVINCIA << "\","
+             << "\"" << row.COMUNE << "\","
+             << row.median_value << ","
+             << cluster_id << "\n";
+    }
+
+    file.close();
+
+    std::cout << "Saved dataset with global clusters to "
+              << filename << "\n";
 }
 
 void BayesianPipelineBaseline::compute_global_posteriors_from_meta() {
@@ -210,4 +264,7 @@ void BayesianPipelineBaseline::save_global_clustering_csv(const std::string& fil
 
     std::cout << "Saved global clustering results to " << filename << "\n";
     file.close();
+
+
+
 }

@@ -35,17 +35,19 @@ set(SOURCES
         Step1_Sharding/Sharding.cpp
         Step1_Sharding/test_sharding.cpp
 
+        # ---- MCMC ----
         dataset_median.csv
         adjacency_list.json
         MCMC/aPPM_MixtureModel_Neal8.cpp
-        MCMC/aPPM_MixtureModel_Neal8.h
         MCMC/BetaNonConjugateModel.cpp
-        MCMC/BetaNonConjugateModel.h
-
-        BayesianPipelineBaseline.cpp
-        BayesianPipelineBaseline.h
         MCMC/PoissonGammaModel.cpp
-        MCMC/PoissonGammaModel.h
+
+        # ---- utils ----
+        utils/adjacency.cpp
+        utils/distances.cpp
+
+        # ---- output ----
+        output/BayesianPipelineBaseline.cpp
 )
 
 add_executable(NEAL_ALGORITHM ${SOURCES})
@@ -60,6 +62,8 @@ target_include_directories(NEAL_ALGORITHM PRIVATE
         "${PROJECT_SOURCE_DIR}/Step0"
         "${PROJECT_SOURCE_DIR}/Step1_Sharding"
         "${PROJECT_SOURCE_DIR}/external/nlohmann"
+        "${PROJECT_SOURCE_DIR}/output"
+        "${PROJECT_SOURCE_DIR}/utils"
         "C:/boost_1_89_0"
 )
 

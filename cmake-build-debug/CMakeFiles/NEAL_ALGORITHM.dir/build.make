@@ -43,19 +43,19 @@ cmake_force:
 SHELL = cmd.exe
 
 # The CMake executable.
-CMAKE_COMMAND = "C:\Users\plakk\AppData\Local\JetBrains\CLion 2024.2.1\bin\cmake\win\x64\bin\cmake.exe"
+CMAKE_COMMAND = "C:\Program Files\JetBrains\CLion 2024.2.1\bin\cmake\win\x64\bin\cmake.exe"
 
 # The command to remove a file.
-RM = "C:\Users\plakk\AppData\Local\JetBrains\CLion 2024.2.1\bin\cmake\win\x64\bin\cmake.exe" -E rm -f
+RM = "C:\Program Files\JetBrains\CLion 2024.2.1\bin\cmake\win\x64\bin\cmake.exe" -E rm -f
 
 # Escaping for special characters.
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = C:\Users\plakk\Desktop\Algortimi\spatialcmc
+CMAKE_SOURCE_DIR = C:\Users\samsung\Desktop\spatialcmc
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = C:\Users\plakk\Desktop\Algortimi\spatialcmc\cmake-build-debug
+CMAKE_BINARY_DIR = C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug
 
 # Include any dependencies generated for this target.
 include CMakeFiles/NEAL_ALGORITHM.dir/depend.make
@@ -70,183 +70,228 @@ include CMakeFiles/NEAL_ALGORITHM.dir/flags.make
 
 CMakeFiles/NEAL_ALGORITHM.dir/main.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/flags.make
 CMakeFiles/NEAL_ALGORITHM.dir/main.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/includes_CXX.rsp
-CMakeFiles/NEAL_ALGORITHM.dir/main.cpp.obj: C:/Users/plakk/Desktop/Algortimi/spatialcmc/main.cpp
+CMakeFiles/NEAL_ALGORITHM.dir/main.cpp.obj: C:/Users/samsung/Desktop/spatialcmc/main.cpp
 CMakeFiles/NEAL_ALGORITHM.dir/main.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\plakk\Desktop\Algortimi\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/main.cpp.obj"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/main.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\main.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\main.cpp.obj -c C:\Users\plakk\Desktop\Algortimi\spatialcmc\main.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/main.cpp.obj"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/main.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\main.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\main.cpp.obj -c C:\Users\samsung\Desktop\spatialcmc\main.cpp
 
 CMakeFiles/NEAL_ALGORITHM.dir/main.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/NEAL_ALGORITHM.dir/main.cpp.i"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\plakk\Desktop\Algortimi\spatialcmc\main.cpp > CMakeFiles\NEAL_ALGORITHM.dir\main.cpp.i
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\samsung\Desktop\spatialcmc\main.cpp > CMakeFiles\NEAL_ALGORITHM.dir\main.cpp.i
 
 CMakeFiles/NEAL_ALGORITHM.dir/main.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/NEAL_ALGORITHM.dir/main.cpp.s"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\plakk\Desktop\Algortimi\spatialcmc\main.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\main.cpp.s
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\samsung\Desktop\spatialcmc\main.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\main.cpp.s
 
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/DP_MixtureModel.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/flags.make
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/DP_MixtureModel.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/includes_CXX.rsp
-CMakeFiles/NEAL_ALGORITHM.dir/MCMC/DP_MixtureModel.cpp.obj: C:/Users/plakk/Desktop/Algortimi/spatialcmc/MCMC/DP_MixtureModel.cpp
+CMakeFiles/NEAL_ALGORITHM.dir/MCMC/DP_MixtureModel.cpp.obj: C:/Users/samsung/Desktop/spatialcmc/MCMC/DP_MixtureModel.cpp
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/DP_MixtureModel.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\plakk\Desktop\Algortimi\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/MCMC/DP_MixtureModel.cpp.obj"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/MCMC/DP_MixtureModel.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\MCMC\DP_MixtureModel.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\DP_MixtureModel.cpp.obj -c C:\Users\plakk\Desktop\Algortimi\spatialcmc\MCMC\DP_MixtureModel.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/MCMC/DP_MixtureModel.cpp.obj"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/MCMC/DP_MixtureModel.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\MCMC\DP_MixtureModel.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\DP_MixtureModel.cpp.obj -c C:\Users\samsung\Desktop\spatialcmc\MCMC\DP_MixtureModel.cpp
 
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/DP_MixtureModel.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/NEAL_ALGORITHM.dir/MCMC/DP_MixtureModel.cpp.i"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\plakk\Desktop\Algortimi\spatialcmc\MCMC\DP_MixtureModel.cpp > CMakeFiles\NEAL_ALGORITHM.dir\MCMC\DP_MixtureModel.cpp.i
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\samsung\Desktop\spatialcmc\MCMC\DP_MixtureModel.cpp > CMakeFiles\NEAL_ALGORITHM.dir\MCMC\DP_MixtureModel.cpp.i
 
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/DP_MixtureModel.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/NEAL_ALGORITHM.dir/MCMC/DP_MixtureModel.cpp.s"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\plakk\Desktop\Algortimi\spatialcmc\MCMC\DP_MixtureModel.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\DP_MixtureModel.cpp.s
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\samsung\Desktop\spatialcmc\MCMC\DP_MixtureModel.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\DP_MixtureModel.cpp.s
 
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/IModelPrior.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/flags.make
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/IModelPrior.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/includes_CXX.rsp
-CMakeFiles/NEAL_ALGORITHM.dir/MCMC/IModelPrior.cpp.obj: C:/Users/plakk/Desktop/Algortimi/spatialcmc/MCMC/IModelPrior.cpp
+CMakeFiles/NEAL_ALGORITHM.dir/MCMC/IModelPrior.cpp.obj: C:/Users/samsung/Desktop/spatialcmc/MCMC/IModelPrior.cpp
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/IModelPrior.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\plakk\Desktop\Algortimi\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/MCMC/IModelPrior.cpp.obj"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/MCMC/IModelPrior.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\MCMC\IModelPrior.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\IModelPrior.cpp.obj -c C:\Users\plakk\Desktop\Algortimi\spatialcmc\MCMC\IModelPrior.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/MCMC/IModelPrior.cpp.obj"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/MCMC/IModelPrior.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\MCMC\IModelPrior.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\IModelPrior.cpp.obj -c C:\Users\samsung\Desktop\spatialcmc\MCMC\IModelPrior.cpp
 
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/IModelPrior.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/NEAL_ALGORITHM.dir/MCMC/IModelPrior.cpp.i"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\plakk\Desktop\Algortimi\spatialcmc\MCMC\IModelPrior.cpp > CMakeFiles\NEAL_ALGORITHM.dir\MCMC\IModelPrior.cpp.i
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\samsung\Desktop\spatialcmc\MCMC\IModelPrior.cpp > CMakeFiles\NEAL_ALGORITHM.dir\MCMC\IModelPrior.cpp.i
 
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/IModelPrior.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/NEAL_ALGORITHM.dir/MCMC/IModelPrior.cpp.s"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\plakk\Desktop\Algortimi\spatialcmc\MCMC\IModelPrior.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\IModelPrior.cpp.s
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\samsung\Desktop\spatialcmc\MCMC\IModelPrior.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\IModelPrior.cpp.s
 
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/flags.make
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/includes_CXX.rsp
-CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel.cpp.obj: C:/Users/plakk/Desktop/Algortimi/spatialcmc/MCMC/aPPM_MixtureModel.cpp
+CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel.cpp.obj: C:/Users/samsung/Desktop/spatialcmc/MCMC/aPPM_MixtureModel.cpp
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\plakk\Desktop\Algortimi\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel.cpp.obj"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\MCMC\aPPM_MixtureModel.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\aPPM_MixtureModel.cpp.obj -c C:\Users\plakk\Desktop\Algortimi\spatialcmc\MCMC\aPPM_MixtureModel.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel.cpp.obj"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\MCMC\aPPM_MixtureModel.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\aPPM_MixtureModel.cpp.obj -c C:\Users\samsung\Desktop\spatialcmc\MCMC\aPPM_MixtureModel.cpp
 
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel.cpp.i"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\plakk\Desktop\Algortimi\spatialcmc\MCMC\aPPM_MixtureModel.cpp > CMakeFiles\NEAL_ALGORITHM.dir\MCMC\aPPM_MixtureModel.cpp.i
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\samsung\Desktop\spatialcmc\MCMC\aPPM_MixtureModel.cpp > CMakeFiles\NEAL_ALGORITHM.dir\MCMC\aPPM_MixtureModel.cpp.i
 
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel.cpp.s"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\plakk\Desktop\Algortimi\spatialcmc\MCMC\aPPM_MixtureModel.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\aPPM_MixtureModel.cpp.s
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\samsung\Desktop\spatialcmc\MCMC\aPPM_MixtureModel.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\aPPM_MixtureModel.cpp.s
 
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/ParallelDPMixture.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/flags.make
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/ParallelDPMixture.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/includes_CXX.rsp
-CMakeFiles/NEAL_ALGORITHM.dir/MCMC/ParallelDPMixture.cpp.obj: C:/Users/plakk/Desktop/Algortimi/spatialcmc/MCMC/ParallelDPMixture.cpp
+CMakeFiles/NEAL_ALGORITHM.dir/MCMC/ParallelDPMixture.cpp.obj: C:/Users/samsung/Desktop/spatialcmc/MCMC/ParallelDPMixture.cpp
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/ParallelDPMixture.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\plakk\Desktop\Algortimi\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/MCMC/ParallelDPMixture.cpp.obj"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/MCMC/ParallelDPMixture.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\MCMC\ParallelDPMixture.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\ParallelDPMixture.cpp.obj -c C:\Users\plakk\Desktop\Algortimi\spatialcmc\MCMC\ParallelDPMixture.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/MCMC/ParallelDPMixture.cpp.obj"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/MCMC/ParallelDPMixture.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\MCMC\ParallelDPMixture.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\ParallelDPMixture.cpp.obj -c C:\Users\samsung\Desktop\spatialcmc\MCMC\ParallelDPMixture.cpp
 
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/ParallelDPMixture.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/NEAL_ALGORITHM.dir/MCMC/ParallelDPMixture.cpp.i"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\plakk\Desktop\Algortimi\spatialcmc\MCMC\ParallelDPMixture.cpp > CMakeFiles\NEAL_ALGORITHM.dir\MCMC\ParallelDPMixture.cpp.i
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\samsung\Desktop\spatialcmc\MCMC\ParallelDPMixture.cpp > CMakeFiles\NEAL_ALGORITHM.dir\MCMC\ParallelDPMixture.cpp.i
 
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/ParallelDPMixture.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/NEAL_ALGORITHM.dir/MCMC/ParallelDPMixture.cpp.s"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\plakk\Desktop\Algortimi\spatialcmc\MCMC\ParallelDPMixture.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\ParallelDPMixture.cpp.s
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\samsung\Desktop\spatialcmc\MCMC\ParallelDPMixture.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\ParallelDPMixture.cpp.s
 
 CMakeFiles/NEAL_ALGORITHM.dir/Consensus/CohesionRepulsionDP.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/flags.make
 CMakeFiles/NEAL_ALGORITHM.dir/Consensus/CohesionRepulsionDP.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/includes_CXX.rsp
-CMakeFiles/NEAL_ALGORITHM.dir/Consensus/CohesionRepulsionDP.cpp.obj: C:/Users/plakk/Desktop/Algortimi/spatialcmc/Consensus/CohesionRepulsionDP.cpp
+CMakeFiles/NEAL_ALGORITHM.dir/Consensus/CohesionRepulsionDP.cpp.obj: C:/Users/samsung/Desktop/spatialcmc/Consensus/CohesionRepulsionDP.cpp
 CMakeFiles/NEAL_ALGORITHM.dir/Consensus/CohesionRepulsionDP.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\plakk\Desktop\Algortimi\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/Consensus/CohesionRepulsionDP.cpp.obj"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/Consensus/CohesionRepulsionDP.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\Consensus\CohesionRepulsionDP.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\Consensus\CohesionRepulsionDP.cpp.obj -c C:\Users\plakk\Desktop\Algortimi\spatialcmc\Consensus\CohesionRepulsionDP.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/Consensus/CohesionRepulsionDP.cpp.obj"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/Consensus/CohesionRepulsionDP.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\Consensus\CohesionRepulsionDP.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\Consensus\CohesionRepulsionDP.cpp.obj -c C:\Users\samsung\Desktop\spatialcmc\Consensus\CohesionRepulsionDP.cpp
 
 CMakeFiles/NEAL_ALGORITHM.dir/Consensus/CohesionRepulsionDP.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/NEAL_ALGORITHM.dir/Consensus/CohesionRepulsionDP.cpp.i"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\plakk\Desktop\Algortimi\spatialcmc\Consensus\CohesionRepulsionDP.cpp > CMakeFiles\NEAL_ALGORITHM.dir\Consensus\CohesionRepulsionDP.cpp.i
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\samsung\Desktop\spatialcmc\Consensus\CohesionRepulsionDP.cpp > CMakeFiles\NEAL_ALGORITHM.dir\Consensus\CohesionRepulsionDP.cpp.i
 
 CMakeFiles/NEAL_ALGORITHM.dir/Consensus/CohesionRepulsionDP.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/NEAL_ALGORITHM.dir/Consensus/CohesionRepulsionDP.cpp.s"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\plakk\Desktop\Algortimi\spatialcmc\Consensus\CohesionRepulsionDP.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\Consensus\CohesionRepulsionDP.cpp.s
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\samsung\Desktop\spatialcmc\Consensus\CohesionRepulsionDP.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\Consensus\CohesionRepulsionDP.cpp.s
 
 CMakeFiles/NEAL_ALGORITHM.dir/Step0/CSVLoader.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/flags.make
 CMakeFiles/NEAL_ALGORITHM.dir/Step0/CSVLoader.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/includes_CXX.rsp
-CMakeFiles/NEAL_ALGORITHM.dir/Step0/CSVLoader.cpp.obj: C:/Users/plakk/Desktop/Algortimi/spatialcmc/Step0/CSVLoader.cpp
+CMakeFiles/NEAL_ALGORITHM.dir/Step0/CSVLoader.cpp.obj: C:/Users/samsung/Desktop/spatialcmc/Step0/CSVLoader.cpp
 CMakeFiles/NEAL_ALGORITHM.dir/Step0/CSVLoader.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\plakk\Desktop\Algortimi\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/Step0/CSVLoader.cpp.obj"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/Step0/CSVLoader.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\Step0\CSVLoader.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\Step0\CSVLoader.cpp.obj -c C:\Users\plakk\Desktop\Algortimi\spatialcmc\Step0\CSVLoader.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/Step0/CSVLoader.cpp.obj"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/Step0/CSVLoader.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\Step0\CSVLoader.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\Step0\CSVLoader.cpp.obj -c C:\Users\samsung\Desktop\spatialcmc\Step0\CSVLoader.cpp
 
 CMakeFiles/NEAL_ALGORITHM.dir/Step0/CSVLoader.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/NEAL_ALGORITHM.dir/Step0/CSVLoader.cpp.i"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\plakk\Desktop\Algortimi\spatialcmc\Step0\CSVLoader.cpp > CMakeFiles\NEAL_ALGORITHM.dir\Step0\CSVLoader.cpp.i
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\samsung\Desktop\spatialcmc\Step0\CSVLoader.cpp > CMakeFiles\NEAL_ALGORITHM.dir\Step0\CSVLoader.cpp.i
 
 CMakeFiles/NEAL_ALGORITHM.dir/Step0/CSVLoader.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/NEAL_ALGORITHM.dir/Step0/CSVLoader.cpp.s"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\plakk\Desktop\Algortimi\spatialcmc\Step0\CSVLoader.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\Step0\CSVLoader.cpp.s
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\samsung\Desktop\spatialcmc\Step0\CSVLoader.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\Step0\CSVLoader.cpp.s
 
 CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/Sharding.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/flags.make
 CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/Sharding.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/includes_CXX.rsp
-CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/Sharding.cpp.obj: C:/Users/plakk/Desktop/Algortimi/spatialcmc/Step1_Sharding/Sharding.cpp
+CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/Sharding.cpp.obj: C:/Users/samsung/Desktop/spatialcmc/Step1_Sharding/Sharding.cpp
 CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/Sharding.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\plakk\Desktop\Algortimi\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/Sharding.cpp.obj"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/Sharding.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\Step1_Sharding\Sharding.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\Step1_Sharding\Sharding.cpp.obj -c C:\Users\plakk\Desktop\Algortimi\spatialcmc\Step1_Sharding\Sharding.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/Sharding.cpp.obj"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/Sharding.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\Step1_Sharding\Sharding.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\Step1_Sharding\Sharding.cpp.obj -c C:\Users\samsung\Desktop\spatialcmc\Step1_Sharding\Sharding.cpp
 
 CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/Sharding.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/Sharding.cpp.i"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\plakk\Desktop\Algortimi\spatialcmc\Step1_Sharding\Sharding.cpp > CMakeFiles\NEAL_ALGORITHM.dir\Step1_Sharding\Sharding.cpp.i
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\samsung\Desktop\spatialcmc\Step1_Sharding\Sharding.cpp > CMakeFiles\NEAL_ALGORITHM.dir\Step1_Sharding\Sharding.cpp.i
 
 CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/Sharding.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/Sharding.cpp.s"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\plakk\Desktop\Algortimi\spatialcmc\Step1_Sharding\Sharding.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\Step1_Sharding\Sharding.cpp.s
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\samsung\Desktop\spatialcmc\Step1_Sharding\Sharding.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\Step1_Sharding\Sharding.cpp.s
 
 CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/test_sharding.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/flags.make
 CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/test_sharding.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/includes_CXX.rsp
-CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/test_sharding.cpp.obj: C:/Users/plakk/Desktop/Algortimi/spatialcmc/Step1_Sharding/test_sharding.cpp
+CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/test_sharding.cpp.obj: C:/Users/samsung/Desktop/spatialcmc/Step1_Sharding/test_sharding.cpp
 CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/test_sharding.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\plakk\Desktop\Algortimi\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/test_sharding.cpp.obj"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/test_sharding.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\Step1_Sharding\test_sharding.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\Step1_Sharding\test_sharding.cpp.obj -c C:\Users\plakk\Desktop\Algortimi\spatialcmc\Step1_Sharding\test_sharding.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/test_sharding.cpp.obj"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/test_sharding.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\Step1_Sharding\test_sharding.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\Step1_Sharding\test_sharding.cpp.obj -c C:\Users\samsung\Desktop\spatialcmc\Step1_Sharding\test_sharding.cpp
 
 CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/test_sharding.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/test_sharding.cpp.i"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\plakk\Desktop\Algortimi\spatialcmc\Step1_Sharding\test_sharding.cpp > CMakeFiles\NEAL_ALGORITHM.dir\Step1_Sharding\test_sharding.cpp.i
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\samsung\Desktop\spatialcmc\Step1_Sharding\test_sharding.cpp > CMakeFiles\NEAL_ALGORITHM.dir\Step1_Sharding\test_sharding.cpp.i
 
 CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/test_sharding.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/test_sharding.cpp.s"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\plakk\Desktop\Algortimi\spatialcmc\Step1_Sharding\test_sharding.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\Step1_Sharding\test_sharding.cpp.s
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\samsung\Desktop\spatialcmc\Step1_Sharding\test_sharding.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\Step1_Sharding\test_sharding.cpp.s
 
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel_Neal8.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/flags.make
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel_Neal8.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/includes_CXX.rsp
-CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel_Neal8.cpp.obj: C:/Users/plakk/Desktop/Algortimi/spatialcmc/MCMC/aPPM_MixtureModel_Neal8.cpp
+CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel_Neal8.cpp.obj: C:/Users/samsung/Desktop/spatialcmc/MCMC/aPPM_MixtureModel_Neal8.cpp
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel_Neal8.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\plakk\Desktop\Algortimi\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel_Neal8.cpp.obj"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel_Neal8.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\MCMC\aPPM_MixtureModel_Neal8.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\aPPM_MixtureModel_Neal8.cpp.obj -c C:\Users\plakk\Desktop\Algortimi\spatialcmc\MCMC\aPPM_MixtureModel_Neal8.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel_Neal8.cpp.obj"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel_Neal8.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\MCMC\aPPM_MixtureModel_Neal8.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\aPPM_MixtureModel_Neal8.cpp.obj -c C:\Users\samsung\Desktop\spatialcmc\MCMC\aPPM_MixtureModel_Neal8.cpp
 
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel_Neal8.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel_Neal8.cpp.i"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\plakk\Desktop\Algortimi\spatialcmc\MCMC\aPPM_MixtureModel_Neal8.cpp > CMakeFiles\NEAL_ALGORITHM.dir\MCMC\aPPM_MixtureModel_Neal8.cpp.i
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\samsung\Desktop\spatialcmc\MCMC\aPPM_MixtureModel_Neal8.cpp > CMakeFiles\NEAL_ALGORITHM.dir\MCMC\aPPM_MixtureModel_Neal8.cpp.i
 
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel_Neal8.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel_Neal8.cpp.s"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\plakk\Desktop\Algortimi\spatialcmc\MCMC\aPPM_MixtureModel_Neal8.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\aPPM_MixtureModel_Neal8.cpp.s
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\samsung\Desktop\spatialcmc\MCMC\aPPM_MixtureModel_Neal8.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\aPPM_MixtureModel_Neal8.cpp.s
 
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/BetaNonConjugateModel.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/flags.make
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/BetaNonConjugateModel.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/includes_CXX.rsp
-CMakeFiles/NEAL_ALGORITHM.dir/MCMC/BetaNonConjugateModel.cpp.obj: C:/Users/plakk/Desktop/Algortimi/spatialcmc/MCMC/BetaNonConjugateModel.cpp
+CMakeFiles/NEAL_ALGORITHM.dir/MCMC/BetaNonConjugateModel.cpp.obj: C:/Users/samsung/Desktop/spatialcmc/MCMC/BetaNonConjugateModel.cpp
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/BetaNonConjugateModel.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\plakk\Desktop\Algortimi\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/MCMC/BetaNonConjugateModel.cpp.obj"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/MCMC/BetaNonConjugateModel.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\MCMC\BetaNonConjugateModel.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\BetaNonConjugateModel.cpp.obj -c C:\Users\plakk\Desktop\Algortimi\spatialcmc\MCMC\BetaNonConjugateModel.cpp
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/MCMC/BetaNonConjugateModel.cpp.obj"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/MCMC/BetaNonConjugateModel.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\MCMC\BetaNonConjugateModel.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\BetaNonConjugateModel.cpp.obj -c C:\Users\samsung\Desktop\spatialcmc\MCMC\BetaNonConjugateModel.cpp
 
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/BetaNonConjugateModel.cpp.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/NEAL_ALGORITHM.dir/MCMC/BetaNonConjugateModel.cpp.i"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\plakk\Desktop\Algortimi\spatialcmc\MCMC\BetaNonConjugateModel.cpp > CMakeFiles\NEAL_ALGORITHM.dir\MCMC\BetaNonConjugateModel.cpp.i
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\samsung\Desktop\spatialcmc\MCMC\BetaNonConjugateModel.cpp > CMakeFiles\NEAL_ALGORITHM.dir\MCMC\BetaNonConjugateModel.cpp.i
 
 CMakeFiles/NEAL_ALGORITHM.dir/MCMC/BetaNonConjugateModel.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/NEAL_ALGORITHM.dir/MCMC/BetaNonConjugateModel.cpp.s"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\plakk\Desktop\Algortimi\spatialcmc\MCMC\BetaNonConjugateModel.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\BetaNonConjugateModel.cpp.s
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\samsung\Desktop\spatialcmc\MCMC\BetaNonConjugateModel.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\BetaNonConjugateModel.cpp.s
 
-CMakeFiles/NEAL_ALGORITHM.dir/BayesianPipelineBaseline.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/flags.make
-CMakeFiles/NEAL_ALGORITHM.dir/BayesianPipelineBaseline.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/includes_CXX.rsp
-CMakeFiles/NEAL_ALGORITHM.dir/BayesianPipelineBaseline.cpp.obj: C:/Users/plakk/Desktop/Algortimi/spatialcmc/BayesianPipelineBaseline.cpp
-CMakeFiles/NEAL_ALGORITHM.dir/BayesianPipelineBaseline.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\plakk\Desktop\Algortimi\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/BayesianPipelineBaseline.cpp.obj"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/BayesianPipelineBaseline.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\BayesianPipelineBaseline.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\BayesianPipelineBaseline.cpp.obj -c C:\Users\plakk\Desktop\Algortimi\spatialcmc\BayesianPipelineBaseline.cpp
+CMakeFiles/NEAL_ALGORITHM.dir/MCMC/PoissonGammaModel.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/flags.make
+CMakeFiles/NEAL_ALGORITHM.dir/MCMC/PoissonGammaModel.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/includes_CXX.rsp
+CMakeFiles/NEAL_ALGORITHM.dir/MCMC/PoissonGammaModel.cpp.obj: C:/Users/samsung/Desktop/spatialcmc/MCMC/PoissonGammaModel.cpp
+CMakeFiles/NEAL_ALGORITHM.dir/MCMC/PoissonGammaModel.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/MCMC/PoissonGammaModel.cpp.obj"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/MCMC/PoissonGammaModel.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\MCMC\PoissonGammaModel.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\PoissonGammaModel.cpp.obj -c C:\Users\samsung\Desktop\spatialcmc\MCMC\PoissonGammaModel.cpp
 
-CMakeFiles/NEAL_ALGORITHM.dir/BayesianPipelineBaseline.cpp.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/NEAL_ALGORITHM.dir/BayesianPipelineBaseline.cpp.i"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\plakk\Desktop\Algortimi\spatialcmc\BayesianPipelineBaseline.cpp > CMakeFiles\NEAL_ALGORITHM.dir\BayesianPipelineBaseline.cpp.i
+CMakeFiles/NEAL_ALGORITHM.dir/MCMC/PoissonGammaModel.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/NEAL_ALGORITHM.dir/MCMC/PoissonGammaModel.cpp.i"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\samsung\Desktop\spatialcmc\MCMC\PoissonGammaModel.cpp > CMakeFiles\NEAL_ALGORITHM.dir\MCMC\PoissonGammaModel.cpp.i
 
-CMakeFiles/NEAL_ALGORITHM.dir/BayesianPipelineBaseline.cpp.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/NEAL_ALGORITHM.dir/BayesianPipelineBaseline.cpp.s"
-	C:\Users\plakk\AppData\Local\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\plakk\Desktop\Algortimi\spatialcmc\BayesianPipelineBaseline.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\BayesianPipelineBaseline.cpp.s
+CMakeFiles/NEAL_ALGORITHM.dir/MCMC/PoissonGammaModel.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/NEAL_ALGORITHM.dir/MCMC/PoissonGammaModel.cpp.s"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\samsung\Desktop\spatialcmc\MCMC\PoissonGammaModel.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\MCMC\PoissonGammaModel.cpp.s
+
+CMakeFiles/NEAL_ALGORITHM.dir/utils/adjacency.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/flags.make
+CMakeFiles/NEAL_ALGORITHM.dir/utils/adjacency.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/includes_CXX.rsp
+CMakeFiles/NEAL_ALGORITHM.dir/utils/adjacency.cpp.obj: C:/Users/samsung/Desktop/spatialcmc/utils/adjacency.cpp
+CMakeFiles/NEAL_ALGORITHM.dir/utils/adjacency.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/utils/adjacency.cpp.obj"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/utils/adjacency.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\utils\adjacency.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\utils\adjacency.cpp.obj -c C:\Users\samsung\Desktop\spatialcmc\utils\adjacency.cpp
+
+CMakeFiles/NEAL_ALGORITHM.dir/utils/adjacency.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/NEAL_ALGORITHM.dir/utils/adjacency.cpp.i"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\samsung\Desktop\spatialcmc\utils\adjacency.cpp > CMakeFiles\NEAL_ALGORITHM.dir\utils\adjacency.cpp.i
+
+CMakeFiles/NEAL_ALGORITHM.dir/utils/adjacency.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/NEAL_ALGORITHM.dir/utils/adjacency.cpp.s"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\samsung\Desktop\spatialcmc\utils\adjacency.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\utils\adjacency.cpp.s
+
+CMakeFiles/NEAL_ALGORITHM.dir/utils/distances.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/flags.make
+CMakeFiles/NEAL_ALGORITHM.dir/utils/distances.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/includes_CXX.rsp
+CMakeFiles/NEAL_ALGORITHM.dir/utils/distances.cpp.obj: C:/Users/samsung/Desktop/spatialcmc/utils/distances.cpp
+CMakeFiles/NEAL_ALGORITHM.dir/utils/distances.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_14) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/utils/distances.cpp.obj"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/utils/distances.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\utils\distances.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\utils\distances.cpp.obj -c C:\Users\samsung\Desktop\spatialcmc\utils\distances.cpp
+
+CMakeFiles/NEAL_ALGORITHM.dir/utils/distances.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/NEAL_ALGORITHM.dir/utils/distances.cpp.i"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\samsung\Desktop\spatialcmc\utils\distances.cpp > CMakeFiles\NEAL_ALGORITHM.dir\utils\distances.cpp.i
+
+CMakeFiles/NEAL_ALGORITHM.dir/utils/distances.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/NEAL_ALGORITHM.dir/utils/distances.cpp.s"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\samsung\Desktop\spatialcmc\utils\distances.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\utils\distances.cpp.s
+
+CMakeFiles/NEAL_ALGORITHM.dir/output/BayesianPipelineBaseline.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/flags.make
+CMakeFiles/NEAL_ALGORITHM.dir/output/BayesianPipelineBaseline.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/includes_CXX.rsp
+CMakeFiles/NEAL_ALGORITHM.dir/output/BayesianPipelineBaseline.cpp.obj: C:/Users/samsung/Desktop/spatialcmc/output/BayesianPipelineBaseline.cpp
+CMakeFiles/NEAL_ALGORITHM.dir/output/BayesianPipelineBaseline.cpp.obj: CMakeFiles/NEAL_ALGORITHM.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_15) "Building CXX object CMakeFiles/NEAL_ALGORITHM.dir/output/BayesianPipelineBaseline.cpp.obj"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/NEAL_ALGORITHM.dir/output/BayesianPipelineBaseline.cpp.obj -MF CMakeFiles\NEAL_ALGORITHM.dir\output\BayesianPipelineBaseline.cpp.obj.d -o CMakeFiles\NEAL_ALGORITHM.dir\output\BayesianPipelineBaseline.cpp.obj -c C:\Users\samsung\Desktop\spatialcmc\output\BayesianPipelineBaseline.cpp
+
+CMakeFiles/NEAL_ALGORITHM.dir/output/BayesianPipelineBaseline.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/NEAL_ALGORITHM.dir/output/BayesianPipelineBaseline.cpp.i"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E C:\Users\samsung\Desktop\spatialcmc\output\BayesianPipelineBaseline.cpp > CMakeFiles\NEAL_ALGORITHM.dir\output\BayesianPipelineBaseline.cpp.i
+
+CMakeFiles/NEAL_ALGORITHM.dir/output/BayesianPipelineBaseline.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/NEAL_ALGORITHM.dir/output/BayesianPipelineBaseline.cpp.s"
+	C:\PROGRA~1\JETBRA~1\CLION2~1.1\bin\mingw\bin\G__~1.EXE $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S C:\Users\samsung\Desktop\spatialcmc\output\BayesianPipelineBaseline.cpp -o CMakeFiles\NEAL_ALGORITHM.dir\output\BayesianPipelineBaseline.cpp.s
 
 # Object files for target NEAL_ALGORITHM
 NEAL_ALGORITHM_OBJECTS = \
@@ -261,7 +306,10 @@ NEAL_ALGORITHM_OBJECTS = \
 "CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/test_sharding.cpp.obj" \
 "CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel_Neal8.cpp.obj" \
 "CMakeFiles/NEAL_ALGORITHM.dir/MCMC/BetaNonConjugateModel.cpp.obj" \
-"CMakeFiles/NEAL_ALGORITHM.dir/BayesianPipelineBaseline.cpp.obj"
+"CMakeFiles/NEAL_ALGORITHM.dir/MCMC/PoissonGammaModel.cpp.obj" \
+"CMakeFiles/NEAL_ALGORITHM.dir/utils/adjacency.cpp.obj" \
+"CMakeFiles/NEAL_ALGORITHM.dir/utils/distances.cpp.obj" \
+"CMakeFiles/NEAL_ALGORITHM.dir/output/BayesianPipelineBaseline.cpp.obj"
 
 # External object files for target NEAL_ALGORITHM
 NEAL_ALGORITHM_EXTERNAL_OBJECTS =
@@ -277,12 +325,15 @@ NEAL_ALGORITHM.exe: CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/Sharding.cpp.ob
 NEAL_ALGORITHM.exe: CMakeFiles/NEAL_ALGORITHM.dir/Step1_Sharding/test_sharding.cpp.obj
 NEAL_ALGORITHM.exe: CMakeFiles/NEAL_ALGORITHM.dir/MCMC/aPPM_MixtureModel_Neal8.cpp.obj
 NEAL_ALGORITHM.exe: CMakeFiles/NEAL_ALGORITHM.dir/MCMC/BetaNonConjugateModel.cpp.obj
-NEAL_ALGORITHM.exe: CMakeFiles/NEAL_ALGORITHM.dir/BayesianPipelineBaseline.cpp.obj
+NEAL_ALGORITHM.exe: CMakeFiles/NEAL_ALGORITHM.dir/MCMC/PoissonGammaModel.cpp.obj
+NEAL_ALGORITHM.exe: CMakeFiles/NEAL_ALGORITHM.dir/utils/adjacency.cpp.obj
+NEAL_ALGORITHM.exe: CMakeFiles/NEAL_ALGORITHM.dir/utils/distances.cpp.obj
+NEAL_ALGORITHM.exe: CMakeFiles/NEAL_ALGORITHM.dir/output/BayesianPipelineBaseline.cpp.obj
 NEAL_ALGORITHM.exe: CMakeFiles/NEAL_ALGORITHM.dir/build.make
 NEAL_ALGORITHM.exe: CMakeFiles/NEAL_ALGORITHM.dir/linkLibs.rsp
 NEAL_ALGORITHM.exe: CMakeFiles/NEAL_ALGORITHM.dir/objects1.rsp
 NEAL_ALGORITHM.exe: CMakeFiles/NEAL_ALGORITHM.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=C:\Users\plakk\Desktop\Algortimi\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_13) "Linking CXX executable NEAL_ALGORITHM.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles --progress-num=$(CMAKE_PROGRESS_16) "Linking CXX executable NEAL_ALGORITHM.exe"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\NEAL_ALGORITHM.dir\link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -294,6 +345,6 @@ CMakeFiles/NEAL_ALGORITHM.dir/clean:
 .PHONY : CMakeFiles/NEAL_ALGORITHM.dir/clean
 
 CMakeFiles/NEAL_ALGORITHM.dir/depend:
-	$(CMAKE_COMMAND) -E cmake_depends "MinGW Makefiles" C:\Users\plakk\Desktop\Algortimi\spatialcmc C:\Users\plakk\Desktop\Algortimi\spatialcmc C:\Users\plakk\Desktop\Algortimi\spatialcmc\cmake-build-debug C:\Users\plakk\Desktop\Algortimi\spatialcmc\cmake-build-debug C:\Users\plakk\Desktop\Algortimi\spatialcmc\cmake-build-debug\CMakeFiles\NEAL_ALGORITHM.dir\DependInfo.cmake "--color=$(COLOR)"
+	$(CMAKE_COMMAND) -E cmake_depends "MinGW Makefiles" C:\Users\samsung\Desktop\spatialcmc C:\Users\samsung\Desktop\spatialcmc C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles\NEAL_ALGORITHM.dir\DependInfo.cmake "--color=$(COLOR)"
 .PHONY : CMakeFiles/NEAL_ALGORITHM.dir/depend
 

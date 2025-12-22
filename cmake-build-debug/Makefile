@@ -47,19 +47,19 @@ cmake_force:
 SHELL = cmd.exe
 
 # The CMake executable.
-CMAKE_COMMAND = "C:\Users\plakk\AppData\Local\JetBrains\CLion 2024.2.1\bin\cmake\win\x64\bin\cmake.exe"
+CMAKE_COMMAND = "C:\Program Files\JetBrains\CLion 2024.2.1\bin\cmake\win\x64\bin\cmake.exe"
 
 # The command to remove a file.
-RM = "C:\Users\plakk\AppData\Local\JetBrains\CLion 2024.2.1\bin\cmake\win\x64\bin\cmake.exe" -E rm -f
+RM = "C:\Program Files\JetBrains\CLion 2024.2.1\bin\cmake\win\x64\bin\cmake.exe" -E rm -f
 
 # Escaping for special characters.
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = C:\Users\plakk\Desktop\Algortimi\spatialcmc
+CMAKE_SOURCE_DIR = C:\Users\samsung\Desktop\spatialcmc
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = C:\Users\plakk\Desktop\Algortimi\spatialcmc\cmake-build-debug
+CMAKE_BINARY_DIR = C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -67,7 +67,7 @@ CMAKE_BINARY_DIR = C:\Users\plakk\Desktop\Algortimi\spatialcmc\cmake-build-debug
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "No interactive CMake dialog available..."
-	"C:\Users\plakk\AppData\Local\JetBrains\CLion 2024.2.1\bin\cmake\win\x64\bin\cmake.exe" -E echo "No interactive CMake dialog available."
+	"C:\Program Files\JetBrains\CLion 2024.2.1\bin\cmake\win\x64\bin\cmake.exe" -E echo "No interactive CMake dialog available."
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -77,7 +77,7 @@ edit_cache/fast: edit_cache
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --cyan "Running CMake to regenerate build system..."
-	"C:\Users\plakk\AppData\Local\JetBrains\CLion 2024.2.1\bin\cmake\win\x64\bin\cmake.exe" --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	"C:\Program Files\JetBrains\CLion 2024.2.1\bin\cmake\win\x64\bin\cmake.exe" --regenerate-during-build -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : rebuild_cache
 
 # Special rule for the target rebuild_cache
@@ -86,9 +86,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\plakk\Desktop\Algortimi\spatialcmc\cmake-build-debug\CMakeFiles C:\Users\plakk\Desktop\Algortimi\spatialcmc\cmake-build-debug\\CMakeFiles\progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\\CMakeFiles\progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\plakk\Desktop\Algortimi\spatialcmc\cmake-build-debug\CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start C:\Users\samsung\Desktop\spatialcmc\cmake-build-debug\CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -127,30 +127,6 @@ NEAL_ALGORITHM: cmake_check_build_system
 NEAL_ALGORITHM/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/build
 .PHONY : NEAL_ALGORITHM/fast
-
-BayesianPipelineBaseline.obj: BayesianPipelineBaseline.cpp.obj
-.PHONY : BayesianPipelineBaseline.obj
-
-# target to build an object file
-BayesianPipelineBaseline.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/BayesianPipelineBaseline.cpp.obj
-.PHONY : BayesianPipelineBaseline.cpp.obj
-
-BayesianPipelineBaseline.i: BayesianPipelineBaseline.cpp.i
-.PHONY : BayesianPipelineBaseline.i
-
-# target to preprocess a source file
-BayesianPipelineBaseline.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/BayesianPipelineBaseline.cpp.i
-.PHONY : BayesianPipelineBaseline.cpp.i
-
-BayesianPipelineBaseline.s: BayesianPipelineBaseline.cpp.s
-.PHONY : BayesianPipelineBaseline.s
-
-# target to generate assembly for a file
-BayesianPipelineBaseline.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/BayesianPipelineBaseline.cpp.s
-.PHONY : BayesianPipelineBaseline.cpp.s
 
 Consensus/CohesionRepulsionDP.obj: Consensus/CohesionRepulsionDP.cpp.obj
 .PHONY : Consensus/CohesionRepulsionDP.obj
@@ -271,6 +247,30 @@ MCMC/ParallelDPMixture.s: MCMC/ParallelDPMixture.cpp.s
 MCMC/ParallelDPMixture.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/MCMC/ParallelDPMixture.cpp.s
 .PHONY : MCMC/ParallelDPMixture.cpp.s
+
+MCMC/PoissonGammaModel.obj: MCMC/PoissonGammaModel.cpp.obj
+.PHONY : MCMC/PoissonGammaModel.obj
+
+# target to build an object file
+MCMC/PoissonGammaModel.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/MCMC/PoissonGammaModel.cpp.obj
+.PHONY : MCMC/PoissonGammaModel.cpp.obj
+
+MCMC/PoissonGammaModel.i: MCMC/PoissonGammaModel.cpp.i
+.PHONY : MCMC/PoissonGammaModel.i
+
+# target to preprocess a source file
+MCMC/PoissonGammaModel.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/MCMC/PoissonGammaModel.cpp.i
+.PHONY : MCMC/PoissonGammaModel.cpp.i
+
+MCMC/PoissonGammaModel.s: MCMC/PoissonGammaModel.cpp.s
+.PHONY : MCMC/PoissonGammaModel.s
+
+# target to generate assembly for a file
+MCMC/PoissonGammaModel.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/MCMC/PoissonGammaModel.cpp.s
+.PHONY : MCMC/PoissonGammaModel.cpp.s
 
 MCMC/aPPM_MixtureModel.obj: MCMC/aPPM_MixtureModel.cpp.obj
 .PHONY : MCMC/aPPM_MixtureModel.obj
@@ -416,6 +416,78 @@ main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/main.cpp.s
 .PHONY : main.cpp.s
 
+output/BayesianPipelineBaseline.obj: output/BayesianPipelineBaseline.cpp.obj
+.PHONY : output/BayesianPipelineBaseline.obj
+
+# target to build an object file
+output/BayesianPipelineBaseline.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/output/BayesianPipelineBaseline.cpp.obj
+.PHONY : output/BayesianPipelineBaseline.cpp.obj
+
+output/BayesianPipelineBaseline.i: output/BayesianPipelineBaseline.cpp.i
+.PHONY : output/BayesianPipelineBaseline.i
+
+# target to preprocess a source file
+output/BayesianPipelineBaseline.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/output/BayesianPipelineBaseline.cpp.i
+.PHONY : output/BayesianPipelineBaseline.cpp.i
+
+output/BayesianPipelineBaseline.s: output/BayesianPipelineBaseline.cpp.s
+.PHONY : output/BayesianPipelineBaseline.s
+
+# target to generate assembly for a file
+output/BayesianPipelineBaseline.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/output/BayesianPipelineBaseline.cpp.s
+.PHONY : output/BayesianPipelineBaseline.cpp.s
+
+utils/adjacency.obj: utils/adjacency.cpp.obj
+.PHONY : utils/adjacency.obj
+
+# target to build an object file
+utils/adjacency.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/utils/adjacency.cpp.obj
+.PHONY : utils/adjacency.cpp.obj
+
+utils/adjacency.i: utils/adjacency.cpp.i
+.PHONY : utils/adjacency.i
+
+# target to preprocess a source file
+utils/adjacency.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/utils/adjacency.cpp.i
+.PHONY : utils/adjacency.cpp.i
+
+utils/adjacency.s: utils/adjacency.cpp.s
+.PHONY : utils/adjacency.s
+
+# target to generate assembly for a file
+utils/adjacency.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/utils/adjacency.cpp.s
+.PHONY : utils/adjacency.cpp.s
+
+utils/distances.obj: utils/distances.cpp.obj
+.PHONY : utils/distances.obj
+
+# target to build an object file
+utils/distances.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/utils/distances.cpp.obj
+.PHONY : utils/distances.cpp.obj
+
+utils/distances.i: utils/distances.cpp.i
+.PHONY : utils/distances.i
+
+# target to preprocess a source file
+utils/distances.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/utils/distances.cpp.i
+.PHONY : utils/distances.cpp.i
+
+utils/distances.s: utils/distances.cpp.s
+.PHONY : utils/distances.s
+
+# target to generate assembly for a file
+utils/distances.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\NEAL_ALGORITHM.dir\build.make CMakeFiles/NEAL_ALGORITHM.dir/utils/distances.cpp.s
+.PHONY : utils/distances.cpp.s
+
 # Help Target
 help:
 	@echo The following are some of the valid targets for this Makefile:
@@ -425,9 +497,6 @@ help:
 	@echo ... edit_cache
 	@echo ... rebuild_cache
 	@echo ... NEAL_ALGORITHM
-	@echo ... BayesianPipelineBaseline.obj
-	@echo ... BayesianPipelineBaseline.i
-	@echo ... BayesianPipelineBaseline.s
 	@echo ... Consensus/CohesionRepulsionDP.obj
 	@echo ... Consensus/CohesionRepulsionDP.i
 	@echo ... Consensus/CohesionRepulsionDP.s
@@ -443,6 +512,9 @@ help:
 	@echo ... MCMC/ParallelDPMixture.obj
 	@echo ... MCMC/ParallelDPMixture.i
 	@echo ... MCMC/ParallelDPMixture.s
+	@echo ... MCMC/PoissonGammaModel.obj
+	@echo ... MCMC/PoissonGammaModel.i
+	@echo ... MCMC/PoissonGammaModel.s
 	@echo ... MCMC/aPPM_MixtureModel.obj
 	@echo ... MCMC/aPPM_MixtureModel.i
 	@echo ... MCMC/aPPM_MixtureModel.s
@@ -461,6 +533,15 @@ help:
 	@echo ... main.obj
 	@echo ... main.i
 	@echo ... main.s
+	@echo ... output/BayesianPipelineBaseline.obj
+	@echo ... output/BayesianPipelineBaseline.i
+	@echo ... output/BayesianPipelineBaseline.s
+	@echo ... utils/adjacency.obj
+	@echo ... utils/adjacency.i
+	@echo ... utils/adjacency.s
+	@echo ... utils/distances.obj
+	@echo ... utils/distances.i
+	@echo ... utils/distances.s
 .PHONY : help
 
 

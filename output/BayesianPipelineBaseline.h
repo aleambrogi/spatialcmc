@@ -1,16 +1,12 @@
-//
-// Created by plakk on 18/12/2025.
-//
-
 #ifndef BAYESIANPIPELINEBASELINE_H
 #define BAYESIANPIPELINEBASELINE_H
 
 #include <vector>
 #include <map>
 #include <iostream>
-#include "MCMC/IModelPrior.h"
+#include "../MCMC/IModelPrior.h"
 #include <string>
-#include "Step0/DataRow.h"
+#include "../Step0/DataRow.h"
 
 // Tipo di sampler
 enum class SamplerType {
@@ -68,8 +64,11 @@ public:
     void compute_global_posteriors_from_meta();
     void print_summary() const;
     void save_global_clustering_csv(const std::string& filename, const std::vector<DataRow>& original_data );
+    std::map<int, int> build_global_index_to_cluster_map(const std::vector<std::vector<DataRow>>& shards) const;
+    void save_dataset_with_global_clusters(const std::string& filename, const std::vector<DataRow>& original_data, const std::vector<std::vector<DataRow>>& shards) const;
 private:
     void map_local_to_global();
+
 };
 
 #endif // BAYESIANPIPELINEBASELINE_H

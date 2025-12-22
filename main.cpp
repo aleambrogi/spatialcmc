@@ -14,6 +14,9 @@
 #include "BayesianPipelineBaseline.h"
 #include <nlohmann/json.hpp>
 #include "MCMC/PoissonGammaModel.h"
+#include "distances.h"
+#include "adjacency.h"
+
 using json = nlohmann::json;
 
 // ------------------------------------------------------------
@@ -285,55 +288,6 @@ void test_DP_MixtureModel_with_APPM()
     std::cout << "===== END TEST =====\n";
 }
 
-std::vector<std::vector<int>> load_adjacency_json(const std::string& filename)
-{
-    std::ifstream f(filename);
-    if (!f.is_open())
-        throw std::runtime_error("Cannot open adjacency JSON file.");
-
-    json j;
-    f >> j;
-
-    std::vector<std::vector<int>> adj(j.size());
-    for (int i = 0; i < j.size(); i++)
-        for (auto v : j[i])
-            adj[i].push_back(v);
-
-    return adj;
-}
-
-
-std::vector<std::vector<int>> extract_local_adjacency(
-        const std::vector<DataRow>& shard,
-        const std::vector<std::vector<int>>& global_adj)
-{
-    int n = shard.size();
-
-    // mappa: global_index → local_index
-    std::unordered_map<int,int> map_global_to_local;
-    for (int i = 0; i < n; i++)
-        map_global_to_local[ shard[i].global_index ] = i;
-
-    // adjacency locale
-    std::vector<std::vector<int>> local_adj(n);
-
-    for (int i = 0; i < n; i++)
-    {
-        int gi = shard[i].global_index;
-
-        for (int g_nei : global_adj[gi])
-        {
-            if (map_global_to_local.count(g_nei))
-            {
-                int local_j = map_global_to_local[g_nei];
-                local_adj[i].push_back(local_j);
-            }
-        }
-    }
-
-    return local_adj;
-}
-
 
 void test_Parallel_Mixture_with_MetaClustering()
 {
@@ -389,7 +343,7 @@ void test_Parallel_Mixture_with_MetaClustering()
     // =====================================================================
     // 3. LOAD GLOBAL ADJACENCY (JSON)
     // =====================================================================
-    auto global_adjacency = load_adjacency_json("adjacency_list.json");
+    auto global_adjacency = AdjacencyUtils::load_adjacency_json("adjacency_list.json");
     std::cout << "Loaded adjacency list with " << global_adjacency.size() << " nodes.\n";
 
     // =====================================================================
@@ -400,7 +354,7 @@ void test_Parallel_Mixture_with_MetaClustering()
     for (const auto& shard : shards)
     {
         adjacency_per_shard.push_back(
-                extract_local_adjacency(shard, global_adjacency)
+                AdjacencyUtils::extract_local_adjacency(shard, global_adjacency)
         );
     }
 
@@ -446,10 +400,11 @@ void test_Parallel_Mixture_with_MetaClustering()
 
     std::vector<std::vector<double>> D_phi(Q, std::vector<double>(Q, 0.0));
 
+    Distances dist(Distances::Type::Gaussian);
     for (int i = 0; i < Q; ++i)
         for (int j = i + 1; j < Q; ++j)
             D_phi[i][j] = D_phi[j][i] =
-                    wasserstein_1d(phi_data[i], phi_data[j]);
+                    dist(phi_data[i], phi_data[j]);
 
     CohesionRepulsionDP phiDP(5.0, D_phi, 0.5, 10.0, 2.0, 10.0, 999);
     phiDP.initialize_random(6);
@@ -503,7 +458,11 @@ void test_Parallel_Mixture_with_MetaClustering()
     // B. Salviamo
     pipeline.save_global_clustering_csv("FINAL_GLOBAL_CLUSTERING.csv", sorted_rows_for_export);
     //pipeline.save_global_clustering_csv("FINAL_GLOBAL_CLUSTERING.csv");
-
+    pipeline.save_dataset_with_global_clusters(
+        "dataset_with_clusters.csv",
+        rows,
+        shards
+    );
     std::cout << "\n==================== END FULL PIPELINE TEST ====================\n";
 
     delete prior;
@@ -579,12 +538,12 @@ void test_Parallel_Mixture_with_MetaClustering_Neal8_beta()
     // =====================================================================
     // 3. LOAD GLOBAL ADJACENCY
     // =====================================================================
-    auto global_adjacency = load_adjacency_json("adjacency_list.json");
+    auto global_adjacency = AdjacencyUtils::load_adjacency_json("adjacency_list.json");
 
     std::vector<std::vector<std::vector<int>>> adjacency_per_shard;
     for (const auto& shard : shards) {
         adjacency_per_shard.push_back(
-            extract_local_adjacency(shard, global_adjacency)
+            AdjacencyUtils::extract_local_adjacency(shard, global_adjacency)
         );
     }
 
@@ -629,11 +588,12 @@ void test_Parallel_Mixture_with_MetaClustering_Neal8_beta()
     int Q = phi_data.size();
     std::cout << "Collected " << Q << " Beta parameter vectors.\n";
 
+    Distances dist(Distances::Type::Beta);
     std::vector<std::vector<double>> D_phi(Q, std::vector<double>(Q, 0.0));
     for (int i = 0; i < Q; ++i)
         for (int j = i + 1; j < Q; ++j)
             D_phi[i][j] = D_phi[j][i] =
-                wasserstein_1d(phi_data[i], phi_data[j]);
+                dist(phi_data[i], phi_data[j]);
 
     CohesionRepulsionDP phiDP(
         2.0,   // alpha
@@ -704,7 +664,11 @@ void test_Parallel_Mixture_with_MetaClustering_Neal8_beta()
     // (Nel codice Step 2 ho già predisposto l'argomento opzionale const std::vector<DataRow>& original_data = {})
 
     pipeline.save_global_clustering_csv("FINAL_GLOBAL_CLUSTERING.csv", sorted_rows_for_export);
-    //pipeline.save_global_clustering_csv("FINAL_GLOBAL_CLUSTERING.csv");
+    pipeline.save_dataset_with_global_clusters(
+    "dataset_with_clusters.csv",
+    rows,
+    shards
+);
     std::cout << "\n==================== END FULL PIPELINE TEST (NEAL8 + BETA) ====================\n";
 
     delete prior;
@@ -834,6 +798,8 @@ void test_Parallel_Poisson_FullPipeline() {
     // Calcolo matrice distanze D_phi
     // Per Poisson, il parametro è uno scalare (Lambda).
     // Usiamo semplicemente la differenza assoluta: |lambda1 - lambda2|
+    Distances dist(Distances::Type::Poisson);
+
     std::vector<std::vector<double>> D_phi(Q, std::vector<double>(Q, 0.0));
     for (int i = 0; i < Q; ++i) {
         for (int j = i + 1; j < Q; ++j) {
@@ -886,7 +852,11 @@ void test_Parallel_Poisson_FullPipeline() {
 
     // B. Salviamo
     pipeline.save_global_clustering_csv("FINAL_POISSON_CLUSTERING.csv", sorted_rows_for_export);
-
+    pipeline.save_dataset_with_global_clusters(
+        "dataset_with_clusters.csv",
+        rows,
+        shards
+    );
     std::cout << "\n==================== END POISSON TEST ====================\n";
     delete prior;
 }
@@ -897,8 +867,8 @@ int main()
     //test_DP_MixtureModel_with_APPM();
     //test_CohesionRepulsionDP();
     //test_Parallel_DP_MixtureModel_with_APPM();
-    test_Parallel_Mixture_with_MetaClustering();
-    //test_Parallel_Mixture_with_MetaClustering_Neal8_beta();
+    //test_Parallel_Mixture_with_MetaClustering();
+    test_Parallel_Mixture_with_MetaClustering_Neal8_beta();
     //test_PoissonGamma_DP();
     //test_Parallel_Poisson_FullPipeline();
     return 0;
