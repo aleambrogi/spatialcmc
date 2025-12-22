@@ -1,0 +1,13 @@
+Package: spatialcmc
+Type: Package
+Title: Spatial Consensus Monte Carlo
+Version: 0.1.0
+Author: Alessandro Ambrogi
+Maintainer: Your Name <your.email@example.com>
+Description: Bayesian Spatial Consensus Monte Carlo model implemented in C++.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+LinkingTo: Rcpp
+Imports: Rcpp
+SystemRequirements: C++17

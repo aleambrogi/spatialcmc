@@ -1,0 +1,32 @@
+# Makevars.win
+
+PKG_CXXFLAGS = -std=gnu++17 \
+               -I$(R_HOME)/include \
+               -I$(R_HOME)/include/x64 \
+               -I'C:/Users/samsung/AppData/Local/R/win-library/4.4/Rcpp/include' \
+               -I$(PWD)/Step0 \
+               -I$(PWD)/Step1_Sharding \
+               -I$(PWD)/MCMC \
+               -I$(PWD)/Consensus \
+               -I$(PWD)/external
+
+#PKG_LIBS =
+
+# Lista dei .o da compilare nella DLL
+OBJECTS = \
+  BayesianPipelineBaseline.o \
+  spatialcmc_wrapper.o \
+  Step0/CSVLoader.o \
+  Step1_Sharding/Sharding.o \
+  MCMC/ParallelDPMixture.o \
+  MCMC/aPPM_MixtureModel.o \
+  MCMC/aPPM_MixtureModel_Neal8.o \
+  MCMC/BetaNonConjugateModel.o \
+  MCMC/IModelPrior.o \
+  MCMC/DP_MixtureModel.o \
+  MCMC/PoissonGammaModel.o \
+  Consensus/CohesionRepulsionDP.o
+
+# Regola di linking finale
+spatialcmc.dll: $(OBJECTS)
+	$(SHLIB_CXXLD) -o $@ $(OBJECTS) $(PKG_LIBS)

@@ -1,0 +1,142 @@
+#include "ParallelDPMixture.h"
+#include "../Step1_Sharding/Sharding.h"
+
+// ---------------------------------------------------------
+// Constructor
+// ---------------------------------------------------------
+
+ParallelDPMixture::ParallelDPMixture(double alpha_,
+                  const std::vector<Step1_Sharding::Sharding::Shard>& shards,
+                  IModelPrior* prior_,
+                  const std::vector<std::vector<std::vector<int>>>& adjacency_per_shard,
+                  double lambda_appm_,
+                  SamplerType sampler_,
+                  int m_aux_)
+        : alpha(alpha_),
+          lambda_appm(lambda_appm_),
+          prior(prior_),
+          sampler(sampler_),
+          m_aux(m_aux_)
+{
+    num_partitions = shards.size();
+
+    partitions_data.resize(num_partitions);
+    partitions_adj  = adjacency_per_shard;   // <-- copia diretta, zero trasformazioni
+
+    for (size_t k = 0; k < shards.size(); ++k)
+    {
+        size_t shard_size = shards[k].size();
+        partitions_data[k].resize(shard_size);
+
+        for (size_t i = 0; i < shard_size; ++i)
+        {
+            partitions_data[k][i] = shards[k][i].median_value;
+        }
+    }
+
+    std::cout << "Created ParallelDPMixture with "
+              << num_partitions << " shards\n";
+}
+
+
+// ---------------------------------------------------------
+// Clone prior (thread-safe)
+// ---------------------------------------------------------
+IModelPrior* ParallelDPMixture::clone_prior() const
+{
+    auto* p = prior->clone();
+
+    static std::atomic<int> counter{1};
+    unsigned int seed =
+        std::random_device{}() ^ (counter++ * 2654435761u);
+
+    p->set_seed(seed);
+    return p;
+}
+
+// ---------------------------------------------------------
+// Run parallel MCMC
+// ---------------------------------------------------------
+void ParallelDPMixture::run_parallel_mcmc(int burn_in, int sampling)
+{
+    all_samples_c.resize(num_partitions);
+    all_samples_phi.resize(num_partitions);
+
+    best_k_per_chain.resize(num_partitions);
+    best_clustering_per_chain.resize(num_partitions);
+    best_parameters_per_chain.resize(num_partitions);
+
+    std::vector<std::future<void>> jobs;
+
+    for (int k = 0; k < num_partitions; ++k)
+    {
+        jobs.push_back(std::async(std::launch::async,
+                                  [this, k, burn_in, sampling]() {
+
+            IModelPrior* prior_copy = clone_prior();
+             if (sampler == SamplerType::Neal2) {
+                aPPM_MixtureModel model(alpha, partitions_data[k], prior_copy, partitions_adj[k], lambda_appm);
+                model.run_mcmc(burn_in, sampling);
+                 all_samples_c[k]   = model.samples_c;
+                 all_samples_phi[k] = model.samples_phi_c;
+
+                 int best_idx = model.opt_param_index_fast();
+
+                 best_k_per_chain[k]          = best_idx;
+                 best_clustering_per_chain[k] = model.samples_c[best_idx];
+                 best_parameters_per_chain[k] = model.samples_phi_c[best_idx];
+
+                 delete prior_copy;
+             }else {
+                aPPM_MixtureModel_Neal8 model(alpha, partitions_data[k], prior_copy, partitions_adj[k], lambda_appm, m_aux);
+                model.run_mcmc(burn_in, sampling);
+                 all_samples_c[k]   = model.samples_c;
+                 all_samples_phi[k] = model.samples_phi_c;
+
+                 int best_idx = model.opt_param_index_fast();
+
+                 best_k_per_chain[k]          = best_idx;
+                 best_clustering_per_chain[k] = model.samples_c[best_idx];
+                 best_parameters_per_chain[k] = model.samples_phi_c[best_idx];
+
+                 delete prior_copy;
+             }
+
+
+
+        }));
+    }
+
+    for (auto& f : jobs)
+        f.get();
+}
+
+
+// ---------------------------------------------------------
+// Accessors
+// ---------------------------------------------------------
+
+const std::vector<int>&
+ParallelDPMixture::get_best_k_per_chain() const {
+    return best_k_per_chain;
+}
+
+const std::vector<std::vector<int>>&
+ParallelDPMixture::get_best_clustering_per_chain() const {
+    return best_clustering_per_chain;
+}
+
+const std::vector<std::map<int, ComponentParameter>>&
+ParallelDPMixture::get_best_parameters_per_chain() const {
+    return best_parameters_per_chain;
+}
+
+const std::vector<std::vector<std::vector<int>>>&
+ParallelDPMixture::get_all_samples_c() const {
+    return all_samples_c;
+}
+
+const std::vector<std::vector<std::map<int, ComponentParameter>>>&
+ParallelDPMixture::get_all_samples_phi() const {
+    return all_samples_phi;
+}
