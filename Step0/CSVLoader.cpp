@@ -27,7 +27,7 @@ static inline double safe_stod(const std::string& s) {
         return std::stod(t);
     } catch(...) {
         std::cerr << "WARN: impossibile convertire in double la stringa \""
-                  << s << "\" → imposto median_value = 0\n";
+                  << s << "\" → imposto median_val = 0\n";
         return 0.0;
     }
 }
@@ -68,11 +68,11 @@ std::vector<DataRow> CSVReader::read() {
             if (i < (int)columns.size()) {
                 const std::string &cname = columns[i];
 
-                // POPOLA LA TUA STRUCT DataRow (assumo COMUNE, PROVINCIA, median_value)
+                // POPOLA LA TUA STRUCT DataRow (assumo COMUNE, PROVINCIA, median_val)
                 if (cname == "COMUNE") row.COMUNE = clean;
                 else if (cname == "PROVINCIA") row.PROVINCIA = clean;
-                else if (cname == "median_value")
-                    row.median_value = safe_stod(clean);
+                else if (cname == "median_val")
+                    row.median_val = safe_stod(clean);
                 else {
                     // se hai campi extra, puoi expandere qui
                 }

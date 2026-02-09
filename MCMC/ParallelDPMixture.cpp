@@ -30,7 +30,7 @@ ParallelDPMixture::ParallelDPMixture(double alpha_,
 
         for (size_t i = 0; i < shard_size; ++i)
         {
-            partitions_data[k][i] = shards[k][i].median_value;
+            partitions_data[k][i] = shards[k][i].median_val;
         }
     }
 

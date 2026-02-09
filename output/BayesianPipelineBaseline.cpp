@@ -99,7 +99,7 @@ void BayesianPipelineBaseline::save_dataset_with_global_clusters(
         file << global_idx << ","
              << "\"" << row.PROVINCIA << "\","
              << "\"" << row.COMUNE << "\","
-             << row.median_value << ","
+             << row.median_val << ","
              << cluster_id << "\n";
     }
 
@@ -156,10 +156,15 @@ void BayesianPipelineBaseline::print_summary() const {
 
     std::cout << "\nGlobal posteriors:\n";
     for (const auto& kv : global_posteriors) {
-        std::cout << "Cluster " << kv.first
-                  << " | param[0]=" << kv.second.parameters[0]
-                  << " param[1]=" << kv.second.parameters[1] << "\n";
+        std::cout << "Cluster " << kv.first << " | params=[";
+        const auto& pars = kv.second.parameters;
+        for (size_t i = 0; i < pars.size(); ++i) {
+            std::cout << pars[i];
+            if (i + 1 < pars.size()) std::cout << ", ";
+        }
+        std::cout << "]\n";
     }
+
 
     std::cout << "================================================================\n";
 }
@@ -254,7 +259,7 @@ void BayesianPipelineBaseline::save_global_clustering_csv(const std::string& fil
                 // Implementazione futura: passare l'oggetto Sharding o i dati riordinati.
                 // Stampa i dati della riga corrispondente
                 const auto& row = original_data[global_counter_check];
-                file << ",\"" << row.PROVINCIA << "\",\"" << row.COMUNE << "\"," << row.median_value;
+                file << ",\"" << row.PROVINCIA << "\",\"" << row.COMUNE << "\"," << row.median_val;
             }
 
             file << "\n";

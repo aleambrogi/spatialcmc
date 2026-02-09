@@ -16,6 +16,9 @@
 #include "MCMC/PoissonGammaModel.h"
 #include "distances.h"
 #include "adjacency.h"
+#include "SpatialCMCInterface.h"
+#include "Step0/DataLoader.h"
+
 
 using json = nlohmann::json;
 
@@ -314,7 +317,7 @@ void test_Parallel_Mixture_with_MetaClustering()
     for (size_t i = 0; i < std::min<size_t>(20, rows.size()); ++i) {
         std::cout << "row[" << i << "] PROVINCIA=\"" << rows[i].PROVINCIA
                   << "\" COMUNE=\"" << rows[i].COMUNE
-                  << "\" median=" << rows[i].median_value << "\n";
+                  << "\" median=" << rows[i].median_val << "\n";
     }
 
     // =====================================================================
@@ -497,17 +500,17 @@ void test_Parallel_Mixture_with_MetaClustering_Neal8_beta()
         double max_val = -std::numeric_limits<double>::infinity();
 
         for (const auto& r : rows) {
-            min_val = std::min(min_val, r.median_value);
-            max_val = std::max(max_val, r.median_value);
+            min_val = std::min(min_val, r.median_val);
+            max_val = std::max(max_val, r.median_val);
         }
 
         const double eps = 1e-6;
         for (auto& r : rows) {
-            double x = (r.median_value - min_val) / (max_val - min_val);
-            r.median_value = std::min(1.0 - eps, std::max(eps, x));
+            double x = (r.median_val - min_val) / (max_val - min_val);
+            r.median_val = std::min(1.0 - eps, std::max(eps, x));
         }
 
-        std::cout << "Rescaled median_value to (0,1).\n";
+        std::cout << "Rescaled median_val to (0,1).\n";
     */
     // =====================================================================
     // 1. SHARDING
@@ -562,7 +565,7 @@ void test_Parallel_Mixture_with_MetaClustering_Neal8_beta()
         prior,
         adjacency_per_shard,
         lambda_appm,
-        ParallelDPMixture::SamplerType::Neal8,
+        SamplerType::Neal8,
         m_aux
     );
 
@@ -738,7 +741,7 @@ void test_Parallel_Poisson_FullPipeline() {
     for(int i=0; i<100; ++i) {
         DataRow r;
         r.global_index = i;
-        r.median_value = (double)p1(gen); // Il conteggio va in median_value
+        r.median_val = (double)p1(gen); // Il conteggio va in median_val
         r.PROVINCIA = "SHARD_A";          // Fittizio per lo sharding
         r.COMUNE = "Comune_" + std::to_string(i);
         rows.push_back(r);
@@ -747,7 +750,7 @@ void test_Parallel_Poisson_FullPipeline() {
     for(int i=0; i<100; ++i) {
         DataRow r;
         r.global_index = 100 + i;
-        r.median_value = (double)p2(gen);
+        r.median_val = (double)p2(gen);
         r.PROVINCIA = "SHARD_B";
         r.COMUNE = "Comune_" + std::to_string(100+i);
         rows.push_back(r);
@@ -775,7 +778,7 @@ void test_Parallel_Poisson_FullPipeline() {
     // 5. PARALLEL MCMC
     double alpha_dp = 1.0;
     double lambda_appm = 0.0; // Disattiviamo influenza spaziale (dato che l'adj è vuota)
-    int burn_in = 200;
+    int burn_in = 2000;
     int sampling = 500;
 
     ParallelDPMixture pdp(alpha_dp, shards, prior, adjacency_per_shard, lambda_appm);
@@ -861,6 +864,131 @@ void test_Parallel_Poisson_FullPipeline() {
     delete prior;
 }
 
+
+void test_spatialcmc_interface()
+{
+    try {
+        std::cout << "\n================ TEST: SpatialCMCInterface ================\n";
+/*
+        // ------------------------------------------------------------
+        // 1) CSV TEST (no geometry, province sharding)
+        // ------------------------------------------------------------
+
+        {
+            std::cout << "\n[TEST] CSV input\n";
+
+            SpatialCMCConfig cfg;
+            cfg.data_path = "dataset_median.csv";
+            cfg.format = DataFormat::CSV;
+
+            cfg.sampler = SamplerType::Neal8;
+            cfg.prior_name = "beta";
+            cfg.hyperparams = {2,1, 2,1, 0.25,0.25, 5}; // BetaNonConjugate
+
+            cfg.shard_key = "PROVINCIA";
+
+            cfg.alpha_dp = 5.0;
+            cfg.lambda_appm = 0.01;
+            cfg.burn_in = 20;
+            cfg.samples = 50;
+            cfg.m_aux = 5;
+
+            cfg.write_outputs = true;
+            cfg.global_clustering_csv = "TEST_csv_global.csv";
+            cfg.meta_assignments_csv  = "TEST_csv_meta.csv";
+
+            SpatialCMCInterface engine(cfg);
+            auto res = engine.run();
+
+            std::cout << "CSV OK | rows=" << res.n_rows
+                      << " shards=" << res.n_shards
+                      << " Q_phi=" << res.Q_phi
+                      << " K_meta=" << res.K_meta << "\n";
+        }
+
+        // ------------------------------------------------------------
+        // 2) GPKG TEST (auto geometry + adjacency)
+        // ------------------------------------------------------------
+        {
+            std::cout << "\n[TEST] GPKG input\n";
+
+            SpatialCMCConfig cfg;
+            cfg.data_path = "full_dataset_pulito.gpkg";
+            cfg.format = DataFormat::GPKG;
+            cfg.layer_name = ""; // empty = first layer
+
+            cfg.sampler = SamplerType::Neal2;
+            cfg.prior_name = "poisson";
+            cfg.hyperparams = {2.0, 1.0}; // example Poisson hyperparams
+
+            cfg.shard_key = "PROVINCIA"; // must exist as attribute
+
+            cfg.alpha_dp = 5.0;
+            cfg.lambda_appm = 0.01;
+            cfg.burn_in = 20;
+            cfg.samples = 50;
+            cfg.m_aux = 5;
+
+            cfg.knn_k = 8; // used for point geometries
+
+            cfg.write_outputs = true;
+            cfg.global_clustering_csv = "TEST_gpkg_global.csv";
+            cfg.meta_assignments_csv  = "TEST_gpkg_meta.csv";
+
+            SpatialCMCInterface engine(cfg);
+            auto res = engine.run();
+
+            std::cout << "GPKG OK | rows=" << res.n_rows
+                      << " shards=" << res.n_shards
+                      << " Q_phi=" << res.Q_phi
+                      << " K_meta=" << res.K_meta << "\n";
+        }
+*/
+        // ------------------------------------------------------------
+        // 3) SHP TEST (auto geometry + adjacency)
+        // ------------------------------------------------------------
+        {
+            std::cout << "\n[TEST] SHP input\n";
+
+            SpatialCMCConfig cfg;
+            cfg.data_path = "output_shapefile/full_dataset_pulito.shp";
+            cfg.format = DataFormat::SHP;
+
+            cfg.sampler = SamplerType::Neal2;
+            cfg.prior_name = "normal";
+            cfg.hyperparams = {2,2, 1,1};
+
+            cfg.shard_key = "PROVINCIA"; // must exist in DBF
+
+            cfg.alpha_dp = 5.0;
+            cfg.lambda_appm = 0.01;
+            cfg.burn_in = 20;
+            cfg.samples = 50;
+            cfg.m_aux = 5;
+
+            cfg.knn_k = 8;
+
+            cfg.write_outputs = true;
+            cfg.global_clustering_csv = "TEST_shp_global.csv";
+            cfg.meta_assignments_csv  = "TEST_shp_meta.csv";
+
+            SpatialCMCInterface engine(cfg);
+            auto res = engine.run();
+
+            std::cout << "SHP OK | rows=" << res.n_rows
+                      << " shards=" << res.n_shards
+                      << " Q_phi=" << res.Q_phi
+                      << " K_meta=" << res.K_meta << "\n";
+        }
+
+        std::cout << "\n================ ALL TESTS COMPLETED =================\n";
+    }
+    catch (const std::exception& e) {
+        std::cerr << "\n[TEST FAILED] " << e.what() << "\n";
+        throw; // rethrow so debugger / CI catches it
+    }
+}
+
 int main()
 {
     //test_DP_MixtureModel();
@@ -868,8 +996,9 @@ int main()
     //test_CohesionRepulsionDP();
     //test_Parallel_DP_MixtureModel_with_APPM();
     //test_Parallel_Mixture_with_MetaClustering();
-    test_Parallel_Mixture_with_MetaClustering_Neal8_beta();
+    //test_Parallel_Mixture_with_MetaClustering_Neal8_beta();
     //test_PoissonGamma_DP();
     //test_Parallel_Poisson_FullPipeline();
+    test_spatialcmc_interface();
     return 0;
 }

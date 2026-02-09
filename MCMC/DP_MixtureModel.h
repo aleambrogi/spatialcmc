@@ -4,7 +4,7 @@
 
 #ifndef DP_MIXTUREMODEL_H
 #define DP_MIXTUREMODEL_H
-
+#include <chrono>
 #include <vector>     // For std::vector
 #include <map>        // For std::map
 #include <cmath>      // For standard math functions (e.g., log, exp)

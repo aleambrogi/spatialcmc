@@ -9,18 +9,19 @@
 #include "aPPM_MixtureModel.h"
 #include "aPPM_MixtureModel_Neal8.h"
 #include "IModelPrior.h"
+// in ParallelDPMixture.h
+#include "../output/BayesianPipelineBaseline.h" // or better: SamplerType.h
+
 
 
 class ParallelDPMixture {
 public:
-    enum class SamplerType { Neal2, Neal8 };
-
     ParallelDPMixture(double alpha_,
                   const std::vector<Step1_Sharding::Sharding::Shard>& shards,
                   IModelPrior* prior_,
                   const std::vector<std::vector<std::vector<int>>>& adjacency_per_shard,
                   double lambda_appm_,
-                  SamplerType sampler_ = SamplerType::Neal2,
+                  SamplerType sampler = SamplerType::Neal2,
                   int m_aux_ = 5);
 
 
