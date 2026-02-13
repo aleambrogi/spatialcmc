@@ -4,7 +4,7 @@
 
 #ifndef DP_MIXTUREMODEL_H
 #define DP_MIXTUREMODEL_H
-
+#include <chrono>
 #include <vector>     // For std::vector
 #include <map>        // For std::map
 #include <cmath>      // For standard math functions (e.g., log, exp)
@@ -16,6 +16,10 @@
 #include <queue>
 #include <unordered_set>
 #include "IModelPrior.h"
+
+
+int binder_loss(const std::vector<int>& a,
+                const std::vector<int>& b);
 
 class DPMixtureModel {
 protected:
@@ -45,24 +49,32 @@ protected:
     // Helper: Calculates n_{-i, c} (count of observations in cluster c excluding observation i)
     int get_cluster_count_minus_i(int i, int c_label);
 
+    int next_component_id;
+
+    // Step 1 and Step 2 must be overridable for Neal-8 / non-conjugate
+    virtual void update_component_indicator(int i);
+    virtual void update_component_parameters();
+
 public:
     std::vector<std::vector<int>> samples_c;
     std::vector<std::map<int, ComponentParameter>> samples_phi_c;
-    [[nodiscard]] int opt_param_index() const;
+    //[[nodiscard]] int opt_param_index() const;
     DPMixtureModel(double alpha, const std::vector<double>& data, IModelPrior* prior);
     void run_mcmc(int burn_in, int sampling);
     void gibbs_scan(); // Executes one full scan (step 1 and 2 of Algorithm 2)
     virtual ~DPMixtureModel() = default;
+    [[nodiscard]] int opt_param_index_fast() const;
+
+
 private:
 
-    // Counter for component labels (to ensure new components get unique IDs)
-    int next_component_id;
+    std::vector<std::vector<double>> compute_co_clustering() const;
 
-    // Step 1: Update component indicator c_i
-    void update_component_indicator(int i);
-
-    // Step 2: Update component parameters phi_c
-    void update_component_parameters();
+    double binder_expected_loss(
+            const std::vector<int>& est,
+            const std::vector<std::vector<double>>& P,
+            double a = 1.0,
+            double b = 1.0) const;
 
     //compute the binder_loss btw two vectors a and b
     static int binder_loss(const std::vector<int>& a,

@@ -9,7 +9,21 @@
 #include "DP_MixtureModel.h"
 #include "aPPM_MixtureModel.h"
 #include "CohesionRepulsionDP.h"
+#include "BetaNonConjugateModel.h"
 #include "ParallelDPMixture.h"
+#include "BayesianPipelineBaseline.h"
+#include <nlohmann/json.hpp>
+#include "MCMC/PoissonGammaModel.h"
+#include "distances.h"
+#include "adjacency.h"
+#include "SpatialCMCInterface.h"
+#include "Step0/DataLoader.h"
+#include <fstream>
+#include <iomanip>
+#include <stdexcept>
+
+
+using json = nlohmann::json;
 
 // ------------------------------------------------------------
 // Generate synthetic Gaussian cluster parameters (mu, sigma^2)
@@ -154,8 +168,8 @@ void test_DP_MixtureModel() {
     std::normal_distribution<double> dist1(-5.0, 1.0);
     std::normal_distribution<double> dist2(5.0, 1.0);
 
-    for (int i = 0; i < 50; ++i) data.push_back(dist1(gen));
-    for (int i = 0; i < 50; ++i) data.push_back(dist2(gen));
+    for (int i = 0; i < 500; ++i) data.push_back(dist1(gen));
+    for (int i = 0; i < 500; ++i) data.push_back(dist2(gen));
 
     NormalConjugateModel prior(0.0, 1.0, 2.0, 2.0);
 
@@ -163,7 +177,7 @@ void test_DP_MixtureModel() {
     model.run_mcmc(1000, 1000);
 
     // Print last iteration cluster assignments
-    const auto& index_star = model.opt_param_index();
+    const auto& index_star = model.opt_param_index_fast();
     const auto& best_c = model.samples_c[index_star];
     const auto& best_phi = model.samples_phi_c[index_star];
 
@@ -185,9 +199,10 @@ void test_DP_MixtureModel_with_APPM()
     // 1. Generate synthetic data (2 true clusters)
     // ------------------------------------------
 
-    int n1 = 50;
-    int n2 = 50;
-    int N  = n1 + n2;
+    int n1 = 100;
+    int n2 = 70;
+    int n3 = 140;
+    int N  = n1 + n2 + n3;
 
     std::vector<double> data;
     data.reserve(N);
@@ -203,6 +218,10 @@ void test_DP_MixtureModel_with_APPM()
     // cluster 2
     for (int i = 0; i < n2; ++i)
         data.push_back(dist2(rng));
+
+    // cluster 3
+    for (int i = 0; i < n3; ++i)
+        data.push_back(dist1(rng));
 
     std::cout << "Generated " << N << " points (two well-separated Gaussians).\n";
 
@@ -223,14 +242,22 @@ void test_DP_MixtureModel_with_APPM()
     }
 
     // cluster 2 adjacency
-    for (int i = n2; i < N; ++i) {
-        for (int j = n2; j < N; ++j) {
+    for (int i = n1; i < n1+n2; ++i) {
+        for (int j = n1; j < n1+n2; ++j) {
             if (i != j)
                 adjacency[i].push_back(j);
         }
     }
 
-    std::cout << "Created adjacency with 2 spatially separated components.\n";
+    // cluster 3 adjacency
+    for (int i = n1+n2; i < N; ++i) {
+        for (int j = n1+n2; j < N; ++j) {
+            if (i != j)
+                adjacency[i].push_back(j);
+        }
+    }
+
+    std::cout << "Created adjacency with 3 spatially separated components.\n";
 
     // -----------------------------------------------------
     // 3. Define model prior (Normal-Inverse-Gamma for 1D)
@@ -263,7 +290,7 @@ void test_DP_MixtureModel_with_APPM()
     // -----------------------------------------------------
     // 6. Recover optimal clustering
     // -----------------------------------------------------
-    int idx = model.opt_param_index();
+    int idx = model.opt_param_index_fast();
     const auto& best_clust = model.samples_c[idx];
 
     std::cout << "\nBest partition index = " << idx << "\n";
@@ -277,83 +304,36 @@ void test_DP_MixtureModel_with_APPM()
         std::cout << "Cluster " << kv.first << ": mu=" << kv.second.parameters[0]
                   << ", sigma2=" << kv.second.parameters[1] << "\n";
 
+    // -----------------------------------------------------
+    // 7. Save generated data + original population + inferred cluster assignment
+    // -----------------------------------------------------
+    {
+        const std::string out_path = "dp_appm_data_clusters.csv";
+        std::ofstream out(out_path);
+        if (!out.is_open()) {
+            throw std::runtime_error("Could not open output file: " + out_path);
+        }
+
+        out << "value,original_pop,cluster_ass\n";
+        out << std::setprecision(17);
+
+        for (int i = 0; i < N; ++i) {
+            int original_pop = 0;
+            if (i < n1) original_pop = 1;
+            else if (i < n1 + n2) original_pop = 2;
+            else original_pop = 3;
+
+            out << data[i] << "," << original_pop << "," << best_clust[i] << "\n";
+        }
+
+        out.close();
+        std::cout << "Saved CSV: " << out_path << "\n";
+    }
+
+
     std::cout << "===== END TEST =====\n";
 }
 
-// -------------------------------------------------------------------------
-// Helper: generate synthetic spatial adjacency for a 1D line graph
-// -------------------------------------------------------------------------
-std::vector<std::vector<int>> make_knn_graph(
-        const std::vector<double>& data,
-        int k)
-{
-    int N = data.size();
-    std::vector<std::vector<int>> adj(N);
-
-    // Index array for sorting
-    std::vector<int> idx(N);
-    std::iota(idx.begin(), idx.end(), 0);
-
-    // Sort indices by data value
-    std::sort(idx.begin(), idx.end(),
-              [&](int a, int b){ return data[a] < data[b]; });
-
-    // Each point connects to k neighbors on each side after sorting by value
-    for (int r = 0; r < N; ++r)
-    {
-        int i = idx[r];
-
-        // connect to k neighbors before
-        for (int d = 1; d <= k; ++d)
-        {
-            if (r - d >= 0) {
-                int j = idx[r - d];
-                adj[i].push_back(j);
-            }
-        }
-
-        // connect to k neighbors after
-        for (int d = 1; d <= k; ++d)
-        {
-            if (r + d < N) {
-                int j = idx[r + d];
-                adj[i].push_back(j);
-            }
-        }
-    }
-
-    return adj;
-}
-
-
-
-// -------------------------------------------------------------------------
-// TEST FUNCTION (call this from main)
-// -------------------------------------------------------------------------
-
-long binder_loss(const std::vector<int>& z1,
-                 const std::vector<int>& z2)
-{
-    const int n = z1.size();
-    if (z2.size() != n) {
-        throw std::runtime_error("binder_loss: size mismatch between partitions.");
-    }
-
-    long loss = 0;
-
-    for (int i = 0; i < n; ++i) {
-        for (int j = i + 1; j < n; ++j) {
-
-            bool same1 = (z1[i] == z1[j]);
-            bool same2 = (z2[i] == z2[j]);
-
-            if (same1 != same2)
-                loss++;
-        }
-    }
-
-    return loss;
-}
 
 void test_Parallel_Mixture_with_MetaClustering()
 {
@@ -377,81 +357,86 @@ void test_Parallel_Mixture_with_MetaClustering()
     }
     std::cout << "Loaded " << rows.size() << " rows.\n";
 
+    for (size_t i = 0; i < std::min<size_t>(20, rows.size()); ++i) {
+        std::cout << "row[" << i << "] PROVINCIA=\"" << rows[i].PROVINCIA
+                  << "\" COMUNE=\"" << rows[i].COMUNE
+                  << "\" median=" << rows[i].median_val << "\n";
+    }
+
     // =====================================================================
     // 1. SHARDING
     // =====================================================================
     std::cout << "Running sharding...\n";
+
+    // assegna GLOBAL INDEX ai dati
+    for (size_t i = 0; i < rows.size(); i++)
+        rows[i].global_index = i;
+
     Step1_Sharding::Sharding sharder(rows);
 
-    std::string shard_column = "PROVINCIA"; // <-- change if needed
+    std::string shard_column = "PROVINCIA";
     auto shards = sharder.generateShards(shard_column);
+
     int num_partitions = shards.size();
     std::cout << "Generated " << num_partitions << " shards.\n";
 
     // =====================================================================
-    // 2. CREATE PRIOR
+    // 2. PRIOR
     // =====================================================================
-    double mu0 = 0.0, kappa0 = 1.0, alpha0 = 2.0, beta0 = 2.0;
+    double mu0 = 0.0, kappa0 = 0.1, alpha0 = 2.0, beta0 = 0.01;
     IModelPrior* prior = new NormalConjugateModel(mu0, kappa0, alpha0, beta0);
 
     // =====================================================================
-    // 3. RUN PARALLEL DP MIXTURE ON SHARDS
+    // 3. LOAD GLOBAL ADJACENCY (JSON)
     // =====================================================================
-    double alpha_dp    = 1.0;
-    double lambda_appm = 0.2;
-    int burn_in        = 200;
-    int sampling       = 100;
+    auto global_adjacency = AdjacencyUtils::load_adjacency_json("adjacency_list.json");
+    std::cout << "Loaded adjacency list with " << global_adjacency.size() << " nodes.\n";
 
-    // concateno tutti i dati per fare la kNN globale
-    std::vector<double> all_data;
-    for (const auto& row : rows)
-        all_data.push_back(row.median_value);
+    // =====================================================================
+    // 3a. COSTRUZIONE ADIACENZA PER SHARD
+    // =====================================================================
+    std::vector<std::vector<std::vector<int>>> adjacency_per_shard;
 
-    auto full_adjacency = make_knn_graph(all_data, 5);
+    for (const auto& shard : shards)
+    {
+        adjacency_per_shard.push_back(
+                AdjacencyUtils::extract_local_adjacency(shard, global_adjacency)
+        );
+    }
 
-    // Parallel DP mixture
+    std::cout << "Built local adjacency matrices for "
+              << adjacency_per_shard.size() << " shards.\n";
+
+    // =====================================================================
+    // 4. PARALLEL DP ON SHARDS
+    // =====================================================================
+    double alpha_dp    = 5.0;
+    double lambda_appm = 0.1;
+    int burn_in        = 2000;
+    int sampling       = 500;
+
     ParallelDPMixture pdp(alpha_dp,
-                          shards,          // vector of Shard
+                          shards,               // ora vettore di vettori DataRow
                           prior,
-                          full_adjacency,  // global adjacency
+                          adjacency_per_shard,  // adjacency locale corretta
                           lambda_appm);
 
     pdp.run_parallel_mcmc(burn_in, sampling);
 
     // =====================================================================
-    // 4. EXTRACT RESULTS
+    // 5. RISULTATI: BEST CLUSTER PER SHARD
     // =====================================================================
     const auto& all_samples_c   = pdp.get_best_clustering_per_chain();
     const auto& all_samples_phi = pdp.get_best_parameters_per_chain();
     int M = all_samples_c.size();
+
     std::cout << "\nCollected best output from " << M << " chains.\n";
 
     // =====================================================================
-    // 5. META-CLUSTERING ON CLUSTERINGS
-    // =====================================================================
-    std::vector<std::vector<int>> clusterings = all_samples_c;
-    int P = clusterings.size();
-    std::cout << "Meta-clustering on " << P << " partitions...\n";
-
-    std::vector<std::vector<double>> D_clusters(P, std::vector<double>(P, 0.0));
-    for (int i = 0; i < P; ++i)
-        for (int j = i + 1; j < P; ++j)
-            D_clusters[i][j] = D_clusters[j][i] =
-                static_cast<double>(binder_loss(clusterings[i], clusterings[j]));
-
-    CohesionRepulsionDP metaDP(1.0, D_clusters, 0.5, 1.0, 3.0, 1.0, 444);
-    metaDP.initialize_random(6);
-    metaDP.run_mcmc(300, 400);
-
-    int best_meta_idx = metaDP.best_sample_binder();
-    const auto& meta_labels = metaDP.get_samples_labels()[best_meta_idx];
-    int Kmeta = *std::max_element(meta_labels.begin(), meta_labels.end()) + 1;
-    std::cout << "Detected " << Kmeta << " meta-clusters.\n";
-
-    // =====================================================================
-    // 6. META-CLUSTERING ON PARAMETERS
+    // 6. META-CLUSTERING SU PHI
     // =====================================================================
     std::vector<ComponentParameter> phi_data;
+
     for (int ch = 0; ch < M; ++ch)
         for (const auto& kv : all_samples_phi[ch])
             phi_data.push_back(kv.second);
@@ -460,16 +445,23 @@ void test_Parallel_Mixture_with_MetaClustering()
     std::cout << "Collected " << Q << " parameter vectors.\n";
 
     std::vector<std::vector<double>> D_phi(Q, std::vector<double>(Q, 0.0));
+
+    Distances dist(Distances::Type::Gaussian);
     for (int i = 0; i < Q; ++i)
         for (int j = i + 1; j < Q; ++j)
-            D_phi[i][j] = D_phi[j][i] = wasserstein_1d(phi_data[i], phi_data[j]);
+            D_phi[i][j] = D_phi[j][i] =
+                    dist(phi_data[i], phi_data[j]);
 
-    CohesionRepulsionDP phiDP(1.0, D_phi, 0.5, 1.0, 3.0, 1.0, 999);
+    CohesionRepulsionDP phiDP(5.0, D_phi, 0.5, 10.0, 2.0, 10.0, 999);
     phiDP.initialize_random(6);
-    phiDP.run_mcmc(200, 400);
+    phiDP.run_mcmc(2000, 400);
+
+    //phiDP.run_mcmc_to_csv(1, 100, "output_clusters.csv");
+    phiDP.save_meta_cluster_assignments_csv(phi_data, "meta_cluster_assignments.csv");
 
     int best_phi_idx = phiDP.best_sample_binder();
     const auto& final_phi_labels = phiDP.get_samples_labels()[best_phi_idx];
+
     int Kphi = *std::max_element(final_phi_labels.begin(), final_phi_labels.end()) + 1;
     std::cout << "Detected " << Kphi << " parameter clusters.\n";
 
@@ -477,10 +469,760 @@ void test_Parallel_Mixture_with_MetaClustering()
         std::cout << "cluster[" << i << "]: mu=" << phi_data[i].parameters[0]
                   << " sigma2=" << phi_data[i].parameters[1]
                   << " --> meta cluster " << final_phi_labels[i] << "\n";
+    // Creazione e stampa della pipeline
 
+    BayesianPipelineBaseline pipeline;
+    // Meta-clustering
+    double alpha_meta  = 5.0;
+    double delta_in    = 0.5;
+    double lambda_in   = 10.0;
+    double delta_out   = 2.0;
+    double theta_out   = 10.0;
+
+
+    pipeline.populate_from_pipeline(
+    all_samples_c, all_samples_phi, phi_data, final_phi_labels,
+    SamplerType::Neal2,
+    alpha_dp, lambda_appm,
+    burn_in, sampling,
+    alpha_meta, delta_in, lambda_in, delta_out, theta_out,
+    best_phi_idx,          // <-- BEST ITERATION (Binder)
+    true,                  // <-- ha prior coniugata
+    mu0, kappa0, alpha0, beta0
+);
+
+    pipeline.print_summary();
+
+    // A. Ricostruiamo il vettore ordinato per l'export
+    std::vector<DataRow> sorted_rows_for_export;
+    for(const auto& shard : shards) {
+        for(const auto& row : shard) {
+            sorted_rows_for_export.push_back(row);
+        }
+    }
+
+    // B. Salviamo
+    pipeline.save_global_clustering_csv("FINAL_GLOBAL_CLUSTERING.csv", sorted_rows_for_export);
+    //pipeline.save_global_clustering_csv("FINAL_GLOBAL_CLUSTERING.csv");
+    pipeline.save_dataset_with_global_clusters(
+        "dataset_with_clusters.csv",
+        rows,
+        shards
+    );
     std::cout << "\n==================== END FULL PIPELINE TEST ====================\n";
 
     delete prior;
+}
+
+void test_Parallel_Mixture_with_MetaClustering_Neal8_beta()
+{
+    std::cout << "\n==================== FULL PIPELINE TEST (NEAL 8 + BETA) ====================\n";
+
+    // =====================================================================
+    // 0. LOAD CSV
+    // =====================================================================
+    std::cout << "Loading CSV...\n";
+    std::ifstream file("dataset_median.csv");
+    std::string header;
+    std::getline(file, header);
+    std::cout << "Header CSV: " << header << std::endl;
+
+    CSVReader reader("dataset_median.csv", ',');
+    std::vector<DataRow> rows = reader.read();
+
+    if (rows.empty()) {
+        std::cerr << "CSV is empty. Abort.\n";
+        return;
+    }
+    std::cout << "Loaded " << rows.size() << " rows.\n";
+    /*
+        // =====================================================================
+        // 0a. RESCALE MEDIANS TO (0,1) FOR BETA MODEL
+        // =====================================================================
+        double min_val = std::numeric_limits<double>::infinity();
+        double max_val = -std::numeric_limits<double>::infinity();
+
+        for (const auto& r : rows) {
+            min_val = std::min(min_val, r.median_val);
+            max_val = std::max(max_val, r.median_val);
+        }
+
+        const double eps = 1e-6;
+        for (auto& r : rows) {
+            double x = (r.median_val - min_val) / (max_val - min_val);
+            r.median_val = std::min(1.0 - eps, std::max(eps, x));
+        }
+
+        std::cout << "Rescaled median_val to (0,1).\n";
+    */
+    // =====================================================================
+    // 1. SHARDING
+    // =====================================================================
+    for (size_t i = 0; i < rows.size(); i++)
+        rows[i].global_index = i;
+
+    Step1_Sharding::Sharding sharder(rows);
+    auto shards = sharder.generateShards("PROVINCIA");
+
+    std::cout << "Generated " << shards.size() << " shards.\n";
+
+    // =====================================================================
+    // 2. NON-CONJUGATE BETA PRIOR
+    // =====================================================================
+    // Independent Gamma priors on alpha and beta
+    double shape_a = 2.0, rate_a = 1.0;
+    double shape_b = 2.0, rate_b = 1.0;
+
+    IModelPrior* prior = new BetaNonConjugateModel(
+        shape_a, rate_a,
+        shape_b, rate_b,
+        0.25,   // proposal sd log(alpha)
+        0.25,   // proposal sd log(beta)
+        2       // MH steps per update
+    );
+
+    // =====================================================================
+    // 3. LOAD GLOBAL ADJACENCY
+    // =====================================================================
+    auto global_adjacency = AdjacencyUtils::load_adjacency_json("adjacency_list.json");
+
+    std::vector<std::vector<std::vector<int>>> adjacency_per_shard;
+    for (const auto& shard : shards) {
+        adjacency_per_shard.push_back(
+            AdjacencyUtils::extract_local_adjacency(shard, global_adjacency)
+        );
+    }
+
+    // =====================================================================
+    // 4. PARALLEL DP (NEAL 8)
+    // =====================================================================
+    double alpha_dp    = 2;
+    double lambda_appm = 0.5;
+    int burn_in        = 2000;
+    int sampling       = 200;
+    int m_aux          = 5;
+
+    ParallelDPMixture pdp(
+        alpha_dp,
+        shards,
+        prior,
+        adjacency_per_shard,
+        lambda_appm,
+        SamplerType::Neal8,
+        m_aux
+    );
+
+    pdp.run_parallel_mcmc(burn_in, sampling);
+
+    // =====================================================================
+    // 5. COLLECT BEST CLUSTERS PER SHARD
+    // =====================================================================
+    const auto& best_c   = pdp.get_best_clustering_per_chain();
+    const auto& best_phi = pdp.get_best_parameters_per_chain();
+
+    std::cout << "Collected best output from "
+              << best_phi.size() << " chains.\n";
+
+    // =====================================================================
+    // 6. META-CLUSTERING ON BETA PARAMETERS
+    // =====================================================================
+    std::vector<ComponentParameter> phi_data;
+    for (const auto& chain_phi : best_phi)
+        for (const auto& kv : chain_phi)
+            phi_data.push_back(kv.second);
+
+    int Q = phi_data.size();
+    std::cout << "Collected " << Q << " Beta parameter vectors.\n";
+
+    Distances dist(Distances::Type::Beta);
+    std::vector<std::vector<double>> D_phi(Q, std::vector<double>(Q, 0.0));
+    for (int i = 0; i < Q; ++i)
+        for (int j = i + 1; j < Q; ++j)
+            D_phi[i][j] = D_phi[j][i] =
+                dist(phi_data[i], phi_data[j]);
+
+    CohesionRepulsionDP phiDP(
+        2.0,   // alpha
+        D_phi,
+        0.5,   // delta_in
+        5.0,  // lambda_in
+        0.5,   // delta_out
+        5.0,  // theta_out
+        999
+    );
+
+    phiDP.initialize_random(6);
+    phiDP.run_mcmc(2000, 500);
+    phiDP.save_meta_cluster_assignments_csv(
+        phi_data, "meta_cluster_assignments_neal8_beta.csv"
+    );
+
+    int best_phi_idx = phiDP.best_sample_binder();
+    const auto& final_phi_labels =
+        phiDP.get_samples_labels()[best_phi_idx];
+
+    int Kphi = *std::max_element(
+        final_phi_labels.begin(),
+        final_phi_labels.end()
+    ) + 1;
+
+    std::cout << "Detected " << Kphi << " Beta meta-clusters.\n";
+
+    for (int i = 0; i < Q; ++i) {
+        std::cout << "component[" << i << "]: "
+                  << "alpha=" << phi_data[i].parameters[0]
+                  << " beta="  << phi_data[i].parameters[1]
+                  << " --> meta cluster "
+                  << final_phi_labels[i] << "\n";
+    }
+
+    // Creazione e stampa della pipeline
+
+    BayesianPipelineBaseline pipeline;
+    // Meta-clustering
+    double alpha_meta  = 5.0;
+    double delta_in    = 0.5;
+    double lambda_in   = 10.0;
+    double delta_out   = 2.0;
+    double theta_out   = 10.0;
+
+    pipeline.populate_from_pipeline(
+    best_c, best_phi, phi_data, final_phi_labels,
+    SamplerType::Neal8,        // <-- Neal8
+    alpha_dp, lambda_appm,
+    burn_in, sampling,
+    alpha_meta, delta_in, lambda_in, delta_out, theta_out,
+    best_phi_idx,              // <-- BEST ITERATION Binder
+    false                      // <-- NON coniugata
+    );
+    pipeline.print_summary();
+
+    // Creiamo un vettore piatto dei dati riordinati come negli shard
+    std::vector<DataRow> sorted_rows_for_export;
+    for(const auto& shard : shards) {
+        for(const auto& row : shard) {
+            sorted_rows_for_export.push_back(row);
+        }
+    }
+
+    // Passiamo questo vettore alla funzione di salvataggio
+    // Nota: devi aggiornare la firma in BayesianPipelineBaseline.h/cpp per accettare questo vettore
+    // (Nel codice Step 2 ho già predisposto l'argomento opzionale const std::vector<DataRow>& original_data = {})
+
+    pipeline.save_global_clustering_csv("FINAL_GLOBAL_CLUSTERING.csv", sorted_rows_for_export);
+    pipeline.save_dataset_with_global_clusters(
+    "dataset_with_clusters.csv",
+    rows,
+    shards
+);
+    std::cout << "\n==================== END FULL PIPELINE TEST (NEAL8 + BETA) ====================\n";
+
+    delete prior;
+}
+
+void test_PoissonGamma_DP() {
+    std::cout << "\n===== TEST: DP Mixture Model with Poisson-Gamma (Count Data) =====\n";
+
+    // 1. Generazione dati sintetici (Conteggi)
+    std::vector<double> data;
+    std::mt19937 gen(1234);
+
+    // Cluster 1: Lambda = 5 (conteggi bassi)
+    std::poisson_distribution<int> pois1(5);
+    for (int i = 0; i < 100; ++i) data.push_back(static_cast<double>(pois1(gen)));
+
+    // Cluster 2: Lambda = 20 (conteggi alti)
+    std::poisson_distribution<int> pois2(20);
+    for (int i = 0; i < 100; ++i) data.push_back(static_cast<double>(pois2(gen)));
+
+    std::cout << "Generated " << data.size() << " count observations.\n";
+    std::cout << "Cluster 1 True Lambda: 5, Cluster 2 True Lambda: 20.\n";
+
+    // 2. Definizione Prior
+    // Prior Gamma(alpha=2, beta=0.5). Media a priori = alpha/beta = 4. Varianza alta.
+    // beta basso => prior "piatta" (informativa debole)
+    IModelPrior* prior = new PoissonGammaModel(2.0, 0.5);
+
+    // 3. Modello DPMixture (Neal 2)
+    // Nota: Passiamo 'data' che è std::vector<double>, ma contiene interi.
+    double alpha_dp = 1.0;
+    DPMixtureModel model(alpha_dp, data, prior);
+
+    // 4. Esecuzione MCMC
+    std::cout << "Running MCMC (Poisson Likelihood)...\n";
+    model.run_mcmc(500, 1000); // 500 burn-in, 1000 samples
+
+    // 5. Risultati
+    const auto& index_star = model.opt_param_index_fast();
+    const auto& best_phi = model.samples_phi_c[index_star];
+    const auto& best_c = model.samples_c[index_star];
+
+    std::cout << "\nBest iteration index: " << index_star << "\n";
+    std::cout << "Estimated Clusters (Lambda):\n";
+    for (auto& kv : best_phi) {
+        // parameter[0] è il lambda stimato
+        std::cout << "Cluster " << kv.first
+                  << " -> Lambda estimated: " << kv.second.parameters[0]
+                  << " (Size: " << std::count(best_c.begin(), best_c.end(), kv.first) << ")\n";
+    }
+
+    delete prior;
+    std::cout << "===== END TEST =====\n";
+}
+
+void test_Parallel_Poisson_FullPipeline() {
+    std::cout << "\n==================== FULL PIPELINE TEST (POISSON - COUNT DATA) ====================\n";
+
+    // 1. GENERAZIONE DATI SINTETICI (Simuliamo lettura CSV)
+    // Creiamo 200 dati: 100 con lambda=5 (Shard A), 100 con lambda=50 (Shard B)
+    std::vector<DataRow> rows;
+    std::mt19937 gen(999);
+    std::poisson_distribution<int> p1(5);
+    std::poisson_distribution<int> p2(50);
+
+    // Shard A (Lambda 5)
+    for(int i=0; i<100; ++i) {
+        DataRow r;
+        r.global_index = i;
+        r.median_val = (double)p1(gen); // Il conteggio va in median_val
+        r.PROVINCIA = "SHARD_A";          // Fittizio per lo sharding
+        r.COMUNE = "Comune_" + std::to_string(i);
+        rows.push_back(r);
+    }
+    // Shard B (Lambda 50)
+    for(int i=0; i<100; ++i) {
+        DataRow r;
+        r.global_index = 100 + i;
+        r.median_val = (double)p2(gen);
+        r.PROVINCIA = "SHARD_B";
+        r.COMUNE = "Comune_" + std::to_string(100+i);
+        rows.push_back(r);
+    }
+
+    std::cout << "Generated " << rows.size() << " synthetic count data.\n";
+
+    // 2. SHARDING
+    Step1_Sharding::Sharding sharder(rows);
+    auto shards = sharder.generateShards("PROVINCIA");
+    std::cout << "Generated " << shards.size() << " shards based on synthetic PROVINCIA.\n";
+
+    // 3. PRIOR POISSON-GAMMA
+    // Prior poco informativa: Gamma(alpha=1, beta=0.1) -> Media 10, Varianza 100
+    IModelPrior* prior = new PoissonGammaModel(1.0, 0.1);
+
+    // 4. ADIACENZA (Fittizia: identità o vuota, dato che i dati sono sintetici e non spaziali)
+    // Creiamo un'adiacenza vuota per ogni shard (nessun vicino spaziale)
+    std::vector<std::vector<std::vector<int>>> adjacency_per_shard;
+    for(const auto& shard : shards) {
+        std::vector<std::vector<int>> adj(shard.size()); // vettori vuoti
+        adjacency_per_shard.push_back(adj);
+    }
+
+    // 5. PARALLEL MCMC
+    double alpha_dp = 1.0;
+    double lambda_appm = 0.0; // Disattiviamo influenza spaziale (dato che l'adj è vuota)
+    int burn_in = 2000;
+    int sampling = 500;
+
+    ParallelDPMixture pdp(alpha_dp, shards, prior, adjacency_per_shard, lambda_appm);
+    pdp.run_parallel_mcmc(burn_in, sampling);
+
+    // 6. RACCOLTA RISULTATI LOCALI
+    const auto& best_c = pdp.get_best_clustering_per_chain();
+    const auto& best_phi = pdp.get_best_parameters_per_chain();
+
+    // 7. META-CLUSTERING (Consensus)
+    // Raccogliamo tutti i parametri Lambda trovati
+    std::vector<ComponentParameter> phi_data;
+    for (const auto& chain_phi : best_phi)
+        for (const auto& kv : chain_phi)
+            phi_data.push_back(kv.second);
+
+    int Q = phi_data.size();
+    std::cout << "Collected " << Q << " local Poisson parameters (Lambdas).\n";
+
+    // Calcolo matrice distanze D_phi
+    // Per Poisson, il parametro è uno scalare (Lambda).
+    // Usiamo semplicemente la differenza assoluta: |lambda1 - lambda2|
+    Distances dist(Distances::Type::Poisson);
+
+    std::vector<std::vector<double>> D_phi(Q, std::vector<double>(Q, 0.0));
+    for (int i = 0; i < Q; ++i) {
+        for (int j = i + 1; j < Q; ++j) {
+            double lam1 = phi_data[i].parameters[0];
+            double lam2 = phi_data[j].parameters[0];
+            double dist = std::abs(lam1 - lam2); // Distanza semplice 1D
+            D_phi[i][j] = D_phi[j][i] = dist;
+        }
+    }
+
+    // Eseguiamo CohesionRepulsionDP sulla distanza dei Lambda
+    CohesionRepulsionDP phiDP(
+        1.0,   // alpha meta
+        D_phi,
+        0.5, 1.0,  // Cohesion (delta_in, lambda_in)
+        5.0, 1.0,  // Repulsion (delta_out, theta_out) - Parametri forti per separare 5 da 50
+        1234       // seed
+    );
+    phiDP.initialize_random(5);
+    phiDP.run_mcmc(200, 500);
+
+    int best_phi_idx = phiDP.best_sample_binder();
+    const auto& final_phi_labels = phiDP.get_samples_labels()[best_phi_idx];
+
+    // 8. PIPELINE & SALVATAGGIO CSV
+    BayesianPipelineBaseline pipeline;
+
+    pipeline.populate_from_pipeline(
+        best_c, best_phi, phi_data, final_phi_labels,
+        SamplerType::Neal2, // PoissonGamma è coniugato -> Neal2
+        alpha_dp, lambda_appm,
+        burn_in, sampling,
+        1.0, 0.5, 1.0, 5.0, 1.0, // Meta params
+        best_phi_idx,
+        true, // Coniugato = true
+        1.0, 0.1, 0.0, 0.0 // Prior params (alpha0, beta0 negli slot mu0, kappa0)
+    );
+
+    pipeline.print_summary();
+
+    // --- SALVATAGGIO CSV CON DATI ORIGINALI ---
+
+    // A. Ricostruiamo il vettore ordinato per l'export
+    std::vector<DataRow> sorted_rows_for_export;
+    for(const auto& shard : shards) {
+        for(const auto& row : shard) {
+            sorted_rows_for_export.push_back(row);
+        }
+    }
+
+    // B. Salviamo
+    pipeline.save_global_clustering_csv("FINAL_POISSON_CLUSTERING.csv", sorted_rows_for_export);
+    pipeline.save_dataset_with_global_clusters(
+        "dataset_with_clusters.csv",
+        rows,
+        shards
+    );
+    std::cout << "\n==================== END POISSON TEST ====================\n";
+    delete prior;
+}
+
+
+void test_spatialcmc_interface()
+{
+    try {
+        std::cout << "\n================ TEST: SpatialCMCInterface ================\n";
+/*
+        // ------------------------------------------------------------
+        // 1) CSV TEST (no geometry, province sharding)
+        // ------------------------------------------------------------
+
+        {
+            std::cout << "\n[TEST] CSV input\n";
+
+            SpatialCMCConfig cfg;
+            cfg.data_path = "dataset_median.csv";
+            cfg.format = DataFormat::CSV;
+
+            cfg.sampler = SamplerType::Neal8;
+            cfg.prior_name = "beta";
+            cfg.hyperparams = {2,1, 2,1, 0.25,0.25, 5}; // BetaNonConjugate
+
+            cfg.shard_key = "PROVINCIA";
+
+            cfg.alpha_dp = 5.0;
+            cfg.lambda_appm = 0.01;
+            cfg.burn_in = 20;
+            cfg.samples = 50;
+            cfg.m_aux = 5;
+
+            cfg.write_outputs = true;
+            cfg.global_clustering_csv = "TEST_csv_global.csv";
+            cfg.meta_assignments_csv  = "TEST_csv_meta.csv";
+
+            SpatialCMCInterface engine(cfg);
+            auto res = engine.run();
+
+            std::cout << "CSV OK | rows=" << res.n_rows
+                      << " shards=" << res.n_shards
+                      << " Q_phi=" << res.Q_phi
+                      << " K_meta=" << res.K_meta << "\n";
+        }
+
+        // ------------------------------------------------------------
+        // 2) GPKG TEST (auto geometry + adjacency)
+        // ------------------------------------------------------------
+        {
+            std::cout << "\n[TEST] GPKG input\n";
+
+            SpatialCMCConfig cfg;
+            cfg.data_path = "full_dataset_pulito.gpkg";
+            cfg.format = DataFormat::GPKG;
+            cfg.layer_name = ""; // empty = first layer
+
+            cfg.sampler = SamplerType::Neal2;
+            cfg.prior_name = "poisson";
+            cfg.hyperparams = {2.0, 1.0}; // example Poisson hyperparams
+
+            cfg.shard_key = "PROVINCIA"; // must exist as attribute
+
+            cfg.alpha_dp = 5.0;
+            cfg.lambda_appm = 0.01;
+            cfg.burn_in = 20;
+            cfg.samples = 50;
+            cfg.m_aux = 5;
+
+            cfg.knn_k = 8; // used for point geometries
+
+            cfg.write_outputs = true;
+            cfg.global_clustering_csv = "TEST_gpkg_global.csv";
+            cfg.meta_assignments_csv  = "TEST_gpkg_meta.csv";
+
+            SpatialCMCInterface engine(cfg);
+            auto res = engine.run();
+
+            std::cout << "GPKG OK | rows=" << res.n_rows
+                      << " shards=" << res.n_shards
+                      << " Q_phi=" << res.Q_phi
+                      << " K_meta=" << res.K_meta << "\n";
+        }
+*/
+        // ------------------------------------------------------------
+        // 3) SHP TEST (auto geometry + adjacency)
+        // ------------------------------------------------------------
+        {
+            std::cout << "\n[TEST] SHP input\n";
+
+            SpatialCMCConfig cfg;
+            cfg.data_path = "output_shapefile/full_dataset_pulito.shp";
+            cfg.format = DataFormat::SHP;
+
+            cfg.sampler = SamplerType::Neal2;
+            cfg.prior_name = "normal";
+            cfg.hyperparams = {2,2, 1,1};
+
+            cfg.shard_key = "PROVINCIA"; // must exist in DBF
+
+            cfg.alpha_dp = 5.0;
+            cfg.lambda_appm = 0.1;
+            cfg.burn_in = 2000;
+            cfg.samples = 500;
+            cfg.m_aux = 5;
+
+            cfg.knn_k = 8;
+
+            cfg.write_outputs = true;
+            cfg.global_clustering_csv = "TEST_shp_global.csv";
+            cfg.meta_assignments_csv  = "TEST_shp_meta.csv";
+
+            SpatialCMCInterface engine(cfg);
+            auto res = engine.run();
+
+            std::cout << "SHP OK | rows=" << res.n_rows
+                      << " shards=" << res.n_shards
+                      << " Q_phi=" << res.Q_phi
+                      << " K_meta=" << res.K_meta << "\n";
+        }
+
+        std::cout << "\n================ ALL TESTS COMPLETED =================\n";
+    }
+    catch (const std::exception& e) {
+        std::cerr << "\n[TEST FAILED] " << e.what() << "\n";
+        throw; // rethrow so debugger / CI catches it
+    }
+}
+
+void test_spatialcmc_piemonte() {
+    try {
+        // ------------------------------------------------------------
+        // GPKG TEST (auto geometry + adjacency)
+        // ------------------------------------------------------------
+
+            std::cout << "\n[TEST] GPKG PIEMONTE input\n";
+
+            //input file
+            SpatialCMCConfig cfg;
+            cfg.data_path = "PIEMONTE.gpkg";
+            cfg.format = DataFormat::GPKG;
+            cfg.layer_name = ""; // empty = first layer
+
+            //sampler and prior
+            cfg.sampler = SamplerType::Neal8;
+            cfg.prior_name = "beta";
+            cfg.hyperparams = {2.0, 1.0, 2.0, 1.0, 0.25, 0.25, 2};
+
+            //sharding
+            cfg.shard_key = "PROVINCIA"; // must exist as attribute
+
+            // DP/PARALLEL/MCMC
+            cfg.alpha_dp = 5.0;
+            cfg.lambda_appm = 0.1;
+            cfg.burn_in = 1000;
+            cfg.samples = 500;
+            cfg.m_aux = 5;
+
+            //adiacency
+            cfg.knn_k = 8; // used for point geometries
+
+            // Meta-clustering
+            cfg.alpha_meta = 5;
+            // must be smaller than 1
+            cfg.delta_in = 0.5;
+            cfg.lambda_in = 7.5;
+            // must be greater than 1
+            cfg.delta_out = 2.0;
+            cfg.theta_out = 10.0;
+            //cfg.meta_seed = 999;
+            cfg.meta_init_K = 6;
+            cfg.meta_burnin = 2000;
+            cfg.meta_samples = 2000;
+
+            //Outputs
+            cfg.write_outputs = true;
+            cfg.global_clustering_csv = "PIEMONTE_global.csv";
+            cfg.meta_assignments_csv  = "PIEMONTE_meta.csv";
+
+            SpatialCMCInterface engine(cfg);
+            auto res = engine.run();
+
+            std::cout << "GPKG OK | rows=" << res.n_rows
+                      << " shards=" << res.n_shards
+                      << " Q_phi=" << res.Q_phi
+                      << " K_meta=" << res.K_meta << "\n";
+        }
+    catch (const std::exception& e) {
+        std::cerr << "\n[TEST FAILED] " << e.what() << "\n";
+        throw; // rethrow so debugger / CI catches it
+    }
+}
+
+
+void spatialcmc_italia_index() {
+    try {
+        // ------------------------------------------------------------
+        // GPKG TEST (auto geometry + adjacency)
+        // ------------------------------------------------------------
+
+            std::cout << "\n[TEST] GPKG ITALIA input\n";
+
+            //input file
+            SpatialCMCConfig cfg;
+            cfg.data_path = "stress_ITALIA_comuni_1.gpkg";
+            cfg.format = DataFormat::GPKG;
+            cfg.layer_name = ""; // empty = first layer
+
+            //sampler and prior
+            cfg.sampler = SamplerType::Neal8;
+            cfg.prior_name = "beta";
+            cfg.hyperparams = {2.0, 1.0, 2.0, 1.0, 0.25, 0.25, 2};
+
+            //sharding
+            cfg.shard_key = "PROVINCIA"; // must exist as attribute
+
+            // DP/PARALLEL/MCMC
+            cfg.alpha_dp = 5.0;
+            cfg.lambda_appm = 0.1;
+            cfg.burn_in = 1000;
+            cfg.samples = 500;
+            cfg.m_aux = 5;
+
+            //adiacency
+            cfg.knn_k = 8; // used for point geometries
+
+            // Meta-clustering
+            cfg.alpha_meta = 5;
+            // must be smaller than 1
+            cfg.delta_in = 0.5;
+            cfg.lambda_in = 7.5;
+            // must be greater than 1
+            cfg.delta_out = 2.0;
+            cfg.theta_out = 10.0;
+            //cfg.meta_seed = 999;
+            cfg.meta_init_K = 6;
+            cfg.meta_burnin = 2000;
+            cfg.meta_samples = 2000;
+
+            //Outputs
+            cfg.write_outputs = false;
+            cfg.global_clustering_csv = "stress_ITALIA_comuni_global.csv";
+            cfg.meta_assignments_csv  = "stress_ITALIA_comuni_meta.csv";
+
+            SpatialCMCInterface engine(cfg);
+            auto res = engine.run();
+
+            std::cout << "GPKG OK | rows=" << res.n_rows
+                      << " shards=" << res.n_shards
+                      << " Q_phi=" << res.Q_phi
+                      << " K_meta=" << res.K_meta << "\n";
+        }
+    catch (const std::exception& e) {
+        std::cerr << "\n[TEST FAILED] " << e.what() << "\n";
+        throw; // rethrow so debugger / CI catches it
+    }
+}
+
+void test_italia_1M() {
+    try {
+        // ------------------------------------------------------------
+        // GPKG TEST (auto geometry + adjacency)
+        // ------------------------------------------------------------
+
+            std::cout << "\n[TEST] GPKG PIEMONTE punti input\n";
+
+            //input file
+            SpatialCMCConfig cfg;
+            cfg.data_path = "piemonte_centroidi.gpkg";
+            cfg.format = DataFormat::GPKG;
+            cfg.layer_name = ""; // empty = first layer
+
+            //sampler and prior
+            cfg.sampler = SamplerType::Neal8;
+            cfg.prior_name = "beta";
+            cfg.hyperparams = {2.0, 1.0, 2.0, 1.0, 0.25, 0.25, 2};
+
+            //sharding
+            cfg.shard_key = "PROVINCIA"; // must exist as attribute
+
+            // DP/PARALLEL/MCMC
+            cfg.alpha_dp = 5.0;
+            cfg.lambda_appm = 0.1;
+            cfg.burn_in = 2000;
+            cfg.samples = 500;
+            cfg.m_aux = 5;
+
+            //adiacency
+            cfg.knn_k = 8; // used for point geometries
+
+            // Meta-clustering
+            cfg.alpha_meta = 5;
+            // must be smaller than 1
+            cfg.delta_in = 0.5;
+            cfg.lambda_in = 10;
+            // must be greater than 1
+            cfg.delta_out = 2.0;
+            cfg.theta_out = 10.0;
+            //cfg.meta_seed = 999;
+            cfg.meta_init_K = 6;
+            cfg.meta_burnin = 1500;
+            cfg.meta_samples = 50;
+
+            //Outputs
+            cfg.write_outputs = true;
+            cfg.global_clustering_csv = "stress_piemonte_punti_global.csv";
+            cfg.meta_assignments_csv  = "stress_piemonte_punti_meta.csv";
+
+            SpatialCMCInterface engine(cfg);
+            auto res = engine.run();
+
+            std::cout << "GPKG OK | rows=" << res.n_rows
+                      << " shards=" << res.n_shards
+                      << " Q_phi=" << res.Q_phi
+                      << " K_meta=" << res.K_meta << "\n";
+        }
+    catch (const std::exception& e) {
+        std::cerr << "\n[TEST FAILED] " << e.what() << "\n";
+        throw; // rethrow so debugger / CI catches it
+    }
 }
 
 int main()
@@ -489,6 +1231,13 @@ int main()
     //test_DP_MixtureModel_with_APPM();
     //test_CohesionRepulsionDP();
     //test_Parallel_DP_MixtureModel_with_APPM();
-    test_Parallel_Mixture_with_MetaClustering();
+    //test_Parallel_Mixture_with_MetaClustering();
+    //test_Parallel_Mixture_with_MetaClustering_Neal8_beta();
+    //test_PoissonGamma_DP();
+    //test_Parallel_Poisson_FullPipeline();
+    //test_spatialcmc_interface();
+    //test_spatialcmc_piemonte();
+    spatialcmc_italia_index();
+    //test_italia_1M();
     return 0;
 }

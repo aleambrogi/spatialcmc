@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <random>
+#include "IModelPrior.h"
 
 class CohesionRepulsionDP {
 public:
@@ -30,6 +31,10 @@ public:
 
     const std::vector<int>& get_current_labels() const { return c; }
     const std::vector<std::vector<int>>& get_samples_labels() const { return samples_c; }
+
+    void run_mcmc_to_csv(int burn_in, int n_samples, const std::string& filename);
+    void save_meta_cluster_assignments_csv(const std::vector<ComponentParameter>& phi_data,
+                                           const std::string& filename) const;
 
 private:
     double alpha;                      // DP concentration

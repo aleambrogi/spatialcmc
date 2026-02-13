@@ -72,6 +72,95 @@ void DPMixtureModel::gibbs_scan() {
     update_component_parameters();
 }
 
+std::vector<std::vector<double>> DPMixtureModel::compute_co_clustering() const
+{
+    int S = samples_c.size();
+    if (S == 0) {
+        throw std::runtime_error("No MCMC samples available.");
+    }
+
+    int N = samples_c[0].size();
+
+    std::vector<std::vector<double>> P(N, std::vector<double>(N, 0.0));
+
+    // Count co-occurrences
+    for (int s = 0; s < S; ++s) {
+        const auto& c = samples_c[s];
+        for (int i = 0; i < N; ++i) {
+            for (int j = i + 1; j < N; ++j) {
+                if (c[i] == c[j]) {
+                    P[i][j] += 1.0;
+                }
+            }
+        }
+    }
+
+    // Normalize
+    for (int i = 0; i < N; ++i) {
+        for (int j = i + 1; j < N; ++j) {
+            P[i][j] /= S;
+        }
+    }
+
+    return P;
+}
+
+
+double DPMixtureModel::binder_expected_loss(
+        const std::vector<int>& est,
+        const std::vector<std::vector<double>>& P,
+        double a,
+        double b) const
+{
+    int N = est.size();
+    double loss = 0.0;
+
+    for (int i = 0; i < N; ++i) {
+        for (int j = i + 1; j < N; ++j) {
+
+            bool same_est = (est[i] == est[j]);
+            double pij = P[i][j];
+
+            if (same_est) {
+                loss += a * (1.0 - pij);
+            } else {
+                loss += b * pij;
+            }
+        }
+    }
+
+    return loss;
+}
+
+
+int DPMixtureModel::opt_param_index_fast() const
+{
+    if (samples_c.empty()) {
+        throw std::runtime_error("No MCMC samples available for opt_param_index_fast().");
+    }
+
+    int S = samples_c.size();
+
+    // Build co-clustering matrix
+    auto P = compute_co_clustering();
+
+    double best_loss = std::numeric_limits<double>::infinity();
+    int best_index = 0;
+
+    // Evaluate expected Binder loss for each sample
+    for (int s = 0; s < S; ++s) {
+        double loss = binder_expected_loss(samples_c[s], P);
+
+        if (loss < best_loss) {
+            best_loss = loss;
+            best_index = s;
+        }
+    }
+
+    return best_index;
+}
+
+
 double DPMixtureModel::cluster_weight(int i,
                                       int cluster_label,
                                       const ComponentParameter& phi)
@@ -121,7 +210,10 @@ void DPMixtureModel::update_component_indicator(int i) {
     for (auto& p : probs) p /= sum;
 
     // Draw a cluster
-    double u = ((double) rand() / RAND_MAX);
+    std::uniform_real_distribution<double> U(0.0, 1.0);
+    double u =  U(model_prior->generator);
+
+
     double cum = 0.0;
     int selected = cluster_labels.back();  // default: new cluster
     for (size_t k = 0; k < probs.size(); ++k) {
@@ -149,6 +241,7 @@ void DPMixtureModel::update_component_parameters() {
             if (c[i] == label)
                 cluster_data.push_back(y[i]);
         }
+        model_prior->set_current_phi(kv.second);
         kv.second = model_prior->sample_from_posterior(cluster_data);
     }
 }
@@ -190,7 +283,7 @@ int DPMixtureModel::binder_loss(const std::vector<int>& a,
 
     return loss;
 }
-
+/*
 int DPMixtureModel::opt_param_index() const
 {
     if (samples_c.empty()) {
@@ -220,3 +313,4 @@ int DPMixtureModel::opt_param_index() const
     // Return the optimal cluster index (smallest binder loss)
     return best_index;
 }
+*/

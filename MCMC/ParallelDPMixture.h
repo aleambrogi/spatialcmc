@@ -7,18 +7,34 @@
 #include <Sharding.h>
 #include <unordered_map>
 #include "aPPM_MixtureModel.h"
+#include "aPPM_MixtureModel_Neal8.h"
 #include "IModelPrior.h"
+// in ParallelDPMixture.h
+#include "../output/BayesianPipelineBaseline.h" // or better: SamplerType.h
+
+
 
 class ParallelDPMixture {
 public:
-    ParallelDPMixture(double alpha,
+    ParallelDPMixture(double alpha_,
                   const std::vector<Step1_Sharding::Sharding::Shard>& shards,
-                  IModelPrior* prior,
-                  const std::vector<std::vector<int>>& full_adjacency,
-                  double lambda_appm);
+                  IModelPrior* prior_,
+                  const std::vector<std::vector<std::vector<int>>>& adjacency_per_shard,
+                  double lambda_appm_,
+                  SamplerType sampler = SamplerType::Neal2,
+                  int m_aux_ = 5);
+
 
     void run_parallel_mcmc(int burn_in, int sampling);
+    // Add this new method
+    std::vector<std::vector<int>> extract_best_clustering() {
+        return std::move(best_clustering_per_chain); // Moves internal data out
+    }
 
+    // Add this new method
+    std::vector<std::map<int, ComponentParameter>> extract_best_parameters() {
+        return std::move(best_parameters_per_chain); // Moves internal data out
+    }
     const std::vector<std::vector<std::vector<int>>>& get_all_samples_c() const;
     const std::vector<std::vector<std::map<int, ComponentParameter>>>& get_all_samples_phi() const;
 
@@ -35,6 +51,8 @@ private:
     int num_partitions;
     double lambda_appm;
     IModelPrior* prior;
+    SamplerType sampler;
+    int m_aux;
 
     // RESULTS PER CHAIN
     std::vector<int> best_k_per_chain;                                         // best index per chain
