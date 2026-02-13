@@ -18,6 +18,9 @@
 #include "adjacency.h"
 #include "SpatialCMCInterface.h"
 #include "Step0/DataLoader.h"
+#include <fstream>
+#include <iomanip>
+#include <stdexcept>
 
 
 using json = nlohmann::json;
@@ -196,9 +199,10 @@ void test_DP_MixtureModel_with_APPM()
     // 1. Generate synthetic data (2 true clusters)
     // ------------------------------------------
 
-    int n1 = 50;
-    int n2 = 50;
-    int N  = n1 + n2;
+    int n1 = 100;
+    int n2 = 70;
+    int n3 = 140;
+    int N  = n1 + n2 + n3;
 
     std::vector<double> data;
     data.reserve(N);
@@ -214,6 +218,10 @@ void test_DP_MixtureModel_with_APPM()
     // cluster 2
     for (int i = 0; i < n2; ++i)
         data.push_back(dist2(rng));
+
+    // cluster 3
+    for (int i = 0; i < n3; ++i)
+        data.push_back(dist1(rng));
 
     std::cout << "Generated " << N << " points (two well-separated Gaussians).\n";
 
@@ -234,14 +242,22 @@ void test_DP_MixtureModel_with_APPM()
     }
 
     // cluster 2 adjacency
-    for (int i = n2; i < N; ++i) {
-        for (int j = n2; j < N; ++j) {
+    for (int i = n1; i < n1+n2; ++i) {
+        for (int j = n1; j < n1+n2; ++j) {
             if (i != j)
                 adjacency[i].push_back(j);
         }
     }
 
-    std::cout << "Created adjacency with 2 spatially separated components.\n";
+    // cluster 3 adjacency
+    for (int i = n1+n2; i < N; ++i) {
+        for (int j = n1+n2; j < N; ++j) {
+            if (i != j)
+                adjacency[i].push_back(j);
+        }
+    }
+
+    std::cout << "Created adjacency with 3 spatially separated components.\n";
 
     // -----------------------------------------------------
     // 3. Define model prior (Normal-Inverse-Gamma for 1D)
@@ -287,6 +303,33 @@ void test_DP_MixtureModel_with_APPM()
     for (auto& kv : model.samples_phi_c[idx])
         std::cout << "Cluster " << kv.first << ": mu=" << kv.second.parameters[0]
                   << ", sigma2=" << kv.second.parameters[1] << "\n";
+
+    // -----------------------------------------------------
+    // 7. Save generated data + original population + inferred cluster assignment
+    // -----------------------------------------------------
+    {
+        const std::string out_path = "dp_appm_data_clusters.csv";
+        std::ofstream out(out_path);
+        if (!out.is_open()) {
+            throw std::runtime_error("Could not open output file: " + out_path);
+        }
+
+        out << "value,original_pop,cluster_ass\n";
+        out << std::setprecision(17);
+
+        for (int i = 0; i < N; ++i) {
+            int original_pop = 0;
+            if (i < n1) original_pop = 1;
+            else if (i < n1 + n2) original_pop = 2;
+            else original_pop = 3;
+
+            out << data[i] << "," << original_pop << "," << best_clust[i] << "\n";
+        }
+
+        out.close();
+        std::cout << "Saved CSV: " << out_path << "\n";
+    }
+
 
     std::cout << "===== END TEST =====\n";
 }
@@ -368,9 +411,9 @@ void test_Parallel_Mixture_with_MetaClustering()
     // 4. PARALLEL DP ON SHARDS
     // =====================================================================
     double alpha_dp    = 5.0;
-    double lambda_appm = 0.01;
-    int burn_in        = 1;
-    int sampling       = 100;
+    double lambda_appm = 0.1;
+    int burn_in        = 2000;
+    int sampling       = 500;
 
     ParallelDPMixture pdp(alpha_dp,
                           shards,               // ora vettore di vettori DataRow
@@ -411,7 +454,7 @@ void test_Parallel_Mixture_with_MetaClustering()
 
     CohesionRepulsionDP phiDP(5.0, D_phi, 0.5, 10.0, 2.0, 10.0, 999);
     phiDP.initialize_random(6);
-    phiDP.run_mcmc(1, 100);
+    phiDP.run_mcmc(2000, 400);
 
     //phiDP.run_mcmc_to_csv(1, 100, "output_clusters.csv");
     phiDP.save_meta_cluster_assignments_csv(phi_data, "meta_cluster_assignments.csv");
@@ -555,7 +598,7 @@ void test_Parallel_Mixture_with_MetaClustering_Neal8_beta()
     // =====================================================================
     double alpha_dp    = 2;
     double lambda_appm = 0.5;
-    int burn_in        = 1000;
+    int burn_in        = 2000;
     int sampling       = 200;
     int m_aux          = 5;
 
@@ -609,7 +652,7 @@ void test_Parallel_Mixture_with_MetaClustering_Neal8_beta()
     );
 
     phiDP.initialize_random(6);
-    phiDP.run_mcmc(1000, 200);
+    phiDP.run_mcmc(2000, 500);
     phiDP.save_meta_cluster_assignments_csv(
         phi_data, "meta_cluster_assignments_neal8_beta.csv"
     );
@@ -961,9 +1004,9 @@ void test_spatialcmc_interface()
             cfg.shard_key = "PROVINCIA"; // must exist in DBF
 
             cfg.alpha_dp = 5.0;
-            cfg.lambda_appm = 0.01;
-            cfg.burn_in = 20;
-            cfg.samples = 50;
+            cfg.lambda_appm = 0.1;
+            cfg.burn_in = 2000;
+            cfg.samples = 500;
             cfg.m_aux = 5;
 
             cfg.knn_k = 8;
@@ -989,6 +1032,135 @@ void test_spatialcmc_interface()
     }
 }
 
+void test_spatialcmc_piemonte() {
+    try {
+        // ------------------------------------------------------------
+        // GPKG TEST (auto geometry + adjacency)
+        // ------------------------------------------------------------
+
+            std::cout << "\n[TEST] GPKG PIEMONTE input\n";
+
+            //input file
+            SpatialCMCConfig cfg;
+            cfg.data_path = "PIEMONTE.gpkg";
+            cfg.format = DataFormat::GPKG;
+            cfg.layer_name = ""; // empty = first layer
+
+            //sampler and prior
+            cfg.sampler = SamplerType::Neal8;
+            cfg.prior_name = "beta";
+            cfg.hyperparams = {2.0, 1.0, 2.0, 1.0, 0.25, 0.25, 2};
+
+            //sharding
+            cfg.shard_key = "PROVINCIA"; // must exist as attribute
+
+            // DP/PARALLEL/MCMC
+            cfg.alpha_dp = 5.0;
+            cfg.lambda_appm = 0.1;
+            cfg.burn_in = 1000;
+            cfg.samples = 500;
+            cfg.m_aux = 5;
+
+            //adiacency
+            cfg.knn_k = 8; // used for point geometries
+
+            // Meta-clustering
+            cfg.alpha_meta = 5;
+            // must be smaller than 1
+            cfg.delta_in = 0.5;
+            cfg.lambda_in = 7.5;
+            // must be greater than 1
+            cfg.delta_out = 2.0;
+            cfg.theta_out = 10.0;
+            //cfg.meta_seed = 999;
+            cfg.meta_init_K = 6;
+            cfg.meta_burnin = 2000;
+            cfg.meta_samples = 2000;
+
+            //Outputs
+            cfg.write_outputs = true;
+            cfg.global_clustering_csv = "PIEMONTE_global.csv";
+            cfg.meta_assignments_csv  = "PIEMONTE_meta.csv";
+
+            SpatialCMCInterface engine(cfg);
+            auto res = engine.run();
+
+            std::cout << "GPKG OK | rows=" << res.n_rows
+                      << " shards=" << res.n_shards
+                      << " Q_phi=" << res.Q_phi
+                      << " K_meta=" << res.K_meta << "\n";
+        }
+    catch (const std::exception& e) {
+        std::cerr << "\n[TEST FAILED] " << e.what() << "\n";
+        throw; // rethrow so debugger / CI catches it
+    }
+}
+
+
+void spatialcmc_italia_index() {
+    try {
+        // ------------------------------------------------------------
+        // GPKG TEST (auto geometry + adjacency)
+        // ------------------------------------------------------------
+
+            std::cout << "\n[TEST] GPKG PIEMONTE input\n";
+
+            //input file
+            SpatialCMCConfig cfg;
+            cfg.data_path = "stress_ITALIA_comuni_1.gpkg";
+            cfg.format = DataFormat::GPKG;
+            cfg.layer_name = ""; // empty = first layer
+
+            //sampler and prior
+            cfg.sampler = SamplerType::Neal8;
+            cfg.prior_name = "beta";
+            cfg.hyperparams = {2.0, 1.0, 2.0, 1.0, 0.25, 0.25, 2};
+
+            //sharding
+            cfg.shard_key = "PROVINCIA"; // must exist as attribute
+
+            // DP/PARALLEL/MCMC
+            cfg.alpha_dp = 5.0;
+            cfg.lambda_appm = 0.1;
+            cfg.burn_in = 1000;
+            cfg.samples = 500;
+            cfg.m_aux = 5;
+
+            //adiacency
+            cfg.knn_k = 8; // used for point geometries
+
+            // Meta-clustering
+            cfg.alpha_meta = 5;
+            // must be smaller than 1
+            cfg.delta_in = 0.5;
+            cfg.lambda_in = 7.5;
+            // must be greater than 1
+            cfg.delta_out = 2.0;
+            cfg.theta_out = 10.0;
+            //cfg.meta_seed = 999;
+            cfg.meta_init_K = 6;
+            cfg.meta_burnin = 2000;
+            cfg.meta_samples = 2000;
+
+            //Outputs
+            cfg.write_outputs = false;
+            cfg.global_clustering_csv = "stress_ITALIA_comuni_global.csv";
+            cfg.meta_assignments_csv  = "stress_ITALIA_comuni_meta.csv";
+
+            SpatialCMCInterface engine(cfg);
+            auto res = engine.run();
+
+            std::cout << "GPKG OK | rows=" << res.n_rows
+                      << " shards=" << res.n_shards
+                      << " Q_phi=" << res.Q_phi
+                      << " K_meta=" << res.K_meta << "\n";
+        }
+    catch (const std::exception& e) {
+        std::cerr << "\n[TEST FAILED] " << e.what() << "\n";
+        throw; // rethrow so debugger / CI catches it
+    }
+}
+
 int main()
 {
     //test_DP_MixtureModel();
@@ -999,6 +1171,8 @@ int main()
     //test_Parallel_Mixture_with_MetaClustering_Neal8_beta();
     //test_PoissonGamma_DP();
     //test_Parallel_Poisson_FullPipeline();
-    test_spatialcmc_interface();
+    //test_spatialcmc_interface();
+    //test_spatialcmc_piemonte();
+    spatialcmc_italia_index();
     return 0;
 }

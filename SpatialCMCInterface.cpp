@@ -178,10 +178,14 @@ SpatialCMCResult SpatialCMCInterface::run()
 
     phiDP.initialize_random(cfg_.meta_init_K);
     phiDP.run_mcmc(cfg_.meta_burnin, cfg_.meta_samples);
-
+/*
     if (cfg_.write_outputs) {
-        phiDP.save_meta_cluster_assignments_csv(phi_data, cfg_.meta_assignments_csv);
+        phiDP.save_meta_cluster_assignments_csv(phi_data,+ "clusters" + cfg_.meta_assignments_csv );
+
     }
+*/
+    // 1. Get the history of global clusters
+    const auto& meta_history = phiDP.get_samples_labels();
 
     int best_phi_idx = phiDP.best_sample_binder();
     const auto& final_phi_labels = phiDP.get_samples_labels()[best_phi_idx];
@@ -210,10 +214,26 @@ SpatialCMCResult SpatialCMCInterface::run()
         mu0, kappa0, alpha0, beta0
     );
 
+    // 3. Export
+    if (cfg_.write_outputs) {
+        // NEW: Export the Meta-MCMC Point Trace
+        // Recreate sorted data for headers
+        std::vector<DataRow> shard_order;
+        for (const auto& shard : shards)
+            for (const auto& r : shard) shard_order.push_back(r);
+
+        out.pipeline.save_meta_mcmc_point_trace(
+            cfg_.meta_assignments_csv,
+            meta_history,
+            shard_order
+        );
+    }
+
     out.pipeline.print_summary();
 
     // 10) Export
     if (cfg_.write_outputs) {
+
         // Save in shard order to match your baseline's assumptions
         std::vector<DataRow> shard_order;
         shard_order.reserve(rows.size());
@@ -222,9 +242,15 @@ SpatialCMCResult SpatialCMCInterface::run()
                 shard_order.push_back(r);
 
         out.pipeline.save_global_clustering_csv(cfg_.global_clustering_csv, shard_order);
+
+        // NEW: GPKG export (Change extension for clarity)
+        std::string gpkg_out = cfg_.global_clustering_csv;
+        // Simple string replace .csv -> .gpkg
+        size_t lastindex = gpkg_out.find_last_of(".");
+        if (lastindex != std::string::npos) gpkg_out = gpkg_out.substr(0, lastindex);
+        gpkg_out += ".gpkg";
+
+        out.pipeline.save_global_clustering_gpkg(gpkg_out, shard_order);
     }
-
-
-
     return out;
 }
