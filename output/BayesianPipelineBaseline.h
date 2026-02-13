@@ -61,6 +61,21 @@ public:
         double alpha0_ = 0.0, double beta0_ = 0.0
     );
 
+    void save_global_clustering_gpkg(
+        const std::string& filename,
+        const std::vector<DataRow>& sorted_data,
+        const std::string& layer_name = "clusters"
+    ) const;
+
+
+    void save_meta_mcmc_point_trace(
+        const std::string& filename,
+        // The history from CohesionRepulsionDP: [Iteration][MetaItemIndex] -> GlobalID
+        const std::vector<std::vector<int>>& meta_samples,
+        // Optional: for column headers
+        const std::vector<DataRow>& original_data_sorted = {}
+    );
+
     void compute_global_posteriors_from_meta();
     void print_summary() const;
     void save_global_clustering_csv(const std::string& filename, const std::vector<DataRow>& original_data );

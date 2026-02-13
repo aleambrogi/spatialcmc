@@ -3,7 +3,16 @@
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
+#include "ogrsf_frmts.h"
+#include "cpl_error.h" // Required
 
+#include "cpl_conv.h" // Required for CPLSetConfigOption
+
+// ... inside your main or constructor
+// Windows Example (adjust path to where your GDAL is installed)
+
+
+// Make sure to link against gdal library
 void BayesianPipelineBaseline::populate_from_pipeline(
     const std::vector<std::vector<int>>& clusterings,
     const std::vector<std::map<int, ComponentParameter>>& parameters,
@@ -69,6 +78,110 @@ BayesianPipelineBaseline::build_global_index_to_cluster_map(
 
     return global_map;
 }
+
+void BayesianPipelineBaseline::save_meta_mcmc_point_trace(
+    const std::string& filename,
+    const std::vector<std::vector<int>>& meta_samples,
+    const std::vector<DataRow>& original_data_sorted
+) {
+    if (meta_samples.empty()) {
+        std::cerr << "No meta-samples provided.\n";
+        return;
+    }
+
+    std::ofstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Error opening file: " << filename << "\n";
+        return;
+    }
+
+    // ---------------------------------------------------------
+    // 1. Build a Map: (ShardID, LocalClusterID) -> MetaItemIndex
+    // ---------------------------------------------------------
+    // The CohesionRepulsionDP receives parameters in a specific flattened order.
+    // We must reconstruct that exact order to know which column in 'meta_samples'
+    // corresponds to which local cluster.
+
+    std::map<std::pair<int, int>, int> local_to_meta_idx;
+    int flat_idx = 0;
+
+    // Iterate exactly as we did when building phi_data in SpatialCMCInterface
+    for (size_t s = 0; s < all_parameters.size(); ++s) {
+        // Map is sorted by key (LocalClusterID), ensuring deterministic order
+        for (const auto& kv : all_parameters[s]) {
+            int local_id = kv.first;
+            local_to_meta_idx[{ (int)s, local_id }] = flat_idx;
+            flat_idx++;
+        }
+    }
+
+    // Check consistency
+    if (meta_samples[0].size() != (size_t)flat_idx) {
+        std::cerr << "Warning: Mismatch between meta-sample columns ("
+                  << meta_samples[0].size() << ") and total local clusters (" << flat_idx << ").\n";
+    }
+
+    // ---------------------------------------------------------
+    // 2. Write Header
+    // ---------------------------------------------------------
+    file << "MetaIteration";
+
+    // Calculate total points
+    int total_points = 0;
+    for (const auto& shard_c : all_clusterings) total_points += shard_c.size();
+
+    if (!original_data_sorted.empty() && original_data_sorted.size() == total_points) {
+        for (const auto& row : original_data_sorted) file << "," << row.COMUNE;
+    } else {
+        for (int i = 0; i < total_points; ++i) file << ",Pt_" << i;
+    }
+    file << "\n";
+
+    // ---------------------------------------------------------
+    // 3. Write Trace Rows
+    // ---------------------------------------------------------
+    std::cout << "Saving meta-point trace (" << meta_samples.size() << " iterations) to " << filename << "...\n";
+
+    for (size_t t = 0; t < meta_samples.size(); ++t) {
+        file << t; // Iteration
+
+        const auto& current_global_config = meta_samples[t];
+
+        // Iterate over every point in the dataset (Shard 0 -> N)
+        for (size_t s = 0; s < all_clusterings.size(); ++s) {
+            const auto& shard_assignments = all_clusterings[s]; // Fixed local assignment
+
+            for (int local_c : shard_assignments) {
+
+                int global_c = -1;
+
+                // 1. Find which "Meta Item" this local cluster corresponds to
+                auto key = std::make_pair((int)s, local_c);
+                if (local_to_meta_idx.count(key)) {
+                    int meta_idx = local_to_meta_idx.at(key);
+
+                    // 2. Look up the Global ID for that item at this iteration
+                    if (meta_idx < current_global_config.size()) {
+                        global_c = current_global_config[meta_idx];
+                    }
+                }
+
+                file << "," << global_c;
+            }
+        }
+        file << "\n";
+    }
+
+    file.close();
+}
+
+void save_meta_mcmc_point_trace(
+    const std::string& filename,
+    // The history from CohesionRepulsionDP: [Iteration][MetaItemIndex] -> GlobalID
+    const std::vector<std::vector<int>>& meta_samples,
+    // Optional: for column headers
+    const std::vector<DataRow>& original_data_sorted = {}
+);
 
 void BayesianPipelineBaseline::save_dataset_with_global_clusters(
     const std::string& filename,
@@ -269,7 +382,107 @@ void BayesianPipelineBaseline::save_global_clustering_csv(const std::string& fil
 
     std::cout << "Saved global clustering results to " << filename << "\n";
     file.close();
+}
 
 
 
+void BayesianPipelineBaseline::save_global_clustering_gpkg(
+    const std::string& filename,
+    const std::vector<DataRow>& sorted_data,
+    const std::string& layer_name
+) const {
+
+    //CPLSetConfigOption("GDAL_DATA", "C:\\Program Files\\GDAL\\gdal-data");
+
+    CPLPushErrorHandler(CPLQuietErrorHandler);
+    GDALAllRegister();
+
+    const char *pszDriverName = "GPKG";
+    GDALDriver *poDriver = GetGDALDriverManager()->GetDriverByName(pszDriverName);
+    if (!poDriver) {
+        std::cerr << "GPKG driver not available.\n";
+        return;
+    }
+
+    // Create the datasource (the file)
+    GDALDataset *poDS = poDriver->Create(filename.c_str(), 0, 0, 0, GDT_Unknown, nullptr);
+    if (!poDS) {
+        std::cerr << "Creation of output file failed: " << filename << "\n";
+        return;
+    }
+
+    // Create the layer
+    // Note: We don't have the SpatialReference (CRS) here easily unless stored in DataRow.
+    // The output will be valid geometry but "Unknown CRS" in QGIS.
+    OGRLayer *poLayer = poDS->CreateLayer(layer_name.c_str(), nullptr, wkbUnknown, nullptr);
+    if (!poLayer) {
+        std::cerr << "Layer creation failed.\n";
+        GDALClose(poDS);
+        return;
+    }
+
+    // Define Fields (Schema)
+    OGRFieldDefn fProv("PROVINCIA", OFTString);
+    poLayer->CreateField(&fProv);
+
+    OGRFieldDefn fCom("COMUNE", OFTString);
+    poLayer->CreateField(&fCom);
+
+    OGRFieldDefn fVal("Value", OFTReal);
+    poLayer->CreateField(&fVal);
+
+    OGRFieldDefn fGlobal("GlobalIndex", OFTInteger);
+    poLayer->CreateField(&fGlobal);
+
+    OGRFieldDefn fCluster("GlobalClusterID", OFTInteger);
+    poLayer->CreateField(&fCluster);
+
+    // Add Shard/Local ID for debugging if needed
+    OGRFieldDefn fShard("ShardID", OFTInteger);
+    poLayer->CreateField(&fShard);
+
+    // Write Data
+    // We assume 'sorted_data' matches the order of 'global_assignments' (Shard 0->N)
+    size_t global_counter = 0;
+
+    for (size_t s = 0; s < global_assignments.size(); ++s) {
+        for (size_t i = 0; i < global_assignments[s].size(); ++i) {
+
+            if (global_counter >= sorted_data.size()) break;
+
+            const auto& row = sorted_data[global_counter];
+            int cluster_id = global_assignments[s][i];
+
+            OGRFeature *poFeature = OGRFeature::CreateFeature(poLayer->GetLayerDefn());
+
+            // 1. Reconstruct Geometry from WKT
+            if (!row.geometry_wkt.empty()) {
+                char* wkt = const_cast<char*>(row.geometry_wkt.c_str());
+                OGRGeometry *poGeom = nullptr;
+                OGRGeometryFactory::createFromWkt(&wkt, nullptr, &poGeom);
+                if (poGeom) {
+                    poFeature->SetGeometryDirectly(poGeom); // Feature takes ownership
+                }
+            }
+
+            // 2. Set Attributes
+            poFeature->SetField("PROVINCIA", row.PROVINCIA.c_str());
+            poFeature->SetField("COMUNE", row.COMUNE.c_str());
+            poFeature->SetField("Value", row.median_val);
+            poFeature->SetField("GlobalIndex", row.global_index);
+            poFeature->SetField("GlobalClusterID", cluster_id);
+            poFeature->SetField("ShardID", (int)s);
+
+            // 3. Commit
+            if (poLayer->CreateFeature(poFeature) != OGRERR_NONE) {
+                std::cerr << "Failed to create feature " << row.global_index << "\n";
+            }
+
+            OGRFeature::DestroyFeature(poFeature);
+            global_counter++;
+        }
+    }
+
+    std::cout << "Saved global clustering to GPKG: " << filename << "\n";
+    GDALClose(poDS);
 }
