@@ -240,10 +240,16 @@ void BayesianPipelineBaseline::print_summary() const {
               << "\n";
 
     if (has_conjugate_prior) {
-        std::cout << "Prior (conjugate NIG): mu0=" << mu0
+        if (alpha0 == 0 and beta0 == 0) {
+            std::cout << "Prior (conjugate GAMMA): alpha=" << mu0
+                  << " beta=" << kappa0 <<std::endl;
+        }
+        else {
+            std::cout << "Prior (conjugate NIG): mu0=" << mu0
                   << " kappa0=" << kappa0
                   << " alpha0=" << alpha0
                   << " beta0=" << beta0 << "\n";
+        }
     } else {
         std::cout << "Prior: non-conjugate / not available\n";
     }

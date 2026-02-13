@@ -7,6 +7,25 @@
 #include <stdexcept>
 #include <algorithm>
 #include <iostream>
+#include <iomanip> // Required for progress bar formatting
+#include <fstream>
+
+// ------------------------------------------------------------
+// Helper: Static Progress Bar
+// ------------------------------------------------------------
+static void print_progress(int current, int total, const std::string& prefix) {
+    const int bar_width = 50;
+    float progress = (float)current / total;
+
+    std::cout << "\r" << prefix << " [";
+    int pos = bar_width * progress;
+    for (int i = 0; i < bar_width; ++i) {
+        if (i < pos) std::cout << "=";
+        else if (i == pos) std::cout << ">";
+        else std::cout << " ";
+    }
+    std::cout << "] " << int(progress * 100.0) << " %" << std::flush;
+}
 
 static long binder_loss(const std::vector<int>& z1,
                         const std::vector<int>& z2)
@@ -29,7 +48,13 @@ static long binder_loss(const std::vector<int>& z1,
 
 // ------------------------------------------------------------
 // Select the MCMC sample index with minimal Binder loss
-// (comparing each sample to all samples)
+// ------------------------------------------------------------
+// ------------------------------------------------------------
+// Select the MCMC sample index with minimal Binder loss
+// ------------------------------------------------------------
+// ------------------------------------------------------------
+// Select the MCMC sample index with minimal Binder loss
+// Optimized: Uses Posterior Similarity Matrix (O(T * N^2))
 // ------------------------------------------------------------
 int CohesionRepulsionDP::best_sample_binder() const
 {
@@ -37,21 +62,66 @@ int CohesionRepulsionDP::best_sample_binder() const
     if (T == 0)
         throw std::runtime_error("No samples stored. Run MCMC first.");
 
-    int best_index = 0;
-    long best_loss = std::numeric_limits<long>::max();
+    // 1. Compute Posterior Similarity Matrix P
+    // P[i][j] = probability that i and j are in the same cluster
+    std::cout << "Computing Posterior Similarity Matrix..." << std::endl;
+    std::vector<std::vector<double>> P(n, std::vector<double>(n, 0.0));
 
-    for (int t = 0; t < T; ++t) {
-        long total_loss = 0;
-
-        for (int s = 0; s < T; ++s) {
-            total_loss += binder_loss(samples_c[t], samples_c[s]);
-        }
-
-        if (total_loss < best_loss) {
-            best_loss = total_loss;
-            best_index = t;
+    for (const auto& sample : samples_c) {
+        for (int i = 0; i < n; ++i) {
+            for (int j = i + 1; j < n; ++j) {
+                if (sample[i] == sample[j]) {
+                    P[i][j] += 1.0;
+                }
+            }
         }
     }
+
+    // Normalize counts to probabilities
+    for (int i = 0; i < n; ++i) {
+        for (int j = i + 1; j < n; ++j) {
+            P[i][j] /= static_cast<double>(T);
+        }
+    }
+
+    // 2. Find sample minimizing expected Binder loss against P
+    int best_index = 0;
+    double best_loss = std::numeric_limits<double>::max();
+
+    // Weights for Binder Loss (standard: a=1, b=1)
+    const double a = 1.0;
+    const double b = 1.0;
+
+    for (int t = 0; t < T; ++t) {
+        double current_loss = 0.0;
+        const auto& est = samples_c[t];
+
+        for (int i = 0; i < n; ++i) {
+            for (int j = i + 1; j < n; ++j) {
+                bool same_cluster = (est[i] == est[j]);
+                double pij = P[i][j];
+
+                if (same_cluster) {
+                    // Penalty if they are same in est, but prob says different
+                    current_loss += a * (1.0 - pij);
+                } else {
+                    // Penalty if they are different in est, but prob says same
+                    current_loss += b * pij;
+                }
+            }
+        }
+
+        if (current_loss < best_loss) {
+            best_loss = current_loss;
+            best_index = t;
+        }
+
+        print_progress(t + 1, T, "Minimizing Binder Loss");
+    }
+    std::cout << std::endl;
+
+    std::cout << "Best iteration found: " << best_index
+              << " (Min Expected Binder Loss: " << best_loss << ")\n";
 
     return best_index;
 }
@@ -86,13 +156,9 @@ CohesionRepulsionDP::CohesionRepulsionDP(
         throw std::runtime_error("Gamma parameters must be > 0.");
     }
 
-    // Precompute log-constants for Gamma densities
-    // Gamma(shape=delta, rate=lambda):
-    // log f(d) = delta*log(lambda) - lgamma(delta) + (delta-1)*log(d) - lambda*d
     logC_in  = delta1 * std::log(lambda_in)  - std::lgamma(delta1);
     logC_out = delta2 * std::log(theta_out) - std::lgamma(delta2);
 
-    // default init: single cluster
     initialize_single_cluster();
 }
 
@@ -103,7 +169,7 @@ void CohesionRepulsionDP::initialize_single_cluster()
     cluster_counts.assign(1, n);
 }
 
-// ---------- initialization: random labels up to max_init_clusters ----------
+// ---------- initialization: random labels ----------
 void CohesionRepulsionDP::initialize_random(int max_init_clusters)
 {
     if (max_init_clusters <= 0) {
@@ -116,15 +182,12 @@ void CohesionRepulsionDP::initialize_random(int max_init_clusters)
         c[i] = unif(rng);
     }
 
-    // compress labels so that only used labels remain
-    // and cluster_counts are correct
-    // (we'll rebuild cluster_counts)
     int max_label = *std::max_element(c.begin(), c.end());
     std::vector<int> tmp_counts(max_label + 1, 0);
     for (int i = 0; i < n; ++i) {
         tmp_counts[c[i]]++;
     }
-    // build mapping old_label -> new_label (keeping only non-empty)
+
     std::vector<int> label_map(max_label + 1, -1);
     int newK = 0;
     for (int old = 0; old <= max_label; ++old) {
@@ -132,35 +195,27 @@ void CohesionRepulsionDP::initialize_random(int max_init_clusters)
             label_map[old] = newK++;
         }
     }
-    // relabel c[i]
+
     for (int i = 0; i < n; ++i) {
         c[i] = label_map[c[i]];
     }
-    // build cluster_counts
+
     cluster_counts.assign(newK, 0);
     for (int i = 0; i < n; ++i) {
         cluster_counts[c[i]]++;
     }
 }
 
-// ---------- log Gamma pdfs for cohesion / repulsion ----------
+// ---------- log Gamma pdfs ----------
 double CohesionRepulsionDP::log_f_in(double d) const
 {
-    // within-cluster distance density
-    if (d <= 0.0) {
-        // Ideally should never happen; distances should be > 0
-        return -1e30;
-    }
+    if (d <= 0.0) return -1e30;
     return logC_in + (delta1 - 1.0) * std::log(d) - lambda_in * d;
 }
 
 double CohesionRepulsionDP::log_g_out(double d) const
 {
-    // between-cluster distance density
-    if (d <= 0.0) {
-        // repulsive Gamma has 0 density at d=0 when delta2>1
-        return -1e30;
-    }
+    if (d <= 0.0) return -1e30;
     return logC_out + (delta2 - 1.0) * std::log(d) - theta_out * d;
 }
 
@@ -168,16 +223,11 @@ double CohesionRepulsionDP::log_g_out(double d) const
 int CohesionRepulsionDP::sample_from_log_weights(const std::vector<double>& logw)
 {
     const int K = static_cast<int>(logw.size());
-    if (K == 0) {
-        throw std::runtime_error("sample_from_log_weights: empty weights.");
-    }
+    if (K == 0) throw std::runtime_error("sample_from_log_weights: empty weights.");
 
-    // subtract max for numerical stability
     double max_logw = logw[0];
     for (int k = 1; k < K; ++k) {
-        if (logw[k] > max_logw) {
-            max_logw = logw[k];
-        }
+        if (logw[k] > max_logw) max_logw = logw[k];
     }
 
     std::vector<double> w(K);
@@ -189,7 +239,6 @@ int CohesionRepulsionDP::sample_from_log_weights(const std::vector<double>& logw
     }
 
     if (sum_w <= 0.0 || !std::isfinite(sum_w)) {
-        // fallback: uniform
         std::uniform_int_distribution<int> unif(0, K - 1);
         return unif(rng);
     }
@@ -199,11 +248,9 @@ int CohesionRepulsionDP::sample_from_log_weights(const std::vector<double>& logw
     double cum = 0.0;
     for (int k = 0; k < K; ++k) {
         cum += w[k];
-        if (u <= cum) {
-            return k;
-        }
+        if (u <= cum) return k;
     }
-    return K - 1; // safety
+    return K - 1;
 }
 
 // ---------- remove item i from its cluster ----------
@@ -215,20 +262,17 @@ void CohesionRepulsionDP::remove_item_from_cluster(int i)
     }
 
     cluster_counts[old_k]--;
-    c[i] = -1; // mark as unassigned for now
+    c[i] = -1;
 
     if (cluster_counts[old_k] == 0) {
         check_empty_and_relabel(old_k);
     }
 }
 
-// ---------- if a cluster is empty, drop it and relabel higher indices ----------
+// ---------- if a cluster is empty, drop it and relabel ----------
 void CohesionRepulsionDP::check_empty_and_relabel(int emptied_cluster)
 {
-    // remove that cluster from counts
     cluster_counts.erase(cluster_counts.begin() + emptied_cluster);
-
-    // relabel assignments c[i] > emptied_cluster
     for (int i = 0; i < n; ++i) {
         if (c[i] > emptied_cluster) {
             c[i]--;
@@ -239,26 +283,10 @@ void CohesionRepulsionDP::check_empty_and_relabel(int emptied_cluster)
 // ---------- update assignment for index i (Gibbs step) ----------
 void CohesionRepulsionDP::update_assignment_for_index(int i)
 {
-    // 1. Remove i from its current cluster (and possibly drop that cluster)
     remove_item_from_cluster(i);
-
     const int K = static_cast<int>(cluster_counts.size());
-
-    // 2. Build log weights for each candidate cluster (existing + "new")
-    // candidates: 0..K-1 existing, K = new cluster
     std::vector<double> logw(K + 1, 0.0);
 
-    // For each candidate cluster k, compute:
-    // log posterior ∝ log prior + log likelihood contribution of i's distances
-    // Prior (DP): existing cluster k: log(n_k), new cluster: log(alpha)
-    // Likelihood: sum over j != i of log f_in(d_ij) or log g_out(d_ij)
-    // Only pairs involving i change; others are constant wrt assignment of i.
-
-    // Precompute which j's are in which cluster to avoid repeated scanning
-    // (but for simplicity we scan c[j] directly, which is O(n*K) worst-case
-    // and is fine for moderate n).
-
-    // existing clusters
     for (int k = 0; k < K; ++k) {
         double log_prior = std::log(static_cast<double>(cluster_counts[k]));
         double log_like = 0.0;
@@ -266,47 +294,34 @@ void CohesionRepulsionDP::update_assignment_for_index(int i)
         for (int j = 0; j < n; ++j) {
             if (j == i) continue;
             int cj = c[j];
-            if (cj == -1) continue; // j might be temporarily unassigned only when j==i
+            if (cj == -1) continue;
 
             double d = D[i][j];
-            if (cj == k) {
-                // within-cluster pair (i,j)
-                log_like += log_f_in(d);
-            } else {
-                // between-cluster pair
-                log_like += log_g_out(d);
-            }
+            if (cj == k) log_like += log_f_in(d);
+            else         log_like += log_g_out(d);
         }
         logw[k] = log_prior + log_like;
     }
 
-    // new cluster candidate (label = K)
     {
         double log_prior_new = std::log(alpha);
         double log_like_new = 0.0;
-
         for (int j = 0; j < n; ++j) {
             if (j == i) continue;
             int cj = c[j];
             if (cj == -1) continue;
-
             double d = D[i][j];
-            // new cluster has no other members, so every pair (i,j) is "between"
             log_like_new += log_g_out(d);
         }
-
         logw[K] = log_prior_new + log_like_new;
     }
 
-    // 3. Sample cluster index from these log-weights
     int chosen = sample_from_log_weights(logw);
 
     if (chosen < K) {
-        // existing cluster
         c[i] = chosen;
         cluster_counts[chosen]++;
     } else {
-        // new cluster
         int new_k = static_cast<int>(cluster_counts.size());
         cluster_counts.push_back(1);
         c[i] = new_k;
@@ -321,33 +336,35 @@ void CohesionRepulsionDP::gibbs_scan()
     }
 }
 
-// ---------- run MCMC ----------
+// ---------- run MCMC (with progress bars) ----------
 void CohesionRepulsionDP::run_mcmc(int burn_in, int n_samples)
 {
     if (burn_in < 0 || n_samples <= 0) {
-        throw std::runtime_error("Invalid burn_in, n_samples or thin in run_mcmc.");
+        throw std::runtime_error("Invalid burn_in, n_samples in run_mcmc.");
     }
+
+    std::cout << "[MCMC] Number of clusters found: " << n << std::endl;
 
     samples_c.clear();
     samples_c.reserve(n_samples);
 
-
-
+    // 1. Burn-in Phase
     for (int it = 0; it < burn_in; ++it) {
         gibbs_scan();
-        //std::cout << "Burn-in, iteration: " << it << "\n";
+        print_progress(it + 1, burn_in, "Burn-in ");
     }
+    if (burn_in > 0) std::cout << std::endl;
 
+    // 2. Sampling Phase
     for (int it = 0; it < n_samples; ++it) {
         gibbs_scan();
-        //std::cout << "Sampling , iteration: " << it << "\n";
         samples_c.push_back(c);
+        print_progress(it + 1, n_samples, "Sampling");
     }
+    std::cout << std::endl;
 }
 
-#include <fstream>
-#include <stdexcept>
-
+// ---------- run MCMC to CSV (with progress bars) ----------
 void CohesionRepulsionDP::run_mcmc_to_csv(int burn_in, int n_samples, const std::string& filename)
 {
     if (burn_in < 0 || n_samples <= 0) {
@@ -362,31 +379,33 @@ void CohesionRepulsionDP::run_mcmc_to_csv(int burn_in, int n_samples, const std:
         throw std::runtime_error("Cannot open file: " + filename);
     }
 
-    // Opzionale: intestazione con nomi degli elementi
     for (int i = 0; i < n; ++i) {
         outfile << "elem" << i;
         if (i != n-1) outfile << ",";
     }
     outfile << "\n";
 
-    // Burn-in
+    // 1. Burn-in Phase
     for (int it = 0; it < burn_in; ++it) {
         gibbs_scan();
-        // Non si scrive nulla per il burn-in
+        print_progress(it + 1, burn_in, "Burn-in ");
     }
+    if (burn_in > 0) std::cout << std::endl;
 
-    // Sampling
+    // 2. Sampling Phase
     for (int it = 0; it < n_samples; ++it) {
         gibbs_scan();
         samples_c.push_back(c);
 
-        // Salva lo stato corrente dei cluster nel CSV
         for (int i = 0; i < n; ++i) {
             outfile << c[i];
             if (i != n-1) outfile << ",";
         }
         outfile << "\n";
+
+        print_progress(it + 1, n_samples, "Sampling");
     }
+    std::cout << std::endl;
 
     outfile.close();
     std::cout << "Saved " << n_samples << " MCMC samples to " << filename << "\n";
@@ -401,21 +420,18 @@ void CohesionRepulsionDP::save_meta_cluster_assignments_csv(
         throw std::runtime_error("Cannot open file for writing: " + filename);
     }
 
-    int Q = phi_data.size(); // numero di cluster dalla prima MCMC
-    auto samples_labels = get_samples_labels(); // ✅ usa il getter
+    int Q = phi_data.size();
+    auto samples_labels = get_samples_labels();
     int n_iter = samples_labels.size();
 
-
-    // Header: prima colonna "iteration", poi (mu,sigma2) per ogni cluster
     out << "iteration";
     for (int i = 0; i < Q; ++i) {
         out << ",(" << phi_data[i].parameters[0] << "," << phi_data[i].parameters[1] << ")";
     }
     out << "\n";
 
-    // Iterazioni
     for (int it = 0; it < n_iter; ++it) {
-        out << (it + 1); // numero iterazione a partire da 1
+        out << (it + 1);
         const auto& labels = samples_labels[it];
         for (int i = 0; i < Q; ++i) {
             out << "," << labels[i];

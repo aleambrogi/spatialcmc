@@ -12,7 +12,7 @@ alpha(alpha_), y(data), model_prior(prior)
         next_component_id = 0;  // will assign new clusters starting from 0
     }
 
-void DPMixtureModel::run_mcmc(int burn_in, int sampling)
+void DPMixtureModel::run_mcmc(int burn_in, int sampling, std::function<void()> callback)
 {
     using clock = std::chrono::high_resolution_clock;
     auto start_time = clock::now();
@@ -29,22 +29,16 @@ void DPMixtureModel::run_mcmc(int burn_in, int sampling)
     // --------------------------
     // BURN-IN PHASE
     // --------------------------
-    //std::cout << "Burn-in (" << burn_in << " iterations)...\n";
-
     for (int it = 0; it < burn_in; ++it) {
         gibbs_scan();
 
-        //std::cout << "\rBurn-in iteration " << (it + 1)
-               //   << " / " << burn_in << std::flush;
+        // [1] Add callback here
+        if (callback) callback();
     }
-
-    //if (burn_in > 0) std::cout << "\nBurn-in completed.\n";
 
     // --------------------------
     // SAMPLING PHASE
     // --------------------------
-    //std::cout << "Sampling (" << sampling << " iterations)...\n";
-
     for (int it = 0; it < sampling; ++it) {
         gibbs_scan();
 
@@ -52,17 +46,12 @@ void DPMixtureModel::run_mcmc(int burn_in, int sampling)
         samples_c.push_back(c);
         samples_phi_c.push_back(phi_c);
 
-        //std::cout << "\rSample iteration " << (it + 1)
-                 // << " / " << sampling << std::flush;
+        // [2] Add callback here
+        if (callback) callback();
     }
 
     auto end_time = clock::now();
     std::chrono::duration<double> elapsed = end_time - start_time;
-
-    //std::cout << "\nMCMC completed in "
-           //   << elapsed.count() << " seconds.\n";
-    //std::cout << "Total saved samples: "
-        //      << samples_c.size() << "\n";
 }
 
 void DPMixtureModel::gibbs_scan() {
