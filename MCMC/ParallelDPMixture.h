@@ -26,7 +26,15 @@ public:
 
 
     void run_parallel_mcmc(int burn_in, int sampling);
+    // Add this new method
+    std::vector<std::vector<int>> extract_best_clustering() {
+        return std::move(best_clustering_per_chain); // Moves internal data out
+    }
 
+    // Add this new method
+    std::vector<std::map<int, ComponentParameter>> extract_best_parameters() {
+        return std::move(best_parameters_per_chain); // Moves internal data out
+    }
     const std::vector<std::vector<std::vector<int>>>& get_all_samples_c() const;
     const std::vector<std::vector<std::map<int, ComponentParameter>>>& get_all_samples_phi() const;
 

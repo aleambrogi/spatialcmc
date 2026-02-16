@@ -1204,10 +1204,10 @@ void spatialcmc_crocs_morti_beta() {
             cfg.alpha_meta = 1;
             // must be smaller than 1
             cfg.delta_in = 0.5;
-            cfg.lambda_in = 4.955;
+            cfg.lambda_in = 1;
             // must be greater than 1
             cfg.delta_out = 1.5;
-            cfg.theta_out = 5.0;
+            cfg.theta_out = 10.0;
             //cfg.meta_seed = 999;
             cfg.meta_init_K = 6;
             cfg.meta_burnin = 2000;
@@ -1276,10 +1276,11 @@ void spatialcmc_italia_index() {
             cfg.alpha_meta = 0.1;
             // must be smaller than 1
             cfg.delta_in = 0.5;
-            cfg.lambda_in = 7.5;
+            cfg.lambda_in = 1;
             // must be greater than 1
             cfg.delta_out = 2.0;
-            cfg.theta_out = 10.0;
+            //controlla la varianza dei cluster finali (più è basso meno varianza hanno i cluster finali)
+            cfg.theta_out = 10;
             //cfg.meta_seed = 999;
             cfg.meta_init_K = 6;
             cfg.meta_burnin = 2000;
@@ -1289,6 +1290,80 @@ void spatialcmc_italia_index() {
             cfg.write_outputs = true;
             cfg.global_clustering_csv = "stress_ITALIA_comuni_global.csv";
             cfg.meta_assignments_csv  = "stress_ITALIA_comuni_meta.csv";
+
+            SpatialCMCInterface engine(cfg);
+
+        auto start = std::chrono::high_resolution_clock::now();
+
+            auto res = engine.run();
+
+        auto end = std::chrono::high_resolution_clock::now();
+        auto ms_int = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+            std::cout << "GPKG OK | rows=" << res.n_rows
+                      << " shards=" << res.n_shards
+                      << " Q_phi=" << res.Q_phi
+                      << " K_meta=" << res.K_meta << "\n";
+
+        std::cout << "Total Runtime: " << ms_int.count() << "ms ("
+          << ms_int.count() / 1000.0 << "s)\n";
+        }
+    catch (const std::exception& e) {
+        std::cerr << "\n[TEST FAILED] " << e.what() << "\n";
+        throw; // rethrow so debugger / CI catches it
+    }
+}
+
+
+void spatialcmc_italia_index_BD() {
+    try {
+        // ------------------------------------------------------------
+        // GPKG TEST (auto geometry + adjacency)
+        // ------------------------------------------------------------
+
+            std::cout << "\n[TEST] GPKG ITALIA input\n";
+
+            //input file
+            SpatialCMCConfig cfg;
+            cfg.data_path = "CENTROIDI_INDICE.gpkg";
+            cfg.format = DataFormat::GPKG;
+            cfg.layer_name = ""; // empty = first layer
+
+            //sampler and prior
+            cfg.sampler = SamplerType::Neal8;
+            cfg.prior_name = "beta";
+            cfg.hyperparams = {2.0, 1.0, 2.0, 1.0, 0.25, 0.25, 2};
+
+            //sharding
+            cfg.shard_key = "PROVINCIA"; // must exist as attribute
+
+            // DP/PARALLEL/MCMC
+            cfg.alpha_dp = 5.0;
+            cfg.lambda_appm = 0.1;
+            cfg.burn_in = 1500;
+            cfg.samples = 500;
+            cfg.m_aux = 5;
+
+            //adiacency
+            cfg.knn_k = 8; // used for point geometries
+
+            // Meta-clustering
+            cfg.alpha_meta = 5.0;
+            // must be smaller than 1
+            cfg.delta_in = 0.5;
+            cfg.lambda_in = 9.0;
+            // must be greater than 1
+            cfg.delta_out = 2.0;
+            cfg.theta_out = 10.0;
+            //cfg.meta_seed = 999;
+            cfg.meta_init_K = 6;
+            cfg.meta_burnin = 2000;
+            cfg.meta_samples = 30;
+
+            //Outputs
+            cfg.write_outputs = true;
+            cfg.global_clustering_csv = "stress_ITALIA_global.csv";
+            cfg.meta_assignments_csv  = "stress_ITALIA_meta.csv";
 
             SpatialCMCInterface engine(cfg);
 
@@ -1327,6 +1402,7 @@ int main()
     //test_spatialcmc_piemonte();
     //spatialcmc_italia_index();
     //spatialcmc_crocs_morti();
-    spatialcmc_crocs_morti_beta();
+    //spatialcmc_crocs_morti_beta();
+    //spatialcmc_italia_index_BD();
     return 0;
 }

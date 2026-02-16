@@ -16,7 +16,7 @@
 #include <queue>
 #include <unordered_set>
 #include "IModelPrior.h"
-#include <functional>
+
 
 int binder_loss(const std::vector<int>& a,
                 const std::vector<int>& b);
@@ -60,8 +60,7 @@ public:
     std::vector<std::map<int, ComponentParameter>> samples_phi_c;
     //[[nodiscard]] int opt_param_index() const;
     DPMixtureModel(double alpha, const std::vector<double>& data, IModelPrior* prior);
-    // Update declaration
-    void run_mcmc(int burn_in, int n_samples, std::function<void()> callback = nullptr);
+    void run_mcmc(int burn_in, int sampling);
     void gibbs_scan(); // Executes one full scan (step 1 and 2 of Algorithm 2)
     virtual ~DPMixtureModel() = default;
     [[nodiscard]] int opt_param_index_fast() const;

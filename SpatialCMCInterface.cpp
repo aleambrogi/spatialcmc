@@ -103,60 +103,129 @@ SpatialCMCInterface::build_adjacency_per_shard(const std::vector<Step1_Sharding:
     return out;
 }
 
+#include <cmath>
+#include <stdexcept>
+#include <algorithm> // per std::min, std::max se necessario
+
+// Helper function per calcolare il Log-Beta: ln(B(x, y))
+// B(x,y) = Gamma(x)Gamma(y) / Gamma(x+y)
+// Si usa lgamma per evitare overflow numerici con i fattoriali
+double log_beta(double x, double y) {
+    return std::lgamma(x) + std::lgamma(y) - std::lgamma(x + y);
+}
+
 double SpatialCMCInterface::phi_distance(const ComponentParameter& a,
-                                        const ComponentParameter& b) const
+                                         const ComponentParameter& b) const
 {
-    // Same dummy distance you used in Rcpp example:
-    // abs difference in first parameter
     if (a.parameters.empty() || b.parameters.empty())
         return 0.0;
-    return std::abs(a.parameters[0] - b.parameters[0]);
+
+    // --- BETA DISTRIBUTION ---
+    // Usa la Distanza di Hellinger.
+    // Parametri attesi: [0] = alpha, [1] = beta
+    if (cfg_.prior_name == "beta") {
+        if (a.parameters.size() < 2 || b.parameters.size() < 2) {
+            throw std::runtime_error("phi_distance: Beta model requires 2 parameters (alpha, beta).");
+        }
+
+        double alpha1 = a.parameters[0];
+        double beta1  = a.parameters[1];
+        double alpha2 = b.parameters[0];
+        double beta2  = b.parameters[1];
+
+        // Formula Hellinger: sqrt( 1 - BC(P,Q) )
+        // Dove BC (Bhattacharyya Coefficient) = B((a1+a2)/2, (b1+b2)/2) / sqrt( B(a1,b1) * B(a2,b2) )
+
+        // Calcolo in log-space per stabilità numerica
+        double log_num = log_beta((alpha1 + alpha2) / 2.0, (beta1 + beta2) / 2.0);
+        double log_den = 0.5 * (log_beta(alpha1, beta1) + log_beta(alpha2, beta2));
+
+        double affinity = std::exp(log_num - log_den);
+
+        // Clamp per errori di virgola mobile (affinity non deve superare 1.0)
+        if (affinity > 1.0) affinity = 1.0;
+        if (affinity < 0.0) affinity = 0.0; // sicurezza
+
+        return std::sqrt(1.0 - affinity);
+    }
+
+    // --- NORMAL DISTRIBUTION ---
+    // Usa la 2-Wasserstein distance.
+    // Parametri attesi: [0] = mean, [1] = variance (sigma^2)
+    if (cfg_.prior_name == "normal") {
+        double mu1 = a.parameters[0];
+        double mu2 = b.parameters[0];
+
+        // Caso varianza fissa (solo media)
+        if (a.parameters.size() == 1) {
+            return std::abs(mu1 - mu2);
+        }
+
+        // Caso media e varianza
+        double var1 = a.parameters[1];
+        double var2 = b.parameters[1];
+
+        // La Wasserstein richiede le deviazioni standard
+        double sigma1 = std::sqrt(var1);
+        double sigma2 = std::sqrt(var2);
+
+        // W_2 = sqrt( (mu1-mu2)^2 + (sigma1-sigma2)^2 )
+        double mean_diff_sq = (mu1 - mu2) * (mu1 - mu2);
+        double std_diff_sq  = (sigma1 - sigma2) * (sigma1 - sigma2);
+
+        return std::sqrt(mean_diff_sq + std_diff_sq);
+    }
+
+    // --- POISSON DISTRIBUTION ---
+    // Usa la 1-Wasserstein distance (Earth Mover's Distance)
+    // Coincide con la differenza assoluta delle medie (lambda)
+    if (cfg_.prior_name == "poisson") {
+        return std::abs(a.parameters[0] - b.parameters[0]);
+    }
+
+    // --- UNKNOWN MODEL ---
+    throw std::invalid_argument("phi_distance: Unknown prior_name '" + cfg_.prior_name + "'");
 }
+
+// In SpatialCMCInterface.cpp
 
 SpatialCMCResult SpatialCMCInterface::run()
 {
     SpatialCMCResult out;
 
-    // 1) Load
+    // ---------------------------------------------------------
+    // 1-3) Load, Preprocess, Shard
+    // ---------------------------------------------------------
     auto rows = load_data();
     if (rows.empty()) throw std::runtime_error("Dataset is empty.");
     out.n_rows = (int)rows.size();
 
-    // 2) Preprocess for prior constraints
     preprocess_for_prior(rows);
+    for (size_t i = 0; i < rows.size(); ++i) rows[i].global_index = (int)i;
 
-    // Ensure global index set (CSV loader might already do it)
-    for (size_t i = 0; i < rows.size(); ++i)
-        rows[i].global_index = (int)i;
-
-    // 3) Sharding
     Step1_Sharding::Sharding sharder(rows);
     auto shards = sharder.generateShards(cfg_.shard_key);
     out.n_shards = (int)shards.size();
 
-    // 4) Prior
-    auto prior = make_prior();
+    // MEMORY OPTIMIZATION: Clear raw input now that we have shards
+    rows.clear();
+    rows.shrink_to_fit();
 
-    // 5) Adjacency
+    // ---------------------------------------------------------
+    // 4-6) Parallel DP (Batched)
+    // ---------------------------------------------------------
+    auto prior = make_prior();
     auto adjacency_per_shard = build_adjacency_per_shard(shards);
 
-    // 6) Parallel DP
-    ParallelDPMixture pdp(
-        cfg_.alpha_dp,
-        shards,
-        prior.get(),
-        adjacency_per_shard,
-        cfg_.lambda_appm,
-        cfg_.sampler,
-        cfg_.m_aux
-    );
-
+    ParallelDPMixture pdp(cfg_.alpha_dp, shards, prior.get(), adjacency_per_shard,
+                          cfg_.lambda_appm, cfg_.sampler, cfg_.m_aux);
     pdp.run_parallel_mcmc(cfg_.burn_in, cfg_.samples);
 
-    const auto& best_c   = pdp.get_best_clustering_per_chain();
-    const auto& best_phi = pdp.get_best_parameters_per_chain();
-
-    // 7) Collect phi data for meta clustering
+    auto best_c   = pdp.extract_best_clustering();
+    auto best_phi = pdp.extract_best_parameters();
+    // ---------------------------------------------------------
+    // 7-8) Meta Clustering
+    // ---------------------------------------------------------
     std::vector<ComponentParameter> phi_data;
     for (const auto& chain_phi : best_phi)
         for (const auto& kv : chain_phi)
@@ -164,93 +233,93 @@ SpatialCMCResult SpatialCMCInterface::run()
 
     out.Q_phi = (int)phi_data.size();
 
-    // 8) Meta clustering distance matrix
-    int Q = out.Q_phi;
+    // Safety Check for Matrix Size
+    long long Q = out.Q_phi;
+    if ((double)Q*Q*8.0 / 1e9 > 24.0)
+        throw std::runtime_error("Meta-clustering matrix too big! Increase alpha_dp.");
+
+    // Build Distance Matrix
     std::vector<std::vector<double>> D_phi(Q, std::vector<double>(Q, 0.0));
-    for (int i = 0; i < Q; ++i)
-        for (int j = i + 1; j < Q; ++j)
+    #pragma omp parallel for schedule(dynamic)
+    for (int i = 0; i < Q; ++i) {
+        for (int j = i + 1; j < Q; ++j) {
             D_phi[i][j] = D_phi[j][i] = phi_distance(phi_data[i], phi_data[j]);
+        }
+    }
 
-    CohesionRepulsionDP phiDP(cfg_.alpha_meta, D_phi,
-                              cfg_.delta_in, cfg_.lambda_in,
-                              cfg_.delta_out, cfg_.theta_out,
-                              cfg_.meta_seed);
-
+    CohesionRepulsionDP phiDP(cfg_.alpha_meta, D_phi, cfg_.delta_in, cfg_.lambda_in,
+                              cfg_.delta_out, cfg_.theta_out, cfg_.meta_seed);
     phiDP.initialize_random(cfg_.meta_init_K);
     phiDP.run_mcmc(cfg_.meta_burnin, cfg_.meta_samples);
-/*
-    if (cfg_.write_outputs) {
-        phiDP.save_meta_cluster_assignments_csv(phi_data,+ "clusters" + cfg_.meta_assignments_csv );
 
-    }
-*/
-    // 1. Get the history of global clusters
-    const auto& meta_history = phiDP.get_samples_labels();
+    // Free Matrix Memory Immediately
+    D_phi.clear();
+    std::vector<std::vector<double>>().swap(D_phi);
 
+    // [FIX 1] Extract History HERE
+    auto meta_history = phiDP.get_samples_labels();
+
+    // Find Best Iteration
     int best_phi_idx = phiDP.best_sample_binder();
-    const auto& final_phi_labels = phiDP.get_samples_labels()[best_phi_idx];
-
-    out.K_meta = *std::max_element(final_phi_labels.begin(), final_phi_labels.end()) + 1;
-
-    // 9) Populate baseline pipeline
-    bool has_conjugate = (cfg_.prior_name == "normal");
-    double mu0=0, kappa0=0, alpha0=0, beta0=0;
-    if (has_conjugate) {
-        mu0 = cfg_.hyperparams[0];
-        kappa0 = cfg_.hyperparams[1];
-        alpha0 = cfg_.hyperparams[2];
-        beta0 = cfg_.hyperparams[3];
+    // We copy this because we need to move it into pipeline later
+    std::vector<int> final_phi_labels;
+    if (best_phi_idx >= 0 && best_phi_idx < meta_history.size()) {
+        final_phi_labels = meta_history[best_phi_idx];
+        if (!final_phi_labels.empty()) {
+            out.K_meta = *std::max_element(final_phi_labels.begin(), final_phi_labels.end()) + 1;
+        }
     }
+
+    // ---------------------------------------------------------
+    // 9) Populate Pipeline
+    // ---------------------------------------------------------
+    bool has_conjugate = (cfg_.prior_name == "normal");
+    double mu0=0, kappa0=0, alpha0=0, beta0=0; // Fill if using normal...
 
     out.pipeline.populate_from_pipeline(
-        best_c, best_phi, phi_data, final_phi_labels,
-        cfg_.sampler,
-        cfg_.alpha_dp, cfg_.lambda_appm,
-        cfg_.burn_in, cfg_.samples,
-        cfg_.alpha_meta, cfg_.delta_in, cfg_.lambda_in,
-        cfg_.delta_out, cfg_.theta_out,
-        best_phi_idx,
-        has_conjugate,
-        mu0, kappa0, alpha0, beta0
+        std::move(best_c),
+        std::move(best_phi),
+        std::move(phi_data),
+        std::move(final_phi_labels),
+        cfg_.sampler, cfg_.alpha_dp, cfg_.lambda_appm, cfg_.burn_in, cfg_.samples,
+        cfg_.alpha_meta, cfg_.delta_in, cfg_.lambda_in, cfg_.delta_out, cfg_.theta_out,
+        best_phi_idx, has_conjugate, mu0, kappa0, alpha0, beta0
     );
-
-    // 3. Export
-    if (cfg_.write_outputs) {
-        // NEW: Export the Meta-MCMC Point Trace
-        // Recreate sorted data for headers
-        std::vector<DataRow> shard_order;
-        for (const auto& shard : shards)
-            for (const auto& r : shard) shard_order.push_back(r);
-
-        out.pipeline.save_meta_mcmc_point_trace(
-            cfg_.meta_assignments_csv,
-            meta_history,
-            shard_order
-        );
-    }
 
     out.pipeline.print_summary();
 
-    // 10) Export
+    // ---------------------------------------------------------
+    // 10) Export Results (Optimized)
+    // ---------------------------------------------------------
     if (cfg_.write_outputs) {
+        std::cout << "--- Exporting Results ---\n";
 
-        // Save in shard order to match your baseline's assumptions
+        // [FIX 2] Reconstruct data ONCE
         std::vector<DataRow> shard_order;
-        shard_order.reserve(rows.size());
+        shard_order.reserve(out.n_rows); // Use out.n_rows (rows.size() is 0)
+
         for (const auto& shard : shards)
             for (const auto& r : shard)
                 shard_order.push_back(r);
 
+        // Export 1: Meta Trace
+        out.pipeline.save_meta_mcmc_point_trace(
+            cfg_.meta_assignments_csv,
+            meta_history, // Now this exists
+            shard_order
+        );
+
+        // Export 2: CSV
         out.pipeline.save_global_clustering_csv(cfg_.global_clustering_csv, shard_order);
 
-        // NEW: GPKG export (Change extension for clarity)
+        // Export 3: GPKG
         std::string gpkg_out = cfg_.global_clustering_csv;
-        // Simple string replace .csv -> .gpkg
         size_t lastindex = gpkg_out.find_last_of(".");
         if (lastindex != std::string::npos) gpkg_out = gpkg_out.substr(0, lastindex);
         gpkg_out += ".gpkg";
 
         out.pipeline.save_global_clustering_gpkg(gpkg_out, shard_order);
     }
+
     return out;
 }

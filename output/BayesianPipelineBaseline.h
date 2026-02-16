@@ -1,3 +1,4 @@
+
 #ifndef BAYESIANPIPELINEBASELINE_H
 #define BAYESIANPIPELINEBASELINE_H
 
@@ -46,10 +47,10 @@ public:
     BayesianPipelineBaseline() = default;
 
     void populate_from_pipeline(
-        const std::vector<std::vector<int>>& clusterings,
-        const std::vector<std::map<int, ComponentParameter>>& parameters,
-        const std::vector<ComponentParameter>& phi,
-        const std::vector<int>& meta_labels,
+        std::vector<std::vector<int>> clusterings,           // <--- Pass by Value
+        std::vector<std::map<int, ComponentParameter>> parameters,
+        std::vector<ComponentParameter> phi,
+        std::vector<int> meta_labels,
         SamplerType sampler,
         double alpha_dp_, double lambda_appm_,
         int burn_in_, int samples_,

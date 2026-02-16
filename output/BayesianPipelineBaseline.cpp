@@ -13,11 +13,15 @@
 
 
 // Make sure to link against gdal library
+// In BayesianPipelineBaseline.cpp
+
+// BayesianPipelineBaseline.cpp
+
 void BayesianPipelineBaseline::populate_from_pipeline(
-    const std::vector<std::vector<int>>& clusterings,
-    const std::vector<std::map<int, ComponentParameter>>& parameters,
-    const std::vector<ComponentParameter>& phi,
-    const std::vector<int>& meta_labels,
+    std::vector<std::vector<int>> clusterings,           // Passed by value (Copy or Move happened at call site)
+    std::vector<std::map<int, ComponentParameter>> parameters,
+    std::vector<ComponentParameter> phi,
+    std::vector<int> meta_labels,
     SamplerType sampler,
     double alpha_dp_, double lambda_appm_,
     int burn_in_, int samples_,
@@ -28,35 +32,79 @@ void BayesianPipelineBaseline::populate_from_pipeline(
     double mu0_, double kappa0_,
     double alpha0_, double beta0_
 ) {
-    all_clusterings = clusterings;
-    all_parameters = parameters;
-    phi_data = phi;
-    best_meta_labels = meta_labels;
-    sampler_type = sampler;
+    // INTERNAL MOVE: We move the local 'value' into the member variable.
+    // This is instant.
+    all_clusterings = std::move(clusterings);
+    all_parameters  = std::move(parameters);
+    phi_data        = std::move(phi);
+    best_meta_labels= std::move(meta_labels);
 
+    sampler_type = sampler;
     alpha_dp = alpha_dp_;
     lambda_appm = lambda_appm_;
     burn_in = burn_in_;
     samples = samples_;
-
     alpha_meta = alpha_meta_;
     delta_in = delta_in_;
     lambda_in = lambda_in_;
     delta_out = delta_out_;
     theta_out = theta_out_;
-
     best_meta_iteration = best_meta_iteration_;
-
     has_conjugate_prior = has_conjugate_prior_;
     if (has_conjugate_prior) {
-        mu0 = mu0_;
-        kappa0 = kappa0_;
-        alpha0 = alpha0_;
-        beta0 = beta0_;
+        mu0 = mu0_; kappa0 = kappa0_; alpha0 = alpha0_; beta0 = beta0_;
     }
 
     compute_global_posteriors_from_meta();
     map_local_to_global();
+}
+
+void BayesianPipelineBaseline::map_local_to_global() {
+    if(all_parameters.empty()) return;
+
+    // OPTIMIZATION: Use Flat Vector Lookup instead of std::map
+    // 1. Build lookup table: table[shard][local_id] = global_id
+    std::vector<std::vector<int>> lookup_table(all_parameters.size());
+    int flat_index = 0;
+
+    for (size_t shard_idx = 0; shard_idx < all_parameters.size(); ++shard_idx) {
+        int max_local_id = 0;
+        if (!all_parameters[shard_idx].empty()) {
+            max_local_id = all_parameters[shard_idx].rbegin()->first;
+        }
+        lookup_table[shard_idx].assign(max_local_id + 1, -1);
+
+        for (const auto& kv : all_parameters[shard_idx]) {
+            if (flat_index >= best_meta_labels.size()) break;
+            int local_label = kv.first;
+            int global_label = best_meta_labels[flat_index];
+
+            if(local_label >= 0) lookup_table[shard_idx][local_label] = global_label;
+            flat_index++;
+        }
+    }
+
+    // 2. Fast Assign
+    global_assignments.clear();
+    global_assignments.resize(all_clusterings.size());
+
+    // Use OpenMP if you have it, otherwise normal loop is fine
+    #pragma omp parallel for schedule(dynamic)
+    for (size_t shard_idx = 0; shard_idx < all_clusterings.size(); ++shard_idx) {
+        const auto& shard_clusters = all_clusterings[shard_idx];
+        std::vector<int> current_shard_globals(shard_clusters.size());
+
+        for (size_t i = 0; i < shard_clusters.size(); ++i) {
+            int local_c = shard_clusters[i];
+            int global_c = -1;
+            if (local_c >= 0 && local_c < lookup_table[shard_idx].size()) {
+                global_c = lookup_table[shard_idx][local_c];
+            }
+            current_shard_globals[i] = global_c;
+        }
+        global_assignments[shard_idx] = std::move(current_shard_globals);
+    }
+    std::cout << "Mapped global assignments for " << all_clusterings.size() << " shards.\n";
 }
 
 
@@ -240,16 +288,10 @@ void BayesianPipelineBaseline::print_summary() const {
               << "\n";
 
     if (has_conjugate_prior) {
-        if (alpha0 == 0 and beta0 == 0) {
-            std::cout << "Prior (conjugate GAMMA): alpha=" << mu0
-                  << " beta=" << kappa0 <<std::endl;
-        }
-        else {
-            std::cout << "Prior (conjugate NIG): mu0=" << mu0
+        std::cout << "Prior (conjugate NIG): mu0=" << mu0
                   << " kappa0=" << kappa0
                   << " alpha0=" << alpha0
                   << " beta0=" << beta0 << "\n";
-        }
     } else {
         std::cout << "Prior: non-conjugate / not available\n";
     }
@@ -288,54 +330,6 @@ void BayesianPipelineBaseline::print_summary() const {
     std::cout << "================================================================\n";
 }
 
-void BayesianPipelineBaseline::map_local_to_global() {
-    // 1. Costruiamo una mappa di lookup: (ShardID, LocalClusterID) -> GlobalMetaLabel
-    // L'ordine deve rispecchiare ESATTAMENTE come è stato costruito phi_data nel main.
-    // Nel main: loop su shard (ch), loop su map (kv).
-
-    std::map<std::pair<int, int>, int> lookup_table;
-    int flat_index = 0;
-
-    for (size_t shard_idx = 0; shard_idx < all_parameters.size(); ++shard_idx) {
-        // all_parameters[shard_idx] è una std::map<int, ComponentParameter>
-        // L'iterazione su std::map è garantita essere ordinata per chiave (LocalClusterID)
-        for (const auto& kv : all_parameters[shard_idx]) {
-            int local_label = kv.first;
-
-            if (flat_index >= best_meta_labels.size()) {
-                std::cerr << "ERR: flat_index out of bounds in map_local_to_global!\n";
-                break;
-            }
-
-            int global_label = best_meta_labels[flat_index];
-            lookup_table[{ (int)shard_idx, local_label }] = global_label;
-
-            flat_index++;
-        }
-    }
-
-    // 2. Ora iteriamo su tutti i dati originali (tramite all_clusterings) e assegniamo il global label
-    global_assignments.clear();
-    global_assignments.resize(all_clusterings.size());
-
-    for (size_t shard_idx = 0; shard_idx < all_clusterings.size(); ++shard_idx) {
-        const auto& shard_clusters = all_clusterings[shard_idx];
-        global_assignments[shard_idx].resize(shard_clusters.size());
-
-        for (size_t i = 0; i < shard_clusters.size(); ++i) {
-            int local_c = shard_clusters[i];
-
-            // Se il punto è stato assegnato a un cluster locale valido
-            if (lookup_table.count({ (int)shard_idx, local_c })) {
-                global_assignments[shard_idx][i] = lookup_table[{ (int)shard_idx, local_c }];
-            } else {
-                // Caso outlier o errore (es. local_c = -1)
-                global_assignments[shard_idx][i] = -1;
-            }
-        }
-    }
-    std::cout << "Mapped global assignments for " << all_clusterings.size() << " shards.\n";
-}
 
 void BayesianPipelineBaseline::save_global_clustering_csv(const std::string& filename, const std::vector<DataRow>& original_data) {
     std::ofstream file(filename);
