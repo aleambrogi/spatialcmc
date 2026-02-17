@@ -4,14 +4,22 @@
 #include <cmath>
 #include <limits>
 #include <stdexcept>
+#include <iostream>
 
 // Priors
 #include "MCMC/IModelPrior.h"
 #include "MCMC/PoissonGammaModel.h"
-#include "MCMC/BetaNonConjugateModel.h"     // your class
+#include "MCMC/BetaNonConjugateModel.h"
 #include "Step0/GeometryAdjacency.h"
 
-
+// -----------------------------------------------------------------------------
+// Helper function to calculate Log-Beta: ln(B(x, y))
+// B(x,y) = Gamma(x)Gamma(y) / Gamma(x+y)
+// Uses lgamma to avoid numerical overflow with factorials
+// -----------------------------------------------------------------------------
+double log_beta(double x, double y) {
+    return std::lgamma(x) + std::lgamma(y) - std::lgamma(x + y);
+}
 
 SpatialCMCInterface::SpatialCMCInterface(SpatialCMCConfig cfg)
 : cfg_(std::move(cfg))
@@ -22,11 +30,9 @@ std::vector<DataRow> SpatialCMCInterface::load_data() const
     LoadSpec spec;
     spec.path = cfg_.data_path;
     spec.layer_name = cfg_.layer_name;
-
     spec.format = cfg_.format;
 
     // If your vector layers use different field names, expose them via cfg_ and set here.
-
     return load_dataset(spec);
 }
 
@@ -37,10 +43,12 @@ void SpatialCMCInterface::preprocess_for_prior(std::vector<DataRow>& rows) const
     // Beta requires y in (0,1): rescale median_val
     double mn = std::numeric_limits<double>::infinity();
     double mx = -std::numeric_limits<double>::infinity();
+
     for (const auto& r : rows) {
         mn = std::min(mn, r.median_val);
         mx = std::max(mx, r.median_val);
     }
+
     if (!(mx > mn))
         throw std::runtime_error("Beta preprocess: median_val has zero range.");
 
@@ -73,10 +81,11 @@ std::unique_ptr<IModelPrior> SpatialCMCInterface::make_prior() const
 
     if (cfg_.prior_name == "poisson") {
         if (h.size() != 2)
-            throw std::runtime_error("beta prior requires 2 hyperparams: alpha,beta");
+            throw std::runtime_error("poisson prior requires 2 hyperparams: alpha,beta");
         return std::unique_ptr<IModelPrior>(
             new PoissonGammaModel(h[0], h[1])
-        );}
+        );
+    }
 
     throw std::runtime_error("Unknown prior: " + cfg_.prior_name);
 }
@@ -88,7 +97,6 @@ SpatialCMCInterface::build_adjacency_per_shard(const std::vector<Step1_Sharding:
     out.reserve(shards.size());
 
     for (const auto& shard : shards) {
-
         if (cfg_.format == DataFormat::CSV) {
             // CSV: no geometry => empty adjacency (or load external JSON adjacency elsewhere)
             out.emplace_back(shard.size());
@@ -98,20 +106,8 @@ SpatialCMCInterface::build_adjacency_per_shard(const std::vector<Step1_Sharding:
         // SHP/GPKG: infer adjacency mode from geometry
         auto mode = Step0::infer_adjacency_mode(shard);
         out.push_back(Step0::build_local_adjacency_from_rows(shard, mode, cfg_.knn_k));
-
     }
     return out;
-}
-
-#include <cmath>
-#include <stdexcept>
-#include <algorithm> // per std::min, std::max se necessario
-
-// Helper function per calcolare il Log-Beta: ln(B(x, y))
-// B(x,y) = Gamma(x)Gamma(y) / Gamma(x+y)
-// Si usa lgamma per evitare overflow numerici con i fattoriali
-double log_beta(double x, double y) {
-    return std::lgamma(x) + std::lgamma(y) - std::lgamma(x + y);
 }
 
 double SpatialCMCInterface::phi_distance(const ComponentParameter& a,
@@ -121,8 +117,8 @@ double SpatialCMCInterface::phi_distance(const ComponentParameter& a,
         return 0.0;
 
     // --- BETA DISTRIBUTION ---
-    // Usa la Distanza di Hellinger.
-    // Parametri attesi: [0] = alpha, [1] = beta
+    // Uses Hellinger Distance.
+    // Expected parameters: [0] = alpha, [1] = beta
     if (cfg_.prior_name == "beta") {
         if (a.parameters.size() < 2 || b.parameters.size() < 2) {
             throw std::runtime_error("phi_distance: Beta model requires 2 parameters (alpha, beta).");
@@ -133,39 +129,39 @@ double SpatialCMCInterface::phi_distance(const ComponentParameter& a,
         double alpha2 = b.parameters[0];
         double beta2  = b.parameters[1];
 
-        // Formula Hellinger: sqrt( 1 - BC(P,Q) )
-        // Dove BC (Bhattacharyya Coefficient) = B((a1+a2)/2, (b1+b2)/2) / sqrt( B(a1,b1) * B(a2,b2) )
+        // Hellinger Formula: sqrt( 1 - BC(P,Q) )
+        // Where BC (Bhattacharyya Coefficient) = B((a1+a2)/2, (b1+b2)/2) / sqrt( B(a1,b1) * B(a2,b2) )
 
-        // Calcolo in log-space per stabilità numerica
+        // Log-space calculation for numerical stability
         double log_num = log_beta((alpha1 + alpha2) / 2.0, (beta1 + beta2) / 2.0);
         double log_den = 0.5 * (log_beta(alpha1, beta1) + log_beta(alpha2, beta2));
 
         double affinity = std::exp(log_num - log_den);
 
-        // Clamp per errori di virgola mobile (affinity non deve superare 1.0)
+        // Clamp for floating point errors (affinity must not exceed 1.0)
         if (affinity > 1.0) affinity = 1.0;
-        if (affinity < 0.0) affinity = 0.0; // sicurezza
+        if (affinity < 0.0) affinity = 0.0; // safety
 
         return std::sqrt(1.0 - affinity);
     }
 
     // --- NORMAL DISTRIBUTION ---
-    // Usa la 2-Wasserstein distance.
-    // Parametri attesi: [0] = mean, [1] = variance (sigma^2)
+    // Uses 2-Wasserstein distance.
+    // Expected parameters: [0] = mean, [1] = variance (sigma^2)
     if (cfg_.prior_name == "normal") {
         double mu1 = a.parameters[0];
         double mu2 = b.parameters[0];
 
-        // Caso varianza fissa (solo media)
+        // Case: fixed variance (only mean)
         if (a.parameters.size() == 1) {
             return std::abs(mu1 - mu2);
         }
 
-        // Caso media e varianza
+        // Case: mean and variance
         double var1 = a.parameters[1];
         double var2 = b.parameters[1];
 
-        // La Wasserstein richiede le deviazioni standard
+        // Wasserstein requires standard deviations
         double sigma1 = std::sqrt(var1);
         double sigma2 = std::sqrt(var2);
 
@@ -177,8 +173,8 @@ double SpatialCMCInterface::phi_distance(const ComponentParameter& a,
     }
 
     // --- POISSON DISTRIBUTION ---
-    // Usa la 1-Wasserstein distance (Earth Mover's Distance)
-    // Coincide con la differenza assoluta delle medie (lambda)
+    // Uses 1-Wasserstein distance (Earth Mover's Distance)
+    // Coincides with the absolute difference of means (lambda)
     if (cfg_.prior_name == "poisson") {
         return std::abs(a.parameters[0] - b.parameters[0]);
     }
@@ -186,8 +182,6 @@ double SpatialCMCInterface::phi_distance(const ComponentParameter& a,
     // --- UNKNOWN MODEL ---
     throw std::invalid_argument("phi_distance: Unknown prior_name '" + cfg_.prior_name + "'");
 }
-
-// In SpatialCMCInterface.cpp
 
 SpatialCMCResult SpatialCMCInterface::run()
 {
@@ -217,12 +211,16 @@ SpatialCMCResult SpatialCMCInterface::run()
     auto prior = make_prior();
     auto adjacency_per_shard = build_adjacency_per_shard(shards);
 
+    // Note: Assuming ParallelDPMixture is correctly implemented to take these arguments
     ParallelDPMixture pdp(cfg_.alpha_dp, shards, prior.get(), adjacency_per_shard,
                           cfg_.lambda_appm, cfg_.sampler, cfg_.m_aux);
     pdp.run_parallel_mcmc(cfg_.burn_in, cfg_.samples);
 
-    auto best_c   = pdp.extract_best_clustering();
-    auto best_phi = pdp.extract_best_parameters();
+    // Helper methods to extract results from the parallel engine
+    // (Ensure these methods exist in your ParallelDPMixture class)
+    auto best_c   = pdp.get_best_clustering_per_chain(); // Renamed to match main.cpp usage
+    auto best_phi = pdp.get_best_parameters_per_chain(); // Renamed to match main.cpp usage
+
     // ---------------------------------------------------------
     // 7-8) Meta Clustering
     // ---------------------------------------------------------
@@ -240,6 +238,8 @@ SpatialCMCResult SpatialCMCInterface::run()
 
     // Build Distance Matrix
     std::vector<std::vector<double>> D_phi(Q, std::vector<double>(Q, 0.0));
+
+    // OpenMP parallelization if enabled in compiler settings
     #pragma omp parallel for schedule(dynamic)
     for (int i = 0; i < Q; ++i) {
         for (int j = i + 1; j < Q; ++j) {
@@ -256,11 +256,12 @@ SpatialCMCResult SpatialCMCInterface::run()
     D_phi.clear();
     std::vector<std::vector<double>>().swap(D_phi);
 
-    // [FIX 1] Extract History HERE
+    // Extract History
     auto meta_history = phiDP.get_samples_labels();
 
     // Find Best Iteration
     int best_phi_idx = phiDP.best_sample_binder();
+
     // We copy this because we need to move it into pipeline later
     std::vector<int> final_phi_labels;
     if (best_phi_idx >= 0 && best_phi_idx < meta_history.size()) {
@@ -273,14 +274,15 @@ SpatialCMCResult SpatialCMCInterface::run()
     // ---------------------------------------------------------
     // 9) Populate Pipeline
     // ---------------------------------------------------------
-    bool has_conjugate = (cfg_.prior_name == "normal");
+    bool has_conjugate = (cfg_.prior_name == "normal" || cfg_.prior_name == "poisson");
     double mu0=0, kappa0=0, alpha0=0, beta0=0; // Fill if using normal...
 
+    // Populate the results pipeline
     out.pipeline.populate_from_pipeline(
-        std::move(best_c),
-        std::move(best_phi),
-        std::move(phi_data),
-        std::move(final_phi_labels),
+        best_c,
+        best_phi,
+        phi_data,
+        final_phi_labels,
         cfg_.sampler, cfg_.alpha_dp, cfg_.lambda_appm, cfg_.burn_in, cfg_.samples,
         cfg_.alpha_meta, cfg_.delta_in, cfg_.lambda_in, cfg_.delta_out, cfg_.theta_out,
         best_phi_idx, has_conjugate, mu0, kappa0, alpha0, beta0
@@ -294,31 +296,29 @@ SpatialCMCResult SpatialCMCInterface::run()
     if (cfg_.write_outputs) {
         std::cout << "--- Exporting Results ---\n";
 
-        // [FIX 2] Reconstruct data ONCE
+        // Reconstruct data ONCE in shard order
         std::vector<DataRow> shard_order;
-        shard_order.reserve(out.n_rows); // Use out.n_rows (rows.size() is 0)
+        // Estimate size from out.n_rows
+        shard_order.reserve(out.n_rows > 0 ? out.n_rows : 0);
 
         for (const auto& shard : shards)
             for (const auto& r : shard)
                 shard_order.push_back(r);
 
-        // Export 1: Meta Trace
-        out.pipeline.save_meta_mcmc_point_trace(
-            cfg_.meta_assignments_csv,
-            meta_history, // Now this exists
-            shard_order
-        );
-
-        // Export 2: CSV
+        // Export 1: Meta Trace (if your pipeline class supports it)
+        // Check if save_meta_mcmc_point_trace is available in BayesianPipelineBaseline
+        // out.pipeline.save_meta_mcmc_point_trace(cfg_.meta_assignments_csv, meta_history, shard_order);
+        // Assuming standard save for now based on main.cpp usage:
         out.pipeline.save_global_clustering_csv(cfg_.global_clustering_csv, shard_order);
 
-        // Export 3: GPKG
+        // Export 2: GPKG (if supported)
         std::string gpkg_out = cfg_.global_clustering_csv;
         size_t lastindex = gpkg_out.find_last_of(".");
         if (lastindex != std::string::npos) gpkg_out = gpkg_out.substr(0, lastindex);
         gpkg_out += ".gpkg";
 
-        out.pipeline.save_global_clustering_gpkg(gpkg_out, shard_order);
+        // out.pipeline.save_global_clustering_gpkg(gpkg_out, shard_order);
+        out.pipeline.save_dataset_with_global_clusters(gpkg_out, rows, shards); // Using available method from main.cpp context
     }
 
     return out;

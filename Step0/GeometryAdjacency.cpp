@@ -41,6 +41,9 @@ static bool bbox_overlaps(const OGREnvelope& a, const OGREnvelope& b) {
     return !(a.MaxX < b.MinX || b.MaxX < a.MinX || a.MaxY < b.MinY || b.MaxY < a.MinY);
 }
 
+// ------------------------------------------------------------
+// Builds K-Nearest Neighbors graph based on centroids
+// ------------------------------------------------------------
 static std::vector<std::vector<int>>
 build_knn(const std::vector<GeomCache>& cache, int k)
 {
@@ -74,6 +77,9 @@ build_knn(const std::vector<GeomCache>& cache, int k)
     return adj;
 }
 
+// ------------------------------------------------------------
+// Builds adjacency based on polygon intersection or touching
+// ------------------------------------------------------------
 static std::vector<std::vector<int>>
 build_poly_adj(const std::vector<GeomCache>& cache, bool use_intersects)
 {
@@ -104,6 +110,9 @@ build_poly_adj(const std::vector<GeomCache>& cache, bool use_intersects)
 
 namespace Step0 {
 
+// ------------------------------------------------------------
+// Infers adjacency mode (KNN vs Polygon) from geometry type
+// ------------------------------------------------------------
 AdjacencyMode infer_adjacency_mode(const std::vector<DataRow>& shard)
 {
     GDALAllRegister();
@@ -121,6 +130,9 @@ AdjacencyMode infer_adjacency_mode(const std::vector<DataRow>& shard)
     return AdjacencyMode::None;
 }
 
+// ------------------------------------------------------------
+// Main function: builds local adjacency matrix for a shard
+// ------------------------------------------------------------
 std::vector<std::vector<int>>
 build_local_adjacency_from_rows(const std::vector<DataRow>& shard,
                                AdjacencyMode mode,

@@ -368,7 +368,7 @@ void test_Parallel_Mixture_with_MetaClustering()
     // =====================================================================
     std::cout << "Running sharding...\n";
 
-    // assegna GLOBAL INDEX ai dati
+    // assign GLOBAL INDEX to data
     for (size_t i = 0; i < rows.size(); i++)
         rows[i].global_index = i;
 
@@ -393,7 +393,7 @@ void test_Parallel_Mixture_with_MetaClustering()
     std::cout << "Loaded adjacency list with " << global_adjacency.size() << " nodes.\n";
 
     // =====================================================================
-    // 3a. COSTRUZIONE ADIACENZA PER SHARD
+    // 3a. ADJACENCY CONSTRUCTION PER SHARD
     // =====================================================================
     std::vector<std::vector<std::vector<int>>> adjacency_per_shard;
 
@@ -416,15 +416,15 @@ void test_Parallel_Mixture_with_MetaClustering()
     int sampling       = 500;
 
     ParallelDPMixture pdp(alpha_dp,
-                          shards,               // ora vettore di vettori DataRow
+                          shards,               // now vector of DataRow vectors
                           prior,
-                          adjacency_per_shard,  // adjacency locale corretta
+                          adjacency_per_shard,  // correct local adjacency
                           lambda_appm);
 
     pdp.run_parallel_mcmc(burn_in, sampling);
 
     // =====================================================================
-    // 5. RISULTATI: BEST CLUSTER PER SHARD
+    // 5. RESULTS: BEST CLUSTER PER SHARD
     // =====================================================================
     const auto& all_samples_c   = pdp.get_best_clustering_per_chain();
     const auto& all_samples_phi = pdp.get_best_parameters_per_chain();
@@ -433,7 +433,7 @@ void test_Parallel_Mixture_with_MetaClustering()
     std::cout << "\nCollected best output from " << M << " chains.\n";
 
     // =====================================================================
-    // 6. META-CLUSTERING SU PHI
+    // 6. META-CLUSTERING ON PHI
     // =====================================================================
     std::vector<ComponentParameter> phi_data;
 
@@ -469,7 +469,7 @@ void test_Parallel_Mixture_with_MetaClustering()
         std::cout << "cluster[" << i << "]: mu=" << phi_data[i].parameters[0]
                   << " sigma2=" << phi_data[i].parameters[1]
                   << " --> meta cluster " << final_phi_labels[i] << "\n";
-    // Creazione e stampa della pipeline
+    // Creation and printing of the pipeline
 
     BayesianPipelineBaseline pipeline;
     // Meta-clustering
@@ -487,13 +487,13 @@ void test_Parallel_Mixture_with_MetaClustering()
     burn_in, sampling,
     alpha_meta, delta_in, lambda_in, delta_out, theta_out,
     best_phi_idx,          // <-- BEST ITERATION (Binder)
-    true,                  // <-- ha prior coniugata
+    true,                  // <-- has conjugate prior
     mu0, kappa0, alpha0, beta0
 );
 
     pipeline.print_summary();
 
-    // A. Ricostruiamo il vettore ordinato per l'export
+    // A. Reconstruct the sorted vector for export
     std::vector<DataRow> sorted_rows_for_export;
     for(const auto& shard : shards) {
         for(const auto& row : shard) {
@@ -501,7 +501,7 @@ void test_Parallel_Mixture_with_MetaClustering()
         }
     }
 
-    // B. Salviamo
+    // B. Save
     pipeline.save_global_clustering_csv("FINAL_GLOBAL_CLUSTERING.csv", sorted_rows_for_export);
     //pipeline.save_global_clustering_csv("FINAL_GLOBAL_CLUSTERING.csv");
     pipeline.save_dataset_with_global_clusters(
@@ -676,7 +676,7 @@ void test_Parallel_Mixture_with_MetaClustering_Neal8_beta()
                   << final_phi_labels[i] << "\n";
     }
 
-    // Creazione e stampa della pipeline
+    // Creation and printing of the pipeline
 
     BayesianPipelineBaseline pipeline;
     // Meta-clustering
@@ -693,11 +693,11 @@ void test_Parallel_Mixture_with_MetaClustering_Neal8_beta()
     burn_in, sampling,
     alpha_meta, delta_in, lambda_in, delta_out, theta_out,
     best_phi_idx,              // <-- BEST ITERATION Binder
-    false                      // <-- NON coniugata
+    false                      // <-- NON conjugate
     );
     pipeline.print_summary();
 
-    // Creiamo un vettore piatto dei dati riordinati come negli shard
+    // Create a flat vector of data reordered as in the shards
     std::vector<DataRow> sorted_rows_for_export;
     for(const auto& shard : shards) {
         for(const auto& row : shard) {
@@ -705,9 +705,9 @@ void test_Parallel_Mixture_with_MetaClustering_Neal8_beta()
         }
     }
 
-    // Passiamo questo vettore alla funzione di salvataggio
-    // Nota: devi aggiornare la firma in BayesianPipelineBaseline.h/cpp per accettare questo vettore
-    // (Nel codice Step 2 ho già predisposto l'argomento opzionale const std::vector<DataRow>& original_data = {})
+    // Pass this vector to the save function
+    // Note: you must update the signature in BayesianPipelineBaseline.h/cpp to accept this vector
+    // (In Step 2 code I already prepared the optional argument const std::vector<DataRow>& original_data = {})
 
     pipeline.save_global_clustering_csv("FINAL_GLOBAL_CLUSTERING.csv", sorted_rows_for_export);
     pipeline.save_dataset_with_global_clusters(
@@ -723,15 +723,15 @@ void test_Parallel_Mixture_with_MetaClustering_Neal8_beta()
 void test_PoissonGamma_DP() {
     std::cout << "\n===== TEST: DP Mixture Model with Poisson-Gamma (Count Data) =====\n";
 
-    // 1. Generazione dati sintetici (Conteggi)
+    // 1. Synthetic data generation (Counts)
     std::vector<double> data;
     std::mt19937 gen(1234);
 
-    // Cluster 1: Lambda = 5 (conteggi bassi)
+    // Cluster 1: Lambda = 5 (low counts)
     std::poisson_distribution<int> pois1(5);
     for (int i = 0; i < 100; ++i) data.push_back(static_cast<double>(pois1(gen)));
 
-    // Cluster 2: Lambda = 20 (conteggi alti)
+    // Cluster 2: Lambda = 20 (high counts)
     std::poisson_distribution<int> pois2(20);
     for (int i = 0; i < 100; ++i) data.push_back(static_cast<double>(pois2(gen)));
 
@@ -739,12 +739,12 @@ void test_PoissonGamma_DP() {
     std::cout << "Cluster 1 True Lambda: 5, Cluster 2 True Lambda: 20.\n";
 
     // 2. Definizione Prior
-    // Prior Gamma(alpha=2, beta=0.5). Media a priori = alpha/beta = 4. Varianza alta.
-    // beta basso => prior "piatta" (informativa debole)
+    // Prior Gamma(alpha=2, beta=0.5). Prior mean = alpha/beta = 4. High variance.
+    // low beta => "flat" prior (weakly informative)
     IModelPrior* prior = new PoissonGammaModel(2.0, 0.5);
 
     // 3. Modello DPMixture (Neal 2)
-    // Nota: Passiamo 'data' che è std::vector<double>, ma contiene interi.
+    // Note: Passing 'data' which is std::vector<double>, but contains integers.
     double alpha_dp = 1.0;
     DPMixtureModel model(alpha_dp, data, prior);
 
@@ -760,7 +760,7 @@ void test_PoissonGamma_DP() {
     std::cout << "\nBest iteration index: " << index_star << "\n";
     std::cout << "Estimated Clusters (Lambda):\n";
     for (auto& kv : best_phi) {
-        // parameter[0] è il lambda stimato
+        // parameter[0] is the estimated lambda
         std::cout << "Cluster " << kv.first
                   << " -> Lambda estimated: " << kv.second.parameters[0]
                   << " (Size: " << std::count(best_c.begin(), best_c.end(), kv.first) << ")\n";
@@ -773,8 +773,8 @@ void test_PoissonGamma_DP() {
 void test_Parallel_Poisson_FullPipeline() {
     std::cout << "\n==================== FULL PIPELINE TEST (POISSON - COUNT DATA) ====================\n";
 
-    // 1. GENERAZIONE DATI SINTETICI (Simuliamo lettura CSV)
-    // Creiamo 200 dati: 100 con lambda=5 (Shard A), 100 con lambda=50 (Shard B)
+    // 1. SYNTHETIC DATA GENERATION (Simulate CSV reading)
+    // Create 200 data points: 100 with lambda=5 (Shard A), 100 with lambda=50 (Shard B)
     std::vector<DataRow> rows;
     std::mt19937 gen(999);
     std::poisson_distribution<int> p1(5);
@@ -784,8 +784,8 @@ void test_Parallel_Poisson_FullPipeline() {
     for(int i=0; i<100; ++i) {
         DataRow r;
         r.global_index = i;
-        r.median_val = (double)p1(gen); // Il conteggio va in median_val
-        r.PROVINCIA = "SHARD_A";          // Fittizio per lo sharding
+        r.median_val = (double)p1(gen); // The count goes into median_val
+        r.PROVINCIA = "SHARD_A";          // Dummy for sharding
         r.COMUNE = "Comune_" + std::to_string(i);
         rows.push_back(r);
     }
@@ -807,32 +807,32 @@ void test_Parallel_Poisson_FullPipeline() {
     std::cout << "Generated " << shards.size() << " shards based on synthetic PROVINCIA.\n";
 
     // 3. PRIOR POISSON-GAMMA
-    // Prior poco informativa: Gamma(alpha=1, beta=0.1) -> Media 10, Varianza 100
+    // Weakly informative prior: Gamma(alpha=1, beta=0.1) -> Mean 10, Variance 100
     IModelPrior* prior = new PoissonGammaModel(1.0, 0.1);
 
-    // 4. ADIACENZA (Fittizia: identità o vuota, dato che i dati sono sintetici e non spaziali)
-    // Creiamo un'adiacenza vuota per ogni shard (nessun vicino spaziale)
+    // 4. ADJACENCY (Dummy: identity or empty, since data is synthetic and non-spatial)
+    // Create an empty adjacency for each shard (no spatial neighbors)
     std::vector<std::vector<std::vector<int>>> adjacency_per_shard;
     for(const auto& shard : shards) {
-        std::vector<std::vector<int>> adj(shard.size()); // vettori vuoti
+        std::vector<std::vector<int>> adj(shard.size()); // empty vectors
         adjacency_per_shard.push_back(adj);
     }
 
     // 5. PARALLEL MCMC
     double alpha_dp = 1.0;
-    double lambda_appm = 0.0; // Disattiviamo influenza spaziale (dato che l'adj è vuota)
+    double lambda_appm = 0.0; // Disable spatial influence (since adj is empty)
     int burn_in = 2000;
     int sampling = 500;
 
     ParallelDPMixture pdp(alpha_dp, shards, prior, adjacency_per_shard, lambda_appm);
     pdp.run_parallel_mcmc(burn_in, sampling);
 
-    // 6. RACCOLTA RISULTATI LOCALI
+    // 6. COLLECT LOCAL RESULTS
     const auto& best_c = pdp.get_best_clustering_per_chain();
     const auto& best_phi = pdp.get_best_parameters_per_chain();
 
     // 7. META-CLUSTERING (Consensus)
-    // Raccogliamo tutti i parametri Lambda trovati
+    // Collect all found Lambda parameters
     std::vector<ComponentParameter> phi_data;
     for (const auto& chain_phi : best_phi)
         for (const auto& kv : chain_phi)
@@ -841,9 +841,9 @@ void test_Parallel_Poisson_FullPipeline() {
     int Q = phi_data.size();
     std::cout << "Collected " << Q << " local Poisson parameters (Lambdas).\n";
 
-    // Calcolo matrice distanze D_phi
-    // Per Poisson, il parametro è uno scalare (Lambda).
-    // Usiamo semplicemente la differenza assoluta: |lambda1 - lambda2|
+    // Compute distance matrix D_phi
+    // For Poisson, the parameter is a scalar (Lambda).
+    // Simply use absolute difference: |lambda1 - lambda2|
     Distances dist(Distances::Type::Poisson);
 
     std::vector<std::vector<double>> D_phi(Q, std::vector<double>(Q, 0.0));
@@ -851,17 +851,17 @@ void test_Parallel_Poisson_FullPipeline() {
         for (int j = i + 1; j < Q; ++j) {
             double lam1 = phi_data[i].parameters[0];
             double lam2 = phi_data[j].parameters[0];
-            double dist = std::abs(lam1 - lam2); // Distanza semplice 1D
+            double dist = std::abs(lam1 - lam2); // Simple 1D distance
             D_phi[i][j] = D_phi[j][i] = dist;
         }
     }
 
-    // Eseguiamo CohesionRepulsionDP sulla distanza dei Lambda
+    // Run CohesionRepulsionDP on Lambda distances
     CohesionRepulsionDP phiDP(
         1.0,   // alpha meta
         D_phi,
         0.5, 1.0,  // Cohesion (delta_in, lambda_in)
-        5.0, 1.0,  // Repulsion (delta_out, theta_out) - Parametri forti per separare 5 da 50
+        5.0, 1.0,  // Repulsion (delta_out, theta_out) - Strong parameters to separate 5 from 50
         1234       // seed
     );
     phiDP.initialize_random(5);
@@ -875,20 +875,20 @@ void test_Parallel_Poisson_FullPipeline() {
 
     pipeline.populate_from_pipeline(
         best_c, best_phi, phi_data, final_phi_labels,
-        SamplerType::Neal2, // PoissonGamma è coniugato -> Neal2
+        SamplerType::Neal2, // PoissonGamma is conjugate -> Neal2
         alpha_dp, lambda_appm,
         burn_in, sampling,
         1.0, 0.5, 1.0, 5.0, 1.0, // Meta params
         best_phi_idx,
-        true, // Coniugato = true
-        1.0, 0.1, 0.0, 0.0 // Prior params (alpha0, beta0 negli slot mu0, kappa0)
+        true, // Conjugate = true
+        1.0, 0.1, 0.0, 0.0 // Prior params (alpha0, beta0 in mu0, kappa0 slots)
     );
 
     pipeline.print_summary();
 
-    // --- SALVATAGGIO CSV CON DATI ORIGINALI ---
+    // --- SAVE CSV WITH ORIGINAL DATA ---
 
-    // A. Ricostruiamo il vettore ordinato per l'export
+    // A. Reconstruct the sorted vector for export
     std::vector<DataRow> sorted_rows_for_export;
     for(const auto& shard : shards) {
         for(const auto& row : shard) {
@@ -896,7 +896,7 @@ void test_Parallel_Poisson_FullPipeline() {
         }
     }
 
-    // B. Salviamo
+    // B. Save
     pipeline.save_global_clustering_csv("FINAL_POISSON_CLUSTERING.csv", sorted_rows_for_export);
     pipeline.save_dataset_with_global_clusters(
         "dataset_with_clusters.csv",
@@ -1061,7 +1061,7 @@ void test_spatialcmc_piemonte() {
             cfg.samples = 500;
             cfg.m_aux = 5;
 
-            //adiacency
+            //adjacency
             cfg.knn_k = 8; // used for point geometries
 
             // Meta-clustering
@@ -1125,7 +1125,7 @@ void spatialcmc_crocs_morti() {
             cfg.samples = 500;
             cfg.m_aux = 20;
 
-            //adiacency
+            //adjacency
             cfg.knn_k = 12; // used for point geometries
 
             // Meta-clustering
@@ -1197,7 +1197,7 @@ void spatialcmc_crocs_morti_beta() {
             cfg.samples = 500;
             cfg.m_aux = 20;
 
-            //adiacency
+            //adjacency
             cfg.knn_k = 12; // used for point geometries
 
             // Meta-clustering
@@ -1269,7 +1269,7 @@ void spatialcmc_italia_index() {
             cfg.samples = 500;
             cfg.m_aux = 5;
 
-            //adiacency
+            //adjacency
             cfg.knn_k = 8; // used for point geometries
 
             // Meta-clustering
@@ -1279,7 +1279,7 @@ void spatialcmc_italia_index() {
             cfg.lambda_in = 1;
             // must be greater than 1
             cfg.delta_out = 2.0;
-            //controlla la varianza dei cluster finali (più è basso meno varianza hanno i cluster finali)
+            // controls the variance of final clusters (lower values mean less variance in final clusters)
             cfg.theta_out = 10;
             //cfg.meta_seed = 999;
             cfg.meta_init_K = 6;
@@ -1344,7 +1344,7 @@ void spatialcmc_italia_index_BD() {
             cfg.samples = 500;
             cfg.m_aux = 5;
 
-            //adiacency
+            //adjacency
             cfg.knn_k = 8; // used for point geometries
 
             // Meta-clustering

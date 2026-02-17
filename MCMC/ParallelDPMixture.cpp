@@ -1,13 +1,13 @@
 #include "ParallelDPMixture.h"
 #include "Sharding.h"
-#include <thread> // Include this at top
-#include "ParallelDPMixture.h"
 #include <thread>
 #include <future>
 #include <algorithm>
+#include <atomic> // Required for std::atomic
 
-// ... constructor ...
-
+// ------------------------------------------------------------
+// Main Execution: Runs MCMC on all shards in parallel
+// ------------------------------------------------------------
 void ParallelDPMixture::run_parallel_mcmc(int burn_in, int sampling)
 {
     // Resize outputs
@@ -33,6 +33,9 @@ void ParallelDPMixture::run_parallel_mcmc(int burn_in, int sampling)
         for (int k = start; k < end; ++k) {
             current_jobs.push_back(std::async(std::launch::async, [this, k, burn_in, sampling]() {
 
+                // ------------------------------------------------------------
+                // Per-Thread Logic: Clone Prior & Run Model
+                // ------------------------------------------------------------
                 IModelPrior* prior_copy = clone_prior();
 
                 if (sampler == SamplerType::Neal2) {
@@ -82,10 +85,10 @@ void ParallelDPMixture::run_parallel_mcmc(int burn_in, int sampling)
     }
     std::cout << "\n";
 }
+
 // ---------------------------------------------------------
 // Constructor
 // ---------------------------------------------------------
-
 ParallelDPMixture::ParallelDPMixture(double alpha_,
                   const std::vector<Step1_Sharding::Sharding::Shard>& shards,
                   IModelPrior* prior_,
@@ -102,7 +105,7 @@ ParallelDPMixture::ParallelDPMixture(double alpha_,
     num_partitions = shards.size();
 
     partitions_data.resize(num_partitions);
-    partitions_adj  = adjacency_per_shard;   // <-- copia diretta, zero trasformazioni
+    partitions_adj  = adjacency_per_shard;   // <-- direct copy, zero transformations
 
     for (size_t k = 0; k < shards.size(); ++k)
     {
@@ -121,7 +124,7 @@ ParallelDPMixture::ParallelDPMixture(double alpha_,
 
 
 // ---------------------------------------------------------
-// Clone prior (thread-safe)
+// Helper: Clone prior with thread-safe seeding
 // ---------------------------------------------------------
 IModelPrior* ParallelDPMixture::clone_prior() const
 {
@@ -135,16 +138,9 @@ IModelPrior* ParallelDPMixture::clone_prior() const
     return p;
 }
 
-// ---------------------------------------------------------
-// Run parallel MCMC
-// ---------------------------------------------------------
-
-// In ParallelDPMixture.cpp
-
-
 
 // ---------------------------------------------------------
-// Accessors
+// Accessors / Getters
 // ---------------------------------------------------------
 
 const std::vector<int>&

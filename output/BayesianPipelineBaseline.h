@@ -1,4 +1,3 @@
-
 #ifndef BAYESIANPIPELINEBASELINE_H
 #define BAYESIANPIPELINEBASELINE_H
 
@@ -9,43 +8,55 @@
 #include <string>
 #include "../Step0/DataRow.h"
 
-// Tipo di sampler
+// ------------------------------------------------------------
+// Sampler Type Enum
+// ------------------------------------------------------------
 enum class SamplerType {
     Neal2,
     Neal8
 };
 
+// ------------------------------------------------------------
+// BayesianPipelineBaseline: Aggregates and Manages Pipeline Results
+// ------------------------------------------------------------
 class BayesianPipelineBaseline {
 public:
-    // OUTPUT dal pipeline
+    // ------------------------------------------------------------
+    // Output Data from Pipeline
+    // ------------------------------------------------------------
     std::vector<std::vector<int>> all_clusterings;
     std::vector<std::map<int, ComponentParameter>> all_parameters;
     std::vector<ComponentParameter> phi_data;
     std::vector<int> best_meta_labels;
     std::vector<std::vector<int>> global_assignments;
 
-    // DP + MCMC + Meta hyperparameters
+    // ------------------------------------------------------------
+    // Hyperparameters (DP, MCMC, Meta)
+    // ------------------------------------------------------------
     double alpha_dp = 0.0, lambda_appm = 0.0;
     int burn_in = 0, samples = 0;
     double alpha_meta = 0.0, delta_in = 0.0, lambda_in = 0.0;
     double delta_out = 0.0, theta_out = 0.0;
 
-    // Prior (solo Neal2)
+    // Prior specific (only for Neal2)
     bool has_conjugate_prior = false;
     double mu0 = 0.0, kappa0 = 0.0, alpha0 = 0.0, beta0 = 0.0;
 
-    // Sampler
+    // Sampler config
     SamplerType sampler_type;
 
-    // Meta info
+    // Meta clustering info
     int best_meta_iteration = -1;
 
-    // Global posteriors (lasciati invariati)
+    // Global posteriors
     std::map<int, ComponentParameter> global_posteriors;
 
 public:
     BayesianPipelineBaseline() = default;
 
+    // ------------------------------------------------------------
+    // Population Method: Fills the object with results
+    // ------------------------------------------------------------
     void populate_from_pipeline(
         std::vector<std::vector<int>> clusterings,           // <--- Pass by Value
         std::vector<std::map<int, ComponentParameter>> parameters,
@@ -62,6 +73,9 @@ public:
         double alpha0_ = 0.0, double beta0_ = 0.0
     );
 
+    // ------------------------------------------------------------
+    // Output / Saving Methods
+    // ------------------------------------------------------------
     void save_global_clustering_gpkg(
         const std::string& filename,
         const std::vector<DataRow>& sorted_data,

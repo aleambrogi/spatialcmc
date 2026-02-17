@@ -5,18 +5,11 @@
 #include <stdexcept>
 #include "ogrsf_frmts.h"
 #include "cpl_error.h" // Required
-
 #include "cpl_conv.h" // Required for CPLSetConfigOption
 
-// ... inside your main or constructor
-// Windows Example (adjust path to where your GDAL is installed)
-
-
-// Make sure to link against gdal library
-// In BayesianPipelineBaseline.cpp
-
-// BayesianPipelineBaseline.cpp
-
+// ------------------------------------------------------------
+// Population Method: Fills the object with pipeline results
+// ------------------------------------------------------------
 void BayesianPipelineBaseline::populate_from_pipeline(
     std::vector<std::vector<int>> clusterings,           // Passed by value (Copy or Move happened at call site)
     std::vector<std::map<int, ComponentParameter>> parameters,
@@ -59,6 +52,9 @@ void BayesianPipelineBaseline::populate_from_pipeline(
     map_local_to_global();
 }
 
+// ------------------------------------------------------------
+// Mapping Logic: Local Clusters -> Global Meta Clusters
+// ------------------------------------------------------------
 void BayesianPipelineBaseline::map_local_to_global() {
     if(all_parameters.empty()) return;
 
@@ -107,7 +103,6 @@ void BayesianPipelineBaseline::map_local_to_global() {
     std::cout << "Mapped global assignments for " << all_clusterings.size() << " shards.\n";
 }
 
-
 std::map<int, int>
 BayesianPipelineBaseline::build_global_index_to_cluster_map(
     const std::vector<std::vector<DataRow>>& shards) const
@@ -127,6 +122,20 @@ BayesianPipelineBaseline::build_global_index_to_cluster_map(
     return global_map;
 }
 
+// ------------------------------------------------------------
+// Posterior Computation
+// ------------------------------------------------------------
+void BayesianPipelineBaseline::compute_global_posteriors_from_meta() {
+    global_posteriors.clear();
+    for (size_t i = 0; i < phi_data.size(); ++i) {
+        int meta = best_meta_labels[i];
+        global_posteriors[meta] = phi_data[i]; // Left unchanged
+    }
+}
+
+// ------------------------------------------------------------
+// Output & Saving Methods
+// ------------------------------------------------------------
 void BayesianPipelineBaseline::save_meta_mcmc_point_trace(
     const std::string& filename,
     const std::vector<std::vector<int>>& meta_samples,
@@ -143,9 +152,7 @@ void BayesianPipelineBaseline::save_meta_mcmc_point_trace(
         return;
     }
 
-    // ---------------------------------------------------------
     // 1. Build a Map: (ShardID, LocalClusterID) -> MetaItemIndex
-    // ---------------------------------------------------------
     // The CohesionRepulsionDP receives parameters in a specific flattened order.
     // We must reconstruct that exact order to know which column in 'meta_samples'
     // corresponds to which local cluster.
@@ -169,9 +176,7 @@ void BayesianPipelineBaseline::save_meta_mcmc_point_trace(
                   << meta_samples[0].size() << ") and total local clusters (" << flat_idx << ").\n";
     }
 
-    // ---------------------------------------------------------
     // 2. Write Header
-    // ---------------------------------------------------------
     file << "MetaIteration";
 
     // Calculate total points
@@ -185,9 +190,7 @@ void BayesianPipelineBaseline::save_meta_mcmc_point_trace(
     }
     file << "\n";
 
-    // ---------------------------------------------------------
     // 3. Write Trace Rows
-    // ---------------------------------------------------------
     std::cout << "Saving meta-point trace (" << meta_samples.size() << " iterations) to " << filename << "...\n";
 
     for (size_t t = 0; t < meta_samples.size(); ++t) {
@@ -223,14 +226,6 @@ void BayesianPipelineBaseline::save_meta_mcmc_point_trace(
     file.close();
 }
 
-void save_meta_mcmc_point_trace(
-    const std::string& filename,
-    // The history from CohesionRepulsionDP: [Iteration][MetaItemIndex] -> GlobalID
-    const std::vector<std::vector<int>>& meta_samples,
-    // Optional: for column headers
-    const std::vector<DataRow>& original_data_sorted = {}
-);
-
 void BayesianPipelineBaseline::save_dataset_with_global_clusters(
     const std::string& filename,
     const std::vector<DataRow>& original_data,
@@ -242,7 +237,7 @@ void BayesianPipelineBaseline::save_dataset_with_global_clusters(
         throw std::runtime_error("Cannot open output CSV: " + filename);
     }
 
-    // Costruiamo la mappa global_index -> cluster
+    // Build map global_index -> cluster
     auto global_map = build_global_index_to_cluster_map(shards);
 
     // Header
@@ -268,14 +263,6 @@ void BayesianPipelineBaseline::save_dataset_with_global_clusters(
 
     std::cout << "Saved dataset with global clusters to "
               << filename << "\n";
-}
-
-void BayesianPipelineBaseline::compute_global_posteriors_from_meta() {
-    global_posteriors.clear();
-    for (size_t i = 0; i < phi_data.size(); ++i) {
-        int meta = best_meta_labels[i];
-        global_posteriors[meta] = phi_data[i]; // lasciato invariato
-    }
 }
 
 void BayesianPipelineBaseline::print_summary() const {
@@ -340,16 +327,16 @@ void BayesianPipelineBaseline::save_global_clustering_csv(const std::string& fil
 
     // Header
     file << "GlobalIndex,ShardID,LocalIndexInShard,LocalClusterID,GlobalClusterID";
-    // Se abbiamo i dati originali, aggiungiamo info extra
+    // If we have original data, add extra info
     if (!original_data.empty()) {
         file << ",PROVINCIA,COMUNE,Value";
     }
     file << "\n";
 
-    // Assumiamo che original_data sia ordinato esattamente come lo sharding.
-    // NOTA: Poiché lo sharding riordina i dati nei vettori 'shards', dobbiamo fare attenzione.
-    // L'approccio più sicuro è salvare l'indice globale se disponibile.
-    // Tuttavia, 'all_clusterings' segue la struttura degli shards.
+    // We assume that original_data is ordered exactly like the sharding.
+    // NOTE: Since sharding reorders data in 'shards' vectors, we must be careful.
+    // The safest approach is to save the global index if available.
+    // However, 'all_clusterings' follows the structure of shards.
 
     int global_counter_check = 0;
 
@@ -359,18 +346,18 @@ void BayesianPipelineBaseline::save_global_clustering_csv(const std::string& fil
             int local_c = all_clusterings[s][i];
             int global_c = global_assignments[s][i];
 
-            // Scriviamo le info di base
-            // Nota: non abbiamo il GlobalIndex originale qui dentro facilmente a meno che non passiamo l'oggetto Shard.
-            // Scriveremo un ID sequenziale basato sull'ordine di esportazione o useremo i dati originali se passati correttamente.
+            // Write basic info
+            // Note: we don't easily have the original GlobalIndex here unless we pass the Shard object.
+            // We will write a sequential ID based on export order or use original data if passed correctly.
 
             file << global_counter_check << "," << s << "," << i << "," << local_c << "," << global_c;
 
             if (!original_data.empty() && global_counter_check < original_data.size()) {
-                // ATTENZIONE: Questo assume che 'original_data' passato qui sia GIA' ordinato per Shard
-                // Se original_data è il vettore grezzo letto dal CSV, l'ordine non corrisponde!
-                // Per ora stampiamo solo se l'utente passa i dati riordinati, altrimenti lasciamo vuoto.
-                // Implementazione futura: passare l'oggetto Sharding o i dati riordinati.
-                // Stampa i dati della riga corrispondente
+                // WARNING: This assumes 'original_data' passed here is ALREADY sorted by Shard
+                // If original_data is the raw vector read from CSV, the order does not match!
+                // For now we only print if the user passes sorted data, otherwise leave empty.
+                // Future implementation: pass the Sharding object or sorted data.
+                // Print row data
                 const auto& row = original_data[global_counter_check];
                 file << ",\"" << row.PROVINCIA << "\",\"" << row.COMUNE << "\"," << row.median_val;
             }
@@ -383,8 +370,6 @@ void BayesianPipelineBaseline::save_global_clustering_csv(const std::string& fil
     std::cout << "Saved global clustering results to " << filename << "\n";
     file.close();
 }
-
-
 
 void BayesianPipelineBaseline::save_global_clustering_gpkg(
     const std::string& filename,

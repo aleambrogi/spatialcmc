@@ -1,9 +1,6 @@
-//
-// Created by albor on 14/11/2025.
-//
-
 #ifndef DP_MIXTUREMODEL_H
 #define DP_MIXTUREMODEL_H
+
 #include <chrono>
 #include <vector>     // For std::vector
 #include <map>        // For std::map
@@ -17,16 +14,20 @@
 #include <unordered_set>
 #include "IModelPrior.h"
 
-
 int binder_loss(const std::vector<int>& a,
                 const std::vector<int>& b);
 
+// ------------------------------------------------------------
+// DPMixtureModel: Base class for Dirichlet Process Mixtures
+// Implements Neal's Algorithm 2 (Gibbs Sampling)
+// ------------------------------------------------------------
 class DPMixtureModel {
 protected:
     // Core Model Parameters (from DP(G0, alpha))
     double alpha; // Concentration parameter alpha
     int n;        // Number of observations
     std::vector<double> y; // The observed data y_1, ..., y_n
+
     // State Variables for Algorithm 2
     std::vector<int> c; // Component indicators: c_1, ..., c_n
 
@@ -36,6 +37,10 @@ protected:
 
     // Pointer to the specific implementation of the component distribution and prior
     IModelPrior* model_prior;
+
+    // ------------------------------------------------------------
+    // Weight calculations for Gibbs Sampling
+    // ------------------------------------------------------------
     virtual double cluster_weight(int i,
                                   int cluster_label,
                                   const ComponentParameter& phi);
@@ -58,16 +63,20 @@ protected:
 public:
     std::vector<std::vector<int>> samples_c;
     std::vector<std::map<int, ComponentParameter>> samples_phi_c;
-    //[[nodiscard]] int opt_param_index() const;
+
+    // ------------------------------------------------------------
+    // Constructor & Main MCMC Loop
+    // ------------------------------------------------------------
     DPMixtureModel(double alpha, const std::vector<double>& data, IModelPrior* prior);
     void run_mcmc(int burn_in, int sampling);
     void gibbs_scan(); // Executes one full scan (step 1 and 2 of Algorithm 2)
     virtual ~DPMixtureModel() = default;
+
+    // Returns the index of the sample that minimizes Binder Loss
     [[nodiscard]] int opt_param_index_fast() const;
 
 
 private:
-
     std::vector<std::vector<double>> compute_co_clustering() const;
 
     double binder_expected_loss(
@@ -76,7 +85,7 @@ private:
             double a = 1.0,
             double b = 1.0) const;
 
-    //compute the binder_loss btw two vectors a and b
+    // compute the binder_loss between two vectors a and b
     static int binder_loss(const std::vector<int>& a,
                     const std::vector<int>& b);
 };

@@ -1,13 +1,9 @@
-//
-// Created by albor on 14/11/2025.
-//
-
 #include "IModelPrior.h"
 
-/**
- * @brief Utility function to perform the NIG posterior calculation and sampling.
- * @param data Data for the cluster (or {y_i} for H_i, or empty for G_0).
- */
+// ------------------------------------------------------------
+// NormalConjugateModel Implementation
+// F = Normal(mu, sigma^2), G0 = Normal-Inverse-Gamma(NIG)
+// ------------------------------------------------------------
 
 NormalConjugateModel::NormalConjugateModel(double mu0, double kappa0, double alpha0, double beta0)
 : mu_0(mu0), kappa_0(kappa0), alpha_0(alpha0), beta_0(beta0) {
@@ -15,6 +11,13 @@ NormalConjugateModel::NormalConjugateModel(double mu0, double kappa0, double alp
     generator.seed(rd());
 }
 
+// ------------------------------------------------------------
+// Core Utility: Sample from NIG Posterior
+// ------------------------------------------------------------
+/**
+ * @brief Utility function to perform the NIG posterior calculation and sampling.
+ * @param data Data for the cluster (or {y_i} for H_i, or empty for G_0).
+ */
 ComponentParameter NormalConjugateModel::sample_nig_posterior(const std::vector<double>& data, double mu0, double kappa0, double alpha0, double beta0) {
     size_t k = data.size();
 
@@ -40,12 +43,11 @@ ComponentParameter NormalConjugateModel::sample_nig_posterior(const std::vector<
     double sigma_sq_new = inv_gamma_rng(alpha_k, beta_k);
 
     // 4. Sample Mu
-
-    ComponentParameter phi_mu;
-    phi_mu.parameters.push_back(mu_k);
-    phi_mu.parameters.push_back(sigma_sq_new / kappa_k);
-    double mu_new = normal_rng(phi_mu);
-    // double mu_new = normal_rng(mu_k, sigma_sq_new / kappa_k);
+    // Note: The logic here was slightly confused in original code.
+    // We need to sample Mu given Sigma^2.
+    // Mu | Sigma^2 ~ Normal(mu_k, sigma_sq_new / kappa_k)
+    std::normal_distribution<double> norm_dist(mu_k, std::sqrt(sigma_sq_new / kappa_k));
+    double mu_new = norm_dist(generator);
 
     // 5. Package into the generic struct (MAPPING)
     ComponentParameter phi;
@@ -55,11 +57,15 @@ ComponentParameter NormalConjugateModel::sample_nig_posterior(const std::vector<
     return phi;
 }
 
-// G0 (Base Prior)
+// ------------------------------------------------------------
+// IModelPrior Interface Implementation
+// ------------------------------------------------------------
+
 // G0 (Base Prior)
 ComponentParameter NormalConjugateModel::sample_from_G0() {
     // Call the utility function with empty data (k=0) to return G0
     ComponentParameter phi;
+    // Note: Calling this with empty data essentially samples from the Prior G0
     phi = sample_nig_posterior({}, mu_0, kappa_0, alpha_0, beta_0);
 
     // Ensure the vector is correctly populated by the utility function
@@ -68,17 +74,13 @@ ComponentParameter NormalConjugateModel::sample_from_G0() {
 }
 
 // H_i (Single-Observation Posterior)
-// H_i (Single-Observation Posterior)
 ComponentParameter NormalConjugateModel::sample_from_H_i(double y_i) {
     // Call the utility function with data = {y_i} (k=1)
     ComponentParameter phi;
     phi = sample_nig_posterior({y_i}, mu_0, kappa_0, alpha_0, beta_0);
-
-    // Assuming sample_nig_posterior handles population of phi.values
     return phi;
 }
 
-// Full Cluster Posterior
 // Full Cluster Posterior
 ComponentParameter NormalConjugateModel::sample_from_posterior(const std::vector<double>& cluster_data) {
     // Call the utility function with the full cluster data
@@ -95,11 +97,20 @@ double NormalConjugateModel::likelihood(double y_i, const ComponentParameter& ph
 
 double NormalConjugateModel::calculate_prior_predictive(double y_i) {
     double df = 2.0 * alpha_0;
-    double scale_sq = (beta_0 / alpha_0) * ((kappa_0 + 1.0) / kappa_0); // This is the variance factor for the scaled t-dist.
+    // This is the variance factor for the scaled t-dist.
+    double scale_sq = (beta_0 / alpha_0) * ((kappa_0 + 1.0) / kappa_0);
 
     // The integral is the PDF of the predictive Student's t-distribution
     return student_t_pdf(y_i, mu_0, df, scale_sq);
 }
+
+IModelPrior* NormalConjugateModel::clone() const {
+    return new NormalConjugateModel(*this);
+}
+
+// ------------------------------------------------------------
+// Mathematical Helpers
+// ------------------------------------------------------------
 
 double NormalConjugateModel::normal_pdf(double x, const ComponentParameter& phi) const {
 
@@ -188,9 +199,4 @@ double NormalConjugateModel::inv_gamma_rng(double alpha, double beta) {
     // 3. Return 1/X for the Inverse Gamma variate
     return 1.0 / x;
 }
-
-IModelPrior* NormalConjugateModel::clone() const {
-    return new NormalConjugateModel(*this);
-}
-
 

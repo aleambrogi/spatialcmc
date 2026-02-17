@@ -1,7 +1,3 @@
-//
-// Created by albor on 14/11/2025.
-//
-
 #include "DP_MixtureModel.h"
 
 DPMixtureModel::DPMixtureModel(double alpha_, const std::vector<double>& data, IModelPrior *prior):
@@ -12,6 +8,9 @@ alpha(alpha_), y(data), model_prior(prior)
         next_component_id = 0;  // will assign new clusters starting from 0
     }
 
+// ------------------------------------------------------------
+// Main MCMC Loop (Burn-in + Sampling)
+// ------------------------------------------------------------
 void DPMixtureModel::run_mcmc(int burn_in, int sampling)
 {
     using clock = std::chrono::high_resolution_clock;
@@ -72,6 +71,9 @@ void DPMixtureModel::gibbs_scan() {
     update_component_parameters();
 }
 
+// ------------------------------------------------------------
+// Posterior Analysis: Co-clustering Matrix & Binder Loss
+// ------------------------------------------------------------
 std::vector<std::vector<double>> DPMixtureModel::compute_co_clustering() const
 {
     int S = samples_c.size();
@@ -175,9 +177,11 @@ double DPMixtureModel::new_cluster_weight(int i)
     return alpha * compute_prior_predictive(y[i]);
 }
 
-
+// ------------------------------------------------------------
+// Core Gibbs Step 1: Update Indicators (Algorithm 2)
+// ------------------------------------------------------------
 void DPMixtureModel::update_component_indicator(int i) {
-    //remove i from the current cluster
+    // Remove i from the current cluster
     int old_cluster = c[i];
     if (old_cluster != -1) {
         // Decrease cluster count
@@ -187,7 +191,7 @@ void DPMixtureModel::update_component_indicator(int i) {
             phi_c.erase(old_cluster);
         }
     }
-    //compute probabilities
+    // Compute probabilities
     std::vector<double> probs;
     std::vector<int> cluster_labels;
 
@@ -204,7 +208,7 @@ void DPMixtureModel::update_component_indicator(int i) {
     probs.push_back(new_prob);
     cluster_labels.push_back(next_component_id);  // temporary label
 
-    //sample cluster assignements
+    // Sample cluster assignments
     // Normalize probabilities
     double sum = std::accumulate(probs.begin(), probs.end(), 0.0);
     for (auto& p : probs) p /= sum;
@@ -233,6 +237,9 @@ void DPMixtureModel::update_component_indicator(int i) {
 
 }
 
+// ------------------------------------------------------------
+// Core Gibbs Step 2: Update Parameters
+// ------------------------------------------------------------
 void DPMixtureModel::update_component_parameters() {
     for (auto& kv : phi_c) {
         int label = kv.first;

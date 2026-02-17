@@ -36,6 +36,9 @@ static std::vector<DataRow> load_csv_rows(const std::string& path) {
     return reader.read();
 }
 
+// ------------------------------------------------------------
+// Loads vector data (SHP/GPKG) using GDAL/OGR
+// ------------------------------------------------------------
 static std::vector<DataRow> load_vector_rows_ogr(const LoadSpec& spec) {
     GDALAllRegister();
 
@@ -83,6 +86,9 @@ static std::vector<DataRow> load_vector_rows_ogr(const LoadSpec& spec) {
     OGRFeature* feat = nullptr;
     int global_idx = 0;
 
+    // ------------------------------------------------------------
+    // Iterate over features to extract attributes and WKT geometry
+    // ------------------------------------------------------------
     while ((feat = layer->GetNextFeature()) != nullptr) {
         DataRow r;
         r.global_index = global_idx++;
@@ -113,6 +119,9 @@ static std::vector<DataRow> load_vector_rows_ogr(const LoadSpec& spec) {
     return out;
 }
 
+// ------------------------------------------------------------
+// Main dispatcher: selects loader based on DataFormat
+// ------------------------------------------------------------
 std::vector<DataRow> load_dataset(const LoadSpec& spec) {
     if (spec.format == DataFormat::CSV) {
         auto rows = load_csv_rows(spec.path);

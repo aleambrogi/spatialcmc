@@ -8,6 +8,9 @@
 
 namespace Step1_Sharding {
 
+    // ------------------------------------------------------------
+    // Sharding: Manages data partitioning based on a key column
+    // ------------------------------------------------------------
     class Sharding {
     public:
         using Row = DataRow;
@@ -15,7 +18,7 @@ namespace Step1_Sharding {
 
         Sharding(const std::vector<Row>& data);
 
-        // Divide il dataset in shard basati su una colonna chiave
+        // Splits the dataset into shards based on a key column
         std::vector<Shard> generateShards(const std::string& column);
 
     private:

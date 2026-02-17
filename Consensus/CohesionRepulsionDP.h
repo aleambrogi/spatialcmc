@@ -1,7 +1,3 @@
-//
-// Created by albor on 01/12/2025.
-//
-
 #ifndef COHESION_REPULSION_DP_H
 #define COHESION_REPULSION_DP_H
 
@@ -9,6 +5,11 @@
 #include <random>
 #include "IModelPrior.h"
 
+// ------------------------------------------------------------
+// CohesionRepulsionDP: Consensus Algorithm
+// Uses a distance-based likelihood to cluster local parameters
+// into global meta-clusters.
+// ------------------------------------------------------------
 class CohesionRepulsionDP {
 public:
     CohesionRepulsionDP(double alpha,
@@ -17,20 +18,28 @@ public:
                         double delta2, double theta_out,
                         unsigned int seed = std::random_device{}());
 
-    // Initialize with a single cluster or random labels
+    // ------------------------------------------------------------
+    // Initialization
+    // ------------------------------------------------------------
     void initialize_single_cluster();
     void initialize_random(int max_init_clusters);
 
-    [[nodiscard]] int best_sample_binder() const;
-
+    // ------------------------------------------------------------
+    // MCMC Execution
+    // ------------------------------------------------------------
     // One full Gibbs sweep over all items
     void gibbs_scan();
 
     // Run MCMC: burn-in + sampling (with optional thinning)
     void run_mcmc(int burn_in, int n_samples);
 
+    // ------------------------------------------------------------
+    // Output & Diagnostics
+    // ------------------------------------------------------------
     const std::vector<int>& get_current_labels() const { return c; }
     const std::vector<std::vector<int>>& get_samples_labels() const { return samples_c; }
+
+    [[nodiscard]] int best_sample_binder() const;
 
     void run_mcmc_to_csv(int burn_in, int n_samples, const std::string& filename);
     void save_meta_cluster_assignments_csv(const std::vector<ComponentParameter>& phi_data,
@@ -60,7 +69,9 @@ private:
     // MCMC samples of labels
     std::vector<std::vector<int>> samples_c;
 
-    // Internal helpers
+    // ------------------------------------------------------------
+    // Internal Helpers
+    // ------------------------------------------------------------
     int sample_from_log_weights(const std::vector<double>& logw);
     void remove_item_from_cluster(int i);
     void check_empty_and_relabel(int emptied_cluster);

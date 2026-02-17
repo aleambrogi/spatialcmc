@@ -1,12 +1,11 @@
-//
-// Created by albor on 17/12/2025.
-//
-
 #include "aPPM_MixtureModel_Neal8.h"
 #include <limits>
 #include <cmath>
 #include <random>
 
+// ------------------------------------------------------------
+// Constructor: initializes Neal 8 with m auxiliary components
+// ------------------------------------------------------------
 aPPM_MixtureModel_Neal8::aPPM_MixtureModel_Neal8(
         double alpha,
         const std::vector<double>& data,
@@ -20,6 +19,9 @@ aPPM_MixtureModel_Neal8::aPPM_MixtureModel_Neal8(
     if (m <= 0) throw std::runtime_error("Neal8: m_aux must be > 0");
 }
 
+// ------------------------------------------------------------
+// Core Step: Updates cluster assignment for observation i
+// ------------------------------------------------------------
 void aPPM_MixtureModel_Neal8::update_component_indicator(int i)
 {
     // 1) Remove i from its old cluster; delete empty clusters
@@ -52,7 +54,9 @@ void aPPM_MixtureModel_Neal8::update_component_indicator(int i)
         existing_labels.push_back(label);
     }
 
-    // Auxiliary candidates: phi_aux[j] ~ G0
+    // ------------------------------------------------------------
+    // 2b) Generate m auxiliary candidates from Base Measure (G0)
+    // ------------------------------------------------------------
     std::vector<ComponentParameter> phi_aux;
     phi_aux.reserve(m);
 
@@ -72,7 +76,9 @@ void aPPM_MixtureModel_Neal8::update_component_indicator(int i)
         }
     }
 
-    // 3) Sample from categorical distribution using stable log-sum-exp
+    // ------------------------------------------------------------
+    // 3) Sample new label using Log-Sum-Exp for stability
+    // ------------------------------------------------------------
     double maxlog = -std::numeric_limits<double>::infinity();
     for (double lw : logw) if (lw > maxlog) maxlog = lw;
 

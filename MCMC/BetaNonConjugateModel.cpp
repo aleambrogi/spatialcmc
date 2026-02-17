@@ -1,13 +1,12 @@
-//
-// Created by albor on 17/12/2025.
-//
-
 #include "BetaNonConjugateModel.h"
 #include <random>
 #include <cmath>
 #include <stdexcept>
 #include <limits>
 
+// ------------------------------------------------------------
+// Constructor: Validates hyperparameters and MCMC settings
+// ------------------------------------------------------------
 BetaNonConjugateModel::BetaNonConjugateModel(double shape_a_, double rate_a_,
                                              double shape_b_, double rate_b_,
                                              double prop_sd_log_a_,
@@ -29,6 +28,9 @@ BetaNonConjugateModel::BetaNonConjugateModel(double shape_a_, double rate_a_,
         throw std::runtime_error("BetaNonConjugateModel: eps must be in (0, 0.5).");
 }
 
+// ------------------------------------------------------------
+// Mathematical Helpers: Log-PDFs
+// ------------------------------------------------------------
 double BetaNonConjugateModel::log_gamma_prior(double x, double shape, double rate)
 {
     // log p(x) = (shape-1)log x - rate*x + const
@@ -84,6 +86,9 @@ double BetaNonConjugateModel::likelihood(double y_i, const ComponentParameter& p
     return std::exp(logf);
 }
 
+// ------------------------------------------------------------
+// Base Measure Sampling (G0)
+// ------------------------------------------------------------
 ComponentParameter BetaNonConjugateModel::sample_from_G0()
 {
     // alpha ~ Gamma(shape_a, scale=1/rate_a), beta ~ Gamma(shape_b, scale=1/rate_b)
@@ -114,6 +119,9 @@ ComponentParameter BetaNonConjugateModel::sample_from_H_i(double y_i)
     return sample_from_posterior(singleton);
 }
 
+// ------------------------------------------------------------
+// Posterior Sampling via Metropolis-Hastings (Log-Space)
+// ------------------------------------------------------------
 ComponentParameter BetaNonConjugateModel::sample_from_posterior(const std::vector<double>& cluster_data)
 {
     // MH in log(alpha), log(beta) with symmetric Normal proposals.

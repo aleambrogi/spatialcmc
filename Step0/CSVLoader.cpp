@@ -26,25 +26,26 @@ static inline double safe_stod(const std::string& s) {
     try {
         return std::stod(t);
     } catch(...) {
-        std::cerr << "WARN: impossibile convertire in double la stringa \""
-                  << s << "\" → imposto median_val = 0\n";
+        std::cerr << "WARN: unable to convert string \""
+                  << s << "\" to double -> setting median_val = 0\n";
         return 0.0;
     }
 }
 
-
 std::vector<DataRow> CSVReader::read() {
     std::ifstream file(filename_);
     if (!file.is_open()) {
-        throw std::runtime_error("Impossibile aprire il file CSV: " + filename_);
+        throw std::runtime_error("Unable to open CSV file: " + filename_);
     }
 
     std::string line;
     std::vector<DataRow> rows;
 
-    // --- Leggi header ---
+    // ------------------------------------------------------------
+    // Read header
+    // ------------------------------------------------------------
     if (!std::getline(file, line)) {
-        throw std::runtime_error("CSV vuoto o header mancante.");
+        throw std::runtime_error("Empty CSV or missing header.");
     }
 
     std::stringstream headerStream(line);
@@ -55,7 +56,9 @@ std::vector<DataRow> CSVReader::read() {
         columns.push_back(trim_quotes_ws(col));
     }
 
-    // --- Leggi tutte le righe ---
+    // ------------------------------------------------------------
+    // Read all rows
+    // ------------------------------------------------------------
     while (std::getline(file, line)) {
         std::stringstream ss(line);
         std::string cell;
@@ -68,13 +71,13 @@ std::vector<DataRow> CSVReader::read() {
             if (i < (int)columns.size()) {
                 const std::string &cname = columns[i];
 
-                // POPOLA LA TUA STRUCT DataRow (assumo COMUNE, PROVINCIA, median_val)
+                // Populate DataRow struct (assuming COMUNE, PROVINCIA, median_val)
                 if (cname == "COMUNE") row.COMUNE = clean;
                 else if (cname == "PROVINCIA") row.PROVINCIA = clean;
                 else if (cname == "median_val")
                     row.median_val = safe_stod(clean);
                 else {
-                    // se hai campi extra, puoi expandere qui
+                    // Expand here for extra fields
                 }
             }
             i++;

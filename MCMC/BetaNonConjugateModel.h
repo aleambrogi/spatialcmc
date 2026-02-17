@@ -1,12 +1,12 @@
-//
-// Created by albor on 17/12/2025.
-//
-
 #ifndef BETA_NONCONJUGATE_MODEL_H
 #define BETA_NONCONJUGATE_MODEL_H
 
 #include "IModelPrior.h"
 
+// ------------------------------------------------------------
+// BetaNonConjugateModel: Handles Beta Likelihood with Gamma Priors
+// Uses Metropolis-Hastings for posterior sampling (Neal 8)
+// ------------------------------------------------------------
 class BetaNonConjugateModel : public IModelPrior {
 private:
     // Independent Gamma priors on alpha and beta:
@@ -41,6 +41,9 @@ public:
                           int mh_steps_ = 2,
                           double eps_ = 1e-12);
 
+    // ------------------------------------------------------------
+    // Core Interface Methods
+    // ------------------------------------------------------------
     double likelihood(double y_i, const ComponentParameter& phi) override;
 
     ComponentParameter sample_from_G0() override;

@@ -1,7 +1,3 @@
-//
-// Created by albor on 14/11/2025.
-//
-
 #ifndef IMODELPRIOR_H
 #define IMODELPRIOR_H
 
@@ -22,9 +18,10 @@ struct ComponentParameter {
     std::vector<double> parameters;
 };
 
-// --- Model and Prior Abstraction (Interface) ---
-
-// Interface for distribution-specific operations (e.g., Normal-Normal Conjugate)
+// ------------------------------------------------------------
+// IModelPrior: Interface for Model and Prior Operations
+// Abstraction for distribution-specific logic (Likelihood, Sampling)
+// ------------------------------------------------------------
 class IModelPrior {
 protected:
     ComponentParameter current_phi;
@@ -33,6 +30,7 @@ public:
     std::mt19937 generator;
 
     void set_seed(unsigned int s) { generator.seed(s); }
+
     // Computes the likelihood F(y_i, phi_c)
     virtual double likelihood(double y_i, const ComponentParameter& phi) = 0;
 
@@ -49,7 +47,7 @@ public:
     // Computes the prior predictive (integral term: ∫ F(y_i, phi) dG_0(phi))
     virtual double calculate_prior_predictive(double y_i) = 0;
 
-    // allow to clone the prior for parallel implementation
+    // Allows cloning the prior for parallel implementation
     virtual IModelPrior* clone() const = 0;
 
     void set_current_phi(const ComponentParameter& phi) { current_phi = phi; }
@@ -57,9 +55,10 @@ public:
     virtual ~IModelPrior() = default;
 };
 
-// --- Concrete Conjugate Implementation Example ---
-
-// Example: F = Normal(phi, sigma^2) (known sigma), G0 = Normal(mu_0, sigma_0^2)
+// ------------------------------------------------------------
+// NormalConjugateModel: Concrete Implementation
+// F = Normal(mu, sigma^2), G0 = Normal-Inverse-Gamma(NIG)
+// ------------------------------------------------------------
 class NormalConjugateModel : public IModelPrior {
 private:
     // Fixed NIG hyperparameters for the base prior G0 = NIG(mu_0, kappa_0, alpha_0, beta_0)
@@ -73,12 +72,17 @@ private:
     double normal_rng(const ComponentParameter& phi);
     double inv_gamma_rng(double alpha, double beta);
     double student_t_pdf(double x, double mu, double df, double sigma_sq); // Student's t-PDF
-    //core utility function for Bayesian updating of a Normal likelihood with a Normal-Inverse-Gamma (NIG) prior
+
+    // Core utility function for Bayesian updating of a Normal likelihood with a Normal-Inverse-Gamma (NIG) prior
     ComponentParameter sample_nig_posterior(const std::vector<double>& data, double mu0, double kappa0, double alpha0, double beta0);
 
 public:
     NormalConjugateModel(double mu0, double kappa0, double alpha0, double beta0);
-    // ... IModelPrior methods ...
+
+    // ------------------------------------------------------------
+    // IModelPrior Interface Implementation
+    // ------------------------------------------------------------
+
     // Computes the likelihood F(y_i, phi_c)
     double likelihood(double y_i, const ComponentParameter& phi) override;
 

@@ -17,20 +17,23 @@ static inline std::string trim_quotes_and_ws(const std::string &s) {
 
 Sharding::Sharding(const std::vector<Row>& data) : dataset(data) {}
 
+// ------------------------------------------------------------
+// Splits dataset into shards based on the specified column
+// ------------------------------------------------------------
 std::vector<Sharding::Shard> Sharding::generateShards(const std::string& column) {
     if (dataset.empty()) {
-        std::cerr << "Dataset vuoto.\n";
+        std::cerr << "Empty dataset.\n";
         return {};
     }
 
     std::string col = column;
-    // rimuovo eventuali virgolette nel nome della colonna passato
+    // remove potential quotes in the passed column name
     col = trim_quotes_and_ws(col);
 
     std::set<std::string> uniqueValues;
     uniqueValues.clear();
 
-    // raccogli alcuni esempi per debug
+    // collect some examples for debug
     int debug_print = 10;
     std::cout << "Sharding by column: \"" << col << "\" (showing up to " << debug_print << " sample values)\n";
 
@@ -52,7 +55,7 @@ std::vector<Sharding::Shard> Sharding::generateShards(const std::string& column)
             }
             #else
             // unknown column name => throw so user notices
-            throw std::runtime_error("Sharding::generateShards: colonna non riconosciuta: " + col);
+            throw std::runtime_error("Sharding::generateShards: unrecognized column: " + col);
             #endif
         }
 
@@ -64,14 +67,16 @@ std::vector<Sharding::Shard> Sharding::generateShards(const std::string& column)
 
     std::cout << "Unique shard keys found: " << uniqueValues.size() << "\n";
 
-    // mappa valore -> indice shard
+    // map value -> shard index
     std::unordered_map<std::string, size_t> indexMap;
     size_t idx = 0;
     for (const auto &v : uniqueValues) {
         indexMap[v] = idx++;
     }
 
-    // prepara shards
+    // ------------------------------------------------------------
+    // Distribute rows into shards
+    // ------------------------------------------------------------
     std::vector<Shard> shards(uniqueValues.size());
     for (const auto &row : dataset) {
         std::string val;
@@ -82,8 +87,8 @@ std::vector<Sharding::Shard> Sharding::generateShards(const std::string& column)
         shards[indexMap[val]].push_back(row);
     }
 
-    std::cout << "Numero di shard generati: " << shards.size() << std::endl;
+    std::cout << "Number of generated shards: " << shards.size() << std::endl;
     return shards;
 }
 
-} // namespace
+}// namespace

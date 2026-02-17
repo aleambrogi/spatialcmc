@@ -1,7 +1,3 @@
-//
-// Created by albor on 01/12/2025.
-//
-
 #include "CohesionRepulsionDP.h"
 #include <cmath>
 #include <stdexcept>
@@ -9,6 +5,7 @@
 #include <iostream>
 #include <iomanip> // Required for progress bar formatting
 #include <fstream>
+#include <limits> // Required for std::numeric_limits
 
 // ------------------------------------------------------------
 // Helper: Static Progress Bar
@@ -46,12 +43,6 @@ static long binder_loss(const std::vector<int>& z1,
     return loss;
 }
 
-// ------------------------------------------------------------
-// Select the MCMC sample index with minimal Binder loss
-// ------------------------------------------------------------
-// ------------------------------------------------------------
-// Select the MCMC sample index with minimal Binder loss
-// ------------------------------------------------------------
 // ------------------------------------------------------------
 // Select the MCMC sample index with minimal Binder loss
 // Optimized: Uses Posterior Similarity Matrix (O(T * N^2))
@@ -127,7 +118,9 @@ int CohesionRepulsionDP::best_sample_binder() const
 }
 
 
-// ---------- constructor ----------
+// ------------------------------------------------------------
+// Constructor
+// ------------------------------------------------------------
 CohesionRepulsionDP::CohesionRepulsionDP(
         double alpha_,
         const std::vector<std::vector<double>>& D_,
@@ -162,14 +155,18 @@ CohesionRepulsionDP::CohesionRepulsionDP(
     initialize_single_cluster();
 }
 
-// ---------- initialization: all items in one cluster ----------
+// ------------------------------------------------------------
+// Initialization: All items in one cluster
+// ------------------------------------------------------------
 void CohesionRepulsionDP::initialize_single_cluster()
 {
     c.assign(n, 0);
     cluster_counts.assign(1, n);
 }
 
-// ---------- initialization: random labels ----------
+// ------------------------------------------------------------
+// Initialization: Random labels
+// ------------------------------------------------------------
 void CohesionRepulsionDP::initialize_random(int max_init_clusters)
 {
     if (max_init_clusters <= 0) {
@@ -206,7 +203,9 @@ void CohesionRepulsionDP::initialize_random(int max_init_clusters)
     }
 }
 
-// ---------- log Gamma pdfs ----------
+// ------------------------------------------------------------
+// Log-Gamma PDFs
+// ------------------------------------------------------------
 double CohesionRepulsionDP::log_f_in(double d) const
 {
     if (d <= 0.0) return -1e30;
@@ -219,7 +218,9 @@ double CohesionRepulsionDP::log_g_out(double d) const
     return logC_out + (delta2 - 1.0) * std::log(d) - theta_out * d;
 }
 
-// ---------- helper: sample from unnormalised log-weights ----------
+// ------------------------------------------------------------
+// Helper: Sample from unnormalized log-weights
+// ------------------------------------------------------------
 int CohesionRepulsionDP::sample_from_log_weights(const std::vector<double>& logw)
 {
     const int K = static_cast<int>(logw.size());
@@ -253,7 +254,9 @@ int CohesionRepulsionDP::sample_from_log_weights(const std::vector<double>& logw
     return K - 1;
 }
 
-// ---------- remove item i from its cluster ----------
+// ------------------------------------------------------------
+// Remove item i from its cluster
+// ------------------------------------------------------------
 void CohesionRepulsionDP::remove_item_from_cluster(int i)
 {
     int old_k = c[i];
@@ -269,7 +272,9 @@ void CohesionRepulsionDP::remove_item_from_cluster(int i)
     }
 }
 
-// ---------- if a cluster is empty, drop it and relabel ----------
+// ------------------------------------------------------------
+// Check if cluster is empty, drop it and relabel
+// ------------------------------------------------------------
 void CohesionRepulsionDP::check_empty_and_relabel(int emptied_cluster)
 {
     cluster_counts.erase(cluster_counts.begin() + emptied_cluster);
@@ -280,7 +285,9 @@ void CohesionRepulsionDP::check_empty_and_relabel(int emptied_cluster)
     }
 }
 
-// ---------- update assignment for index i (Gibbs step) ----------
+// ------------------------------------------------------------
+// Update assignment for index i (Gibbs step)
+// ------------------------------------------------------------
 void CohesionRepulsionDP::update_assignment_for_index(int i)
 {
     remove_item_from_cluster(i);
@@ -328,7 +335,9 @@ void CohesionRepulsionDP::update_assignment_for_index(int i)
     }
 }
 
-// ---------- one full Gibbs sweep ----------
+// ------------------------------------------------------------
+// One full Gibbs sweep
+// ------------------------------------------------------------
 void CohesionRepulsionDP::gibbs_scan()
 {
     for (int i = 0; i < n; ++i) {
@@ -336,7 +345,9 @@ void CohesionRepulsionDP::gibbs_scan()
     }
 }
 
-// ---------- run MCMC (with progress bars) ----------
+// ------------------------------------------------------------
+// Run MCMC (with progress bars)
+// ------------------------------------------------------------
 void CohesionRepulsionDP::run_mcmc(int burn_in, int n_samples)
 {
     if (burn_in < 0 || n_samples <= 0) {
@@ -364,7 +375,9 @@ void CohesionRepulsionDP::run_mcmc(int burn_in, int n_samples)
     std::cout << std::endl;
 }
 
-// ---------- run MCMC to CSV (with progress bars) ----------
+// ------------------------------------------------------------
+// Run MCMC to CSV (with progress bars)
+// ------------------------------------------------------------
 void CohesionRepulsionDP::run_mcmc_to_csv(int burn_in, int n_samples, const std::string& filename)
 {
     if (burn_in < 0 || n_samples <= 0) {

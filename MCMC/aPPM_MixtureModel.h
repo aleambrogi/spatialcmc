@@ -1,7 +1,3 @@
-//
-// Created by albor on 30/11/2025.
-//
-
 #ifndef NEAL_ALGORITHM_APPM_MIXTUREMODEL_H
 #define NEAL_ALGORITHM_APPM_MIXTUREMODEL_H
 
@@ -9,12 +5,18 @@
 #include <unordered_set>
 #include <queue>
 
+// ------------------------------------------------------------
+// aPPM_MixtureModel: Extends DP Mixture with Spatial Cohesion
+// ------------------------------------------------------------
 class aPPM_MixtureModel : public DPMixtureModel {
 private:
     std::vector<std::vector<int>> neighbors;
     double lambda_appm;
 
 public:
+    // ------------------------------------------------------------
+    // Constructor taking spatial adjacency and lambda parameter
+    // ------------------------------------------------------------
     aPPM_MixtureModel(double alpha,
                       const std::vector<double>& data,
                       IModelPrior* prior,
@@ -22,6 +24,10 @@ public:
                       double lambda);
 
 protected:
+    // ------------------------------------------------------------
+    // Overrides for Spatial Probability Calculation
+    // ------------------------------------------------------------
+
     // Override cluster weight in DP mixture
     double cluster_weight(int i,
                           int cluster_label,
@@ -29,6 +35,7 @@ protected:
 
     // Override weight of a potential new cluster
     double new_cluster_weight(int i) override;
+
     // APPM helpers
     [[nodiscard]] double log_cohesion(const std::vector<int>& members) const;
     [[nodiscard]] int count_internal_edges(const std::vector<int>& members) const;

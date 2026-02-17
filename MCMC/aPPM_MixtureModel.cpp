@@ -1,10 +1,9 @@
-//
-// Created by albor on 30/11/2025.
-//
-
 #include "aPPM_MixtureModel.h"
+#include <limits> // Added for std::numeric_limits
 
+// ------------------------------------------------------------
 // Constructor
+// ------------------------------------------------------------
 aPPM_MixtureModel::aPPM_MixtureModel(
         double alpha,
         const std::vector<double>& data,
@@ -17,6 +16,9 @@ aPPM_MixtureModel::aPPM_MixtureModel(
       lambda_appm(lambda)
 {}
 
+// ------------------------------------------------------------
+// Calculates probability of joining an existing cluster
+// ------------------------------------------------------------
 double aPPM_MixtureModel::cluster_weight(
         int i,
         int cluster_label,
@@ -43,7 +45,9 @@ double aPPM_MixtureModel::cluster_weight(
 }
 
 
-
+// ------------------------------------------------------------
+// Calculates probability of starting a new cluster
+// ------------------------------------------------------------
 double aPPM_MixtureModel::new_cluster_weight(int i)
 {
     double prior_pred = compute_prior_predictive(y[i]);
@@ -56,7 +60,9 @@ double aPPM_MixtureModel::new_cluster_weight(int i)
     return alpha * prior_pred * cohesion;
 }
 
-
+// ------------------------------------------------------------
+// APPM Helper Functions (Cohesion & Connectivity)
+// ------------------------------------------------------------
 int aPPM_MixtureModel::count_internal_edges(
         const std::vector<int>& members) const
 {
