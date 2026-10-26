@@ -41,7 +41,7 @@ On Visual Studio generators, the executable is normally `build/Release/spatialcm
 
 ## Research notes and limitations
 
-The old CSV-to-meta-clustering experiment is preserved in `main.cpp` but is not exposed by the command line: its input `dataset_median.csv` is not included, shard adjacency assumes grouped input order, and partition comparisons across shards require a shared observation set. In that experiment the k-nearest-neighbour graph is constructed from values, rather than geographic coordinates. It must not be interpreted as a validated spatial pipeline.
+The old CSV-to-meta-clustering experiment is preserved in `main.cpp` but is not exposed by the command line: its original `dataset_median.csv` is retained for research context, shard adjacency assumes grouped input order, and partition comparisons across shards require a shared observation set. In that experiment the k-nearest-neighbour graph is constructed from values, rather than geographic coordinates. It must not be interpreted as a validated spatial pipeline.
 
 The simple CSV reader assumes unquoted delimiter-free cells and is intended for controlled research inputs. Sampler seeds are not consistently configurable across all components; repeated runs need not be identical. A successful smoke check establishes basic execution, not MCMC convergence or statistical accuracy.
 
