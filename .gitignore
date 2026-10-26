@@ -1,0 +1,11 @@
+build*/
+cmake-build-*/
+.idea/
+.vscode/
+*.exe
+*.obj
+*.o
+*.a
+*.dll
+*.log
+dataset_median.csv

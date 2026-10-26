@@ -15,7 +15,7 @@
 #include <iostream>   // For basic I/O (debugging/logging)
 #include <ctime>
 #include <limits> // For std::numeric_limits
-#include <boost/math/special_functions/gamma.hpp>
+#include <chrono>
 
 struct ComponentParameter {
     // This could hold parameters like (mu, sigma) for a Normal distribution
