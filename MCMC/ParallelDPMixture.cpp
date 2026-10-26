@@ -1,7 +1,6 @@
 #include "ParallelDPMixture.h"
 #include "Sharding.h"
 #include <atomic>
-#include <atomic>
 
 // ---------------------------------------------------------
 // Constructor
