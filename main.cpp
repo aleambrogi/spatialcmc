@@ -483,12 +483,20 @@ void test_Parallel_Mixture_with_MetaClustering()
     delete prior;
 }
 
-int main()
+int main(int argc, char* argv[])
 {
-    //test_DP_MixtureModel();
-    //test_DP_MixtureModel_with_APPM();
-    //test_CohesionRepulsionDP();
-    //test_Parallel_DP_MixtureModel_with_APPM();
-    test_Parallel_Mixture_with_MetaClustering();
+    const std::string mode = argc > 1 ? argv[1] : "dp";
+    try {
+        if (mode == "dp") test_DP_MixtureModel();
+        else if (mode == "spatial") test_DP_MixtureModel_with_APPM();
+        else if (mode == "consensus") test_CohesionRepulsionDP();
+        else {
+            std::cerr << "Usage: spatialcmc [dp|spatial|consensus]\n";
+            return 2;
+        }
+    } catch (const std::exception& error) {
+        std::cerr << error.what() << "\n";
+        return 1;
+    }
     return 0;
 }
